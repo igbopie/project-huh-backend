@@ -10,6 +10,7 @@
     "jade": "*",
     "mongoose": "~3.8.8",
     "bcrypt": "~0.7.7",
-    "crypto": "0.0.3"
+    "crypto": "0.0.3",
+    "date-utils": "~1.2.15"
   }
 }

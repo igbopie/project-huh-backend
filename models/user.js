@@ -1,19 +1,18 @@
 var mongoose = require('mongoose')
-  , Schema = mongoose.Schema,
-    bcrypt = require('bcrypt'),
-    SALT_WORK_FACTOR = 12;
+  , Schema = mongoose.Schema
+  ,	bcrypt = require('bcrypt')
+  , crypto = require('crypto')
+  ,	dateUtils = require('date-utils')
+  ,	SALT_WORK_FACTOR = 12
+  , TOKEN_LENGTH = 48
+  , MAX_TOKENS = 10;
 
 
-function defaultTokenDate(){
-	var date = new Date();
-	date.setYear(date.getYear()+1);
-	return date;
-}
 
 var tokenSchema = new Schema({
     token		: {	type: String, required: true, index: { unique: true } }
   , created		: { type: Date	, required: true, default: Date.now }
-  , expiration  : { type: Date	, required: true, default: defaultTokenDate }
+  , expiration  : { type: Date	, required: true}
   , lastUsed	: { type: Date 	, required: false }
 });
 
@@ -59,6 +58,42 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
         cb(null, isMatch);
     });
 };
+
+userSchema.methods.createToken = function(cb) {
+	var me = this;
+	var expiration = new Date();
+	expiration.add({ 	milliseconds: 0,
+	        seconds: 0,
+			minutes: 0,
+	        hours: 1,
+	        days: 0,
+	        weeks: 0,
+	        months: 0,
+	        years: 0});
+	
+	crypto.randomBytes(TOKEN_LENGTH,
+		function(err, buf) {
+			if (err){
+				cb(err);
+			}else{
+				//Remove other tokens
+				while(me.tokens.length >= MAX_TOKENS){
+					me.tokens.shift();	
+				}
+			
+				var token = buf.toString('hex');
+				me.tokens.push({token:token,expiration:expiration});
+				me.save(function(err) {
+					if(err) {
+						cb(err);  
+					} else {
+						cb(null,token); 
+					}
+				});
+			}
+		});
+};
+ 
  
  
 var user = mongoose.model('user', userSchema);
