@@ -1,10 +1,27 @@
 var mongoose = require('mongoose');
 var User = require('../apiclient/user');
-var nUsers = 1000000;
+var nUsers = 100;
 
 
+function loginUsers(array,test,callback){
+	var i = 0;
+	loginUsersAux(array,i,test,callback);
+}
+function loginUsersAux(array,i,test,callback){
+	if(i < array.length){
+		var user = array[i];
+		User.login(user.username,user.password,function(err,object){
+		
+			test.ok(!err,"There was an error: "+err);
+		    test.ok(object != null, "Token was null");
+			i++;	
+			loginUsersAux(array,i,test,callback)		
+		});
+	} else {
+		callback();
+	}
 
-
+}
 
 function createUsers(array,callback){
 	var i = 0;
@@ -22,7 +39,6 @@ function createUsersAux(array,i,callback){
 	}
 
 }
-
 
 function randomUsers(nRandomUsers){
 	var array = new Array();
@@ -67,8 +83,6 @@ exports.create = function (test) {
 	});
 }
 
-
-
 exports.list = function (test) {
 	var users = randomUsers(nUsers);
 	createUsers(users,function(){
@@ -83,7 +97,7 @@ exports.list = function (test) {
 
 
 exports.login = function (test) {
-	var users = randomUsers(nUsers);
+	var users = randomUsers(100);
 	createUsers(users,function(){
 		loginUsers(users,test,function(){
 		    test.done();
