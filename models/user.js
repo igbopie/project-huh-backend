@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
   ,	bcrypt = require('bcrypt')
   , crypto = require('crypto')
   ,	dateUtils = require('date-utils')
-  ,	SALT_WORK_FACTOR = 12
+  ,	SALT_WORK_FACTOR = 4
   , TOKEN_LENGTH = 48
   , MAX_TOKENS = 10;
 

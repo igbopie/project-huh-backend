@@ -2,6 +2,7 @@
 var User = require('../models/user').User; 
 var ApiUtils = require('../utils/apiutils'); 
 
+
 /*
  * GET users listing.
  */
@@ -17,6 +18,7 @@ exports.list = function(req, res){
 };
 
 exports.create = function(req, res) {
+	
  	//req.query. for GET
 	var email = req.body.email;
 	var username = req.body.username;
@@ -25,7 +27,7 @@ exports.create = function(req, res) {
 	// Using RegEx - search is case insensitive
 	User.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) { 
 		if(err) { 
-		    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (doc){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS,"User already exists",null);
 		} else{
@@ -43,11 +45,11 @@ exports.create = function(req, res) {
 			});
 		}   
 	});
-
 }
 
 
 exports.login = function(req, res) {
+
 	var username = req.body.username;
 	var password = req.body.password;
 	

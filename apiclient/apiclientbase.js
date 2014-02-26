@@ -25,14 +25,12 @@ exports.post = function(method,params,callback) {
 	// Set up the request
 	var postRequest = http.request(postOptions, function(res) {
 		var data ="";
-		
 		res.setEncoding('utf8');
 		res.on('data', function (chunk) {
 			data += chunk;
 		});
 		res.on('end', function () {
 			callback(res.statusCode,res.headers,data);		
-		
 		});
 	
 	});
