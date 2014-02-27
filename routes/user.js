@@ -1,21 +1,8 @@
 
 var User = require('../models/user').User; 
+var UserService = require('../models/user').Service; 
 var ApiUtils = require('../utils/apiutils'); 
 
-
-/*
- * GET users listing.
- */
-
-exports.list = function(req, res){
-	User.find({}, function(err, docs) {
-		if(!err) {
-			ApiUtils.api(req,res,ApiUtils.OK,null,docs);
-		} else {
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		}
-	});
-};
 
 exports.create = function(req, res) {
 	
@@ -25,7 +12,7 @@ exports.create = function(req, res) {
 	var password = req.body.password;  
 	
 	// Using RegEx - search is case insensitive
-	User.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) { 
+	UserService.findUserByUsername(username, function(err, doc) { 
 		if(err) { 
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (doc){
@@ -54,7 +41,7 @@ exports.login = function(req, res) {
 	var password = req.body.password;
 	
 	// Using RegEx - search is case insensitive  
-	User.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) {  
+	UserService.findUserByUsername(username, function(err, doc) {  
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} if(!doc) {			

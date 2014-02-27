@@ -5,9 +5,22 @@ var mongoose = require('mongoose')
   ,	dateUtils = require('date-utils')
   ,	SALT_WORK_FACTOR = 4
   , TOKEN_LENGTH = 48
-  , MAX_TOKENS = 10;
+  , MAX_TOKENS = 10
+  , MAX_FRIENDS = 5000;
 
+var friendRequestSchema = new Schema({
+    friendId		: {	type: Schema.Types.ObjectId, required: true}
+  , friendUsername	: { type: String	, required: true}
+  , dateRequested  		: { type: Date	, required: true, default: Date.now}
+});
 
+var friendSchema = new Schema({
+    friendId		: {	type: Schema.Types.ObjectId, required: true}
+  , friendUsername	: { type: String	, required: true}
+  , displayName		: { type: String	, required: false}
+  , dateAdded  		: { type: Date	, required: true, default: Date.now}
+  , dateRequested  		: { type: Date	, required: true}
+});
 
 var tokenSchema = new Schema({
     token		: {	type: String, required: true, index: { unique: true } }
@@ -22,7 +35,13 @@ var userSchema = new Schema({
   , email   	: { type: String, required: true, index: { unique: true }  }
   , created		: { type: Date	, required: true, default: Date.now }
   , modified	: { type: Date	, required: true, default: Date.now }
+  , phone			: {	type: String  , required: false, index: { unique: true } } // HASHED
+  , phoneVerificationCode: { type: String  , required: false }
+  , phoneVerified		: { type: Boolean , required: true, default: false }
+  , phoneDateVerified	: { type: Date	  , required: false }
   , tokens		: [tokenSchema]
+  , friends		: [friendSchema]
+  , friendRequests: [friendRequestSchema]
   //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
@@ -49,7 +68,6 @@ userSchema.pre('save', function(next) {
 	});
  
 });
- 
 
  
 userSchema.methods.comparePassword = function(candidatePassword, cb) {
@@ -98,6 +116,54 @@ userSchema.methods.createToken = function(cb) {
  
 var user = mongoose.model('user', userSchema);
 
+//Service?
+var service = {};
+service.findUserByToken = function(token,callback){
+	user.findOne({"tokens.token":token},function(err,user){
+			if(err) {
+				callback(user);
+			} else if (user == null){
+				callback(null,null);
+			}else{
+				var completeToken = null;
+				//look for the token
+				for(var i = 0; i < user.tokens.length; i++){
+					if(user.tokens[i].token == token){
+						completeToken = user.tokens[i];
+						break; 
+					}
+				}	
+				if(completeToken == null){
+					callback(null,null);
+				}else{
+					//verify the expiration date
+					if(new Date().isBefore(completeToken.expiration)){
+						callback(null,user);
+						//return the user
+					} else {
+						//I think I should delete this token
+						callback(null,null);
+					}
+				}
+			}
+	});
+};
+service.findUserByUsername = function(username,callback){
+	// Using RegEx - search is case insensitive
+	user.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) { 
+		if(err) { 
+			callback(err);
+		} else {
+			callback(err,doc);
+		}
+
+	});
+
+};
+
+
+
 module.exports = {
-  User: user
+  User: user,
+  Service:service
 };
