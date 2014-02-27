@@ -12,7 +12,7 @@ var path = require('path');
 var mongoose = require('mongoose');
 var app = express();
 
-mongoose.connect('mongodb://localhost/seem');
+mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
 // all environments
 app.set('port', process.env.PORT || 3000);
