@@ -71,4 +71,37 @@ exports.accept = function (test) {
 	});
 }
 
+exports.decline = function (test) {
+	var users = TestUtils.randomUsers(nUsers);
+	TestUtils.createUsers(users,function(){
+		TestUtils.loginUsers(users,test,function(){			
+			Friends.add(users[1].username,users[0].token,function(err,docs){
+				Friends.decline(users[0].username,users[1].token,function(err){
+					test.ok(!err,"There was an error: "+err);
+					test.done();
+				});
+						
+			});
+		});
+	});
+}
+
+exports.remove = function (test) {
+	var users = TestUtils.randomUsers(nUsers);
+	TestUtils.createUsers(users,function(){
+		TestUtils.loginUsers(users,test,function(){			
+			Friends.add(users[1].username,users[0].token,function(err,docs){
+				Friends.accept(users[0].username,users[1].token,function(err){
+					Friends.remove(users[0].username,users[1].token,function(err){
+						test.ok(!err,"There was an error: "+err);
+						test.done();
+					});
+				});
+						
+			});
+		});
+	});
+}
+
+
 

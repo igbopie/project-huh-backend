@@ -38,25 +38,15 @@ exports.add = function(req, res){
 				} else if(!userToBeAdded){
 					ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"Friend not found",null);
 				} else {
-					var addFriend = true;
+					
 					//check if already added 
-					for(var i = 0;i < userToBeAdded.friends.length && addFriend; i++){
-						var friend = userToBeAdded.friends[i];
-						if(friend.friendId == user._id){
-							addFriend = false;
-						}
-					}
+					var friendIndex = user.findFriendIndex(username);
 					
 					//check if already requested
-					for(var i = 0;i < userToBeAdded.friendRequests.length && addFriend; i++){
-						var friend = userToBeAdded.friendRequests[i];
-						if(friend.friendId == user._id){
-							addFriend = false;
-						}
-					}
-					//TODO check friends limits!
+					var requestedIndex = user.findFriendRequestIndex(username);
 					
-					if(addFriend){
+					//TODO check friends limits!
+					if(friendIndex < 0 && requestedIndex < 0){
 						var request = {};
 						request.friendId = user._id;
 						request.friendUsername = user.username;
@@ -108,14 +98,7 @@ exports.accept = function(req, res){
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
 		} else {
-			var toBeAddedIndex = -1;
-			for(var i = 0;i < user.friendRequests.length && toBeAddedIndex < 0; i++){
-				var friend = user.friendRequests[i];
-				
-				if(friend.friendUsername == username){
-					toBeAddedIndex = i;
-				}
-			}
+			var toBeAddedIndex = user.findFriendRequestIndex(username);
 			if(toBeAddedIndex < 0){
 				ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"Friend request not found",null);
 			}else{
@@ -132,8 +115,7 @@ exports.accept = function(req, res){
 					if(err){
 						ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 					} else {
-						//find user by username
-						UserService.findUserByUsername(friendRequest.friendUsername,function(err,userToBeAdded){
+						UserService.findUserById(friendRequest.friendId,function(err,userToBeAdded){
 							if(err && !userToBeAdded){
 								//TODO undo friend add operation	
 								ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
@@ -163,9 +145,74 @@ exports.accept = function(req, res){
 };
 
 exports.decline = function(req, res){
+	var token = req.body.token;
+	var username = req.body.username;
+	UserService.findUserByToken(token,function(err,user){
+		if(err){
+			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+		} else if (user == null){
+			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+		} else {
+			var toBeAddedIndex = user.findFriendRequestIndex(username);
+			if(toBeAddedIndex < 0){
+				ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"Friend request not found",null);
+			}else{
+				var friendRequest = user.friendRequests.splice(toBeAddedIndex,1)[0];
+				user.save(function(err){
+					if(err){
+						ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+					} else {
+						ApiUtils.api(req,res,ApiUtils.OK,null,null);
+					}
+				})
+			}
+		}
+	});
 
 };
 
 exports.remove = function(req, res){
-
+	var token = req.body.token;
+	var username = req.body.username;
+	UserService.findUserByToken(token,function(err,user){
+		if(err){
+			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+		} else if (user == null){
+			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+		} else {
+			var toBeRemovedIndex = user.findFriendIndex(username);
+			if(toBeRemovedIndex < 0){
+				ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"Friend not found",null);
+			}else{
+				var friendship = user.friends.splice(toBeRemovedIndex,1)[0];
+				user.save(function(err){
+					if(err){
+						ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+					} else {
+						UserService.findUserById(friendship.friendId,function(err,userToBeRemoved){
+							if(err && !userToBeAdded){
+								//TODO undo friend add operation	
+								ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+							} else {
+								var toBeRemovedBIndex = userToBeRemoved.findFriendIndex(user.username);
+								if(toBeRemovedBIndex < 0){
+									//TODO undo friend add operation
+									ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"Friend not found",null);
+								} else {
+									var friendshipB = userToBeRemoved.friends.splice(toBeRemovedBIndex,1)[0];
+									userToBeRemoved.save(function(err){
+										if(err){
+											ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+										} else {
+											ApiUtils.api(req,res,ApiUtils.OK,null,null);
+										}
+									});
+								}
+							}
+						});
+					}
+				})
+			}
+		}
+	});
 };

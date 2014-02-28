@@ -3,10 +3,13 @@ var mongoose = require('mongoose')
   ,	bcrypt = require('bcrypt')
   , crypto = require('crypto')
   ,	dateUtils = require('date-utils')
+  , Utils = require('../utils/utils')
   ,	SALT_WORK_FACTOR = 4
   , TOKEN_LENGTH = 48
   , MAX_TOKENS = 10
-  , MAX_FRIENDS = 5000;
+  , MAX_FRIENDS = 5000
+  , SMS_VERIFICATION_LENGTH = 6
+  , MAX_PHONE_VERIFICATION_TRIES = 3;
 
 var friendRequestSchema = new Schema({
     friendId		: {	type: Schema.Types.ObjectId, required: true}
@@ -37,8 +40,10 @@ var userSchema = new Schema({
   , modified	: { type: Date	, required: true, default: Date.now }
   , phone			: {	type: String  , required: false, index: { unique: true, sparse: true } } // HASHED
   , phoneVerificationCode: { type: String  , required: false }
+  , phoneVerificationTries: { type: Number	  , required: false }
   , phoneVerified		: { type: Boolean , required: true, default: false }
   , phoneDateVerified	: { type: Date	  , required: false }
+  , phoneDateAdded		: { type: Date	  , required: false }
   , tokens		: [tokenSchema]
   , friends		: [friendSchema]
   , friendRequests: [friendRequestSchema]
@@ -69,13 +74,41 @@ userSchema.pre('save', function(next) {
  
 });
 
- 
+
 userSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
         if (err) return cb(err);
         cb(null, isMatch);
     });
 };
+
+userSchema.methods.findFriendIndex = function(username) {
+	var friendIndex = -1;
+	for(var i = 0;i < this.friends.length && friendIndex < 0; i++){
+		var friend = this.friends[i];
+		
+		if(friend.friendUsername == username){
+			friendIndex = i;
+		}
+	}
+    return friendIndex;
+    
+};
+userSchema.methods.findFriendRequestIndex = function(username) {
+	var friendIndex = -1;
+	for(var i = 0;i < this.friendRequests.length && friendIndex < 0; i++){
+		var friend = this.friendRequests[i];
+		
+		if(friend.friendUsername == username){
+			friendIndex = i;
+		}
+	}
+    return friendIndex;
+    
+};
+
+
+
 
 userSchema.methods.createToken = function(cb) {
 	var me = this;
@@ -112,8 +145,67 @@ userSchema.methods.createToken = function(cb) {
 		});
 };
  
- 
- 
+
+userSchema.methods.addPhone = function(phone,cb) {
+	var me = this;
+	var parsedPhone = phone.replace(/[^0-9]/g, ""); 
+	me.phone = phone;
+	// generate a salt
+	bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+	    if (err) return cb(err);
+	 
+	    // hash the password using our new salt
+	    bcrypt.hash(parsedPhone, salt, function(err, hash) {
+	        if (err) return cb(err);
+	 
+	        // override the cleartext password with the hashed one
+	        me.phone = hash;
+	        me.phoneDateAdded = Date.now();
+	        me.phoneVerified = false;
+			me.phoneVerificationCode = Utils.randomNumber(SMS_VERIFICATION_LENGTH);
+			me.phoneVerificationTries = 0;
+			
+			me.save(function(err){
+				if(err){
+					cb(err);
+				} else {
+					cb(null,me.phoneVerificationCode);
+				}
+			});
+	    });
+	});
+};
+
+
+userSchema.methods.verifyPhone = function(phone,verificationCode,cb) {
+	var me = this;
+	var parsedPhone = phone.replace(/[^0-9]/g, ""); 
+	
+	bcrypt.compare(parsedPhone, me.phone, function(err, isMatch) {
+		if (err) return cb(err);
+		
+		if(isMatch && verificationCode == me.phoneVerificationCode && me.phoneVerificationTries < MAX_PHONE_VERIFICATION_TRIES){
+			me.phoneVerified = true;
+			me.phoneDateVerified = Date.now();
+			
+			me.save(function(err){
+		    	if (err) return cb(err);
+		    	
+		    	cb(null,true);
+			});
+		} else {
+			me.phoneVerificationTries ++;
+			
+			me.save(function(err){
+		    	if (err) return cb(err);
+		    	
+		    	cb(null,false);
+			});  
+		}
+	});
+	        
+}
+
 var user = mongoose.model('user', userSchema);
 
 //Service?
@@ -159,6 +251,17 @@ service.findUserByUsername = function(username,callback){
 
 	});
 
+};
+
+service.findUserById = function(id,callback){
+	// Using RegEx - search is case insensitive
+	user.findOne({ _id: id }, function(err, doc) { 
+		if(err) { 
+			callback(err);
+		} else {
+			callback(err,doc);
+		}
+	});
 };
 
 

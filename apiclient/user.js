@@ -24,4 +24,23 @@ exports.login = function(username,password,callback){
     });
 }
 
+exports.addPhone = function(phone,token,callback){ 
+	apiClientBase.post('/api/user/addphone',{phone:phone,token:token},function(code,headers,data){
+		if(code != 200){
+			callback("The server responded with an invalid code:"+code+" : "+data);
+		} else {
+	    	callback(null,JSON.parse(data).response);
+	    }
+    });
+}
+
+exports.verifyPhone = function(phone,verificationCode,token,callback){ 
+	apiClientBase.post('/api/user/verifyphone',{phone:phone,verificationcode:verificationCode,token:token},function(code,headers,data){
+		if(code != 200){
+			callback("The server responded with an invalid code:"+code+" : "+data);
+		} else {
+	    	callback(null,JSON.parse(data).response);
+	    }
+    });
+}
 

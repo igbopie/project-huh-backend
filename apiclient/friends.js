@@ -42,6 +42,27 @@ exports.accept = function(username,token,callback){
 	    }
     });
 }
+exports.decline = function(username,token,callback){ 
+	var params ={username:username,token:token};
+	apiClientBase.post('/api/friends/decline',params,function(code,headers,data){
+		if(code != 200){
+			callback("The server responded with an invalid code:"+code+ " "+data);
+		} else {
+	    	callback(null,JSON.parse(data).response);
+	    }
+    });
+}
+
+exports.remove = function(username,token,callback){ 
+	var params ={username:username,token:token};
+	apiClientBase.post('/api/friends/remove',params,function(code,headers,data){
+		if(code != 200){
+			callback("The server responded with an invalid code:"+code+ " "+data);
+		} else {
+	    	callback(null,JSON.parse(data).response);
+	    }
+    });
+}
 
 
  

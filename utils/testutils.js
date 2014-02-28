@@ -1,10 +1,17 @@
 var mongoose = require('mongoose');
 var User = require('../apiclient/user');
+var Utils = require('../utils/utils');
 
 exports.cleanDatabase = function(callback){
 	//Resest DB
     mongoose.connect('mongodb://localhost/seem',function() {
     	mongoose.connection.collection('users').remove( function(err) {callback();});
+    });
+}
+
+exports.findDBUser = function(username,callback){
+	mongoose.connect('mongodb://localhost/seem',function() {
+    	mongoose.connection.collection('users').findOne({username:username},callback);
     });
 }
 
@@ -64,19 +71,8 @@ exports.randomUsers = function (nRandomUsers){
 
 
 function randomUser(){
-	var username = randomString(6);
-	var password = randomString(8);
-	var email = randomString(5)+"@"+randomString(5)+".com";
+	var username = Utils.randomString(6);
+	var password = Utils.randomString(8);
+	var email = Utils.randomString(5)+"@"+Utils.randomString(5)+".com";
 	return {email:email,username:username,password:password};
-}
-
-function randomString(length)
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < length; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
 }

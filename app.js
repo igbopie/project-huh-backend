@@ -35,6 +35,8 @@ app.get('/', routes.index);
 //USER
 app.post('/api/user/create', user.create);
 app.post('/api/user/login', user.login);
+app.post('/api/user/addphone', user.addPhone);
+app.post('/api/user/verifyphone', user.verifyPhone);
 //FRIENDS
 app.post('/api/friends', friends.list);
 app.post('/api/friends/add', friends.add);
