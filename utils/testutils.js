@@ -4,7 +4,7 @@ var User = require('../apiclient/user');
 exports.cleanDatabase = function(callback){
 	//Resest DB
     mongoose.connect('mongodb://localhost/seem',function() {
-    	mongoose.connection.db.dropDatabase(function(){callback();});
+    	mongoose.connection.collection('users').remove( function(err) {callback();});
     });
 }
 
@@ -42,7 +42,9 @@ function createUsersAux(array,i,callback){
 		var user = array[i];
 		User.create(user.email,user.username,user.password,function(err){
 			user.err = err;
-		
+			if(err){
+				console.log(err);
+			}
 			i++;	
 			createUsersAux(array,i,callback)		
 		});

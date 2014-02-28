@@ -23,7 +23,7 @@ var friendSchema = new Schema({
 });
 
 var tokenSchema = new Schema({
-    token		: {	type: String, required: true, index: { unique: true } }
+    token		: {	type: String, required: true, index: { unique: true , sparse: true} }
   , created		: { type: Date	, required: true, default: Date.now }
   , expiration  : { type: Date	, required: true}
   , lastUsed	: { type: Date 	, required: false }
@@ -35,7 +35,7 @@ var userSchema = new Schema({
   , email   	: { type: String, required: true, index: { unique: true }  }
   , created		: { type: Date	, required: true, default: Date.now }
   , modified	: { type: Date	, required: true, default: Date.now }
-  , phone			: {	type: String  , required: false, index: { unique: true } } // HASHED
+  , phone			: {	type: String  , required: false, index: { unique: true, sparse: true } } // HASHED
   , phoneVerificationCode: { type: String  , required: false }
   , phoneVerified		: { type: Boolean , required: true, default: false }
   , phoneDateVerified	: { type: Date	  , required: false }
