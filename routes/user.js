@@ -2,6 +2,7 @@
 var User = require('../models/user').User; 
 var UserService = require('../models/user').Service; 
 var ApiUtils = require('../utils/apiutils'); 
+var SMS = require('../utils/sms'); 
 
 
 exports.create = function(req, res) {
@@ -83,7 +84,9 @@ exports.addPhone = function(req, res) {
 				} else {
 					// TODO SEND VERIFICATION CODE
 					console.log("SEND code "+verficationCode+" to "+phone);
-					ApiUtils.api(req,res,ApiUtils.OK,null,null);
+					SMS.send(phone,"Seem verification code:"+verficationCode,function(){
+						ApiUtils.api(req,res,ApiUtils.OK,null,null);	
+					});
 				}
 			});
 		}
