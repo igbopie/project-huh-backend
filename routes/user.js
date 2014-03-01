@@ -67,6 +67,19 @@ exports.login = function(req, res) {
 	});
 }
 
+exports.notifications = function(req, res) {
+	var token = req.body.token;
+	var phone = req.body.phone;
+	UserService.findUserByToken(token,function(err,user){
+		if(err){
+			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+		} else if (user == null){
+			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+		} else {
+			ApiUtils.api(req,res,ApiUtils.OK,null,user.notifications);		
+		}
+	});
+}
 
 
 exports.addPhone = function(req, res) {

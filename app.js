@@ -6,7 +6,7 @@
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
-var friends = require('./routes/friends');
+var follow = require('./routes/follow');
 var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose');
@@ -37,13 +37,13 @@ app.post('/api/user/create', user.create);
 app.post('/api/user/login', user.login);
 app.post('/api/user/addphone', user.addPhone);
 app.post('/api/user/verifyphone', user.verifyPhone);
-//FRIENDS
-app.post('/api/friends', friends.list);
-app.post('/api/friends/add', friends.add);
-app.post('/api/friends/pending', friends.pending);
-app.post('/api/friends/accept', friends.accept);
-app.post('/api/friends/decline', friends.decline);
-app.post('/api/friends/remove', friends.remove);
+//FOLLOW
+app.post('/api/followers', follow.followers);
+app.post('/api/following', follow.following);
+app.post('/api/follow', follow.follow);
+app.post('/api/unfollow', follow.unfollow);
+//NOTIFICATION
+app.post('/api/notification', user.notifications);
 
 
 

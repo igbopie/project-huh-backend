@@ -7,11 +7,12 @@ var mongoose = require('mongoose')
   ,	SALT_WORK_FACTOR = 4
   , TOKEN_LENGTH = 48
   , MAX_TOKENS = 10
-  , MAX_FRIENDS = 5000
   , SMS_VERIFICATION_LENGTH = 6
-  , MAX_PHONE_VERIFICATION_TRIES = 3;
+  , MAX_PHONE_VERIFICATION_TRIES = 3
+  , MAX_NOTIFICATIONS = 200
+  , NOTIFICATION_TYPES = {FOLLOW:"FOLLOW"};
 
-var friendRequestSchema = new Schema({
+/*var friendRequestSchema = new Schema({
     friendId		: {	type: Schema.Types.ObjectId, required: true}
   , friendUsername	: { type: String	, required: true}
   , dateRequested  		: { type: Date	, required: true, default: Date.now}
@@ -23,6 +24,15 @@ var friendSchema = new Schema({
   , displayName		: { type: String	, required: false}
   , dateAdded  		: { type: Date	, required: true, default: Date.now}
   , dateRequested  		: { type: Date	, required: true}
+});
+*/
+
+var notificationSchema = new Schema({
+	type: {type: String, enum: ['FOLLOW'], required: true , default:"FOLLOW"}
+  , target		: {	type: String, required: true}
+  , created		: { type: Date	, required: true, default: Date.now }
+  , read  : { type: Boolean	, required: false}
+  , dateReaded	: { type: Date 	, required: false }
 });
 
 var tokenSchema = new Schema({
@@ -45,8 +55,7 @@ var userSchema = new Schema({
   , phoneDateVerified	: { type: Date	  , required: false }
   , phoneDateAdded		: { type: Date	  , required: false }
   , tokens		: [tokenSchema]
-  , friends		: [friendSchema]
-  , friendRequests: [friendRequestSchema]
+  , notifications:[notificationSchema]
   //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
@@ -108,7 +117,19 @@ userSchema.methods.findFriendRequestIndex = function(username) {
 };
 
 
+userSchema.methods.createNotification = function(type,target,cb) {
+	
+	var notification = {};
+	notification.type = type;
+	notification.target = target;
+	
+	//CHECK SIZE
+	this.notifications.push(notification);
+	this.save(function(err){
+		cb(err);
+	})
 
+}
 
 userSchema.methods.createToken = function(cb) {
 	var me = this;
@@ -268,5 +289,6 @@ service.findUserById = function(id,callback){
 
 module.exports = {
   User: user,
-  Service:service
+  Service:service,
+  NOTIFICATION_TYPES:NOTIFICATION_TYPES
 };

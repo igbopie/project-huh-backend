@@ -5,7 +5,11 @@ var Utils = require('../utils/utils');
 exports.cleanDatabase = function(callback){
 	//Resest DB
     mongoose.connect('mongodb://localhost/seem',function() {
-    	mongoose.connection.collection('users').remove( function(err) {callback();});
+    	mongoose.connection.collection('users').remove( function(err) {
+    		mongoose.connection.collection('follows').remove(	function(err) {
+				callback();
+			});
+		});
     });
 }
 
