@@ -7,7 +7,14 @@ exports.cleanDatabase = function(callback){
     mongoose.connect('mongodb://localhost/seem',function() {
     	mongoose.connection.collection('users').remove( function(err) {
     		mongoose.connection.collection('follows').remove(	function(err) {
-				callback();
+               mongoose.disconnect(function(err){
+                    if(err) {
+                        logger.error(err);
+                        return;
+                    }
+                    callback();
+               });
+
 			});
 		});
     });

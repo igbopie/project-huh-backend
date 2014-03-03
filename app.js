@@ -1,4 +1,25 @@
-
+/**
+ * APP ENV VARS
+ *
+ * AWS
+ * --------
+ * AWS_ACCESS_KEY_ID
+ * AWS_SECRET_ACCESS_KEY
+ * AWS_SESSION_TOKEN (optional?)
+ *
+ * TWILIO
+ * ----------
+ * TWILIO_ACCOUNT_SID
+ * TWILIO_TOKEN
+ * TWILIO_FROM
+ *
+ * MONGO
+ * ----------
+ * MONGOLAB_URI || MONGOHQ_URL (HEROKU CONFIG)
+ *
+ *
+ *
+ */
 /**
  * Module dependencies.
  */
@@ -7,6 +28,7 @@ var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
 var follow = require('./routes/follow');
+var media = require('./routes/media');
 var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose');
@@ -19,6 +41,7 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
+app.use(express.bodyParser());
 app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
@@ -45,6 +68,10 @@ app.post('/api/unfollow', follow.unfollow);
 //NOTIFICATION
 app.post('/api/notification', user.notifications);
 
+//MEDIA
+app.post('/api/media/create', media.create);
+app.post('/api/media/remove', media.remove);
+app.post('/api/media/get', media.get);
 
 
 http.createServer(app).listen(app.get('port'), function(){

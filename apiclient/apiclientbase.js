@@ -1,6 +1,7 @@
 // We need this to build our post string
 var querystring = require('querystring');
 var http = require('http');
+var FormData = require('form-data');
 var fs = require('fs');
 
 var PORT = 3000;
@@ -41,5 +42,32 @@ exports.post = function(method,params,callback) {
 		  callback(500);		
 	  });
 	postRequest.end();
+
+}
+
+
+exports.postFile = function(method,pathfile,params,callback) {
+    var form = new FormData();
+
+    for (var property in params) {
+       form.append(property, params[property]);
+    }
+    form.append('file', fs.createReadStream(pathfile));
+
+    form.submit('http://'+HOST+":"+PORT+method, function(err, res) {
+        // res – response object (http.IncomingMessage)  //
+        res.resume();
+        if(err){
+            callback(500);
+        }else{
+            var data = '';
+            res.addListener('data', function(chunk){
+                data += chunk;
+            });
+            res.addListener('end', function(){
+                callback(res.statusCode,res.headers,data);
+            });
+        }
+    });
 
 }
