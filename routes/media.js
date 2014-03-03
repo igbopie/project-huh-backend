@@ -48,7 +48,7 @@ exports.create = function(req, res){
                             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                         } else{
                             //there's an e-tag but I am not going to do anything with it.
-                            ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                            ApiUtils.api(req,res,ApiUtils.OK,null,media._id);
                         }
 
                     });
