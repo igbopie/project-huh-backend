@@ -1,4 +1,5 @@
-var assert = require("assert")
+var assert = require("assert");
+var should = require('should');
 var TestUtils = require('../utils/testutils');
 var Media = require('../apiclient/media');
 var nUsers = 2;
@@ -26,7 +27,7 @@ describe('Media', function(){
             this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                 if(err) return done(err);
-                data.should.be.ok;
+                should(data).be.ok;
                 done();
             });
 		});
