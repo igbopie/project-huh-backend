@@ -27,23 +27,23 @@ exports.findDBUser = function(username,callback){
 }
 
 
-exports.loginUsers = function(array,test,callback){
+exports.loginUsers = function(array,callback){
 	var i = 0;
-	loginUsersAux(array,i,test,callback);
+	loginUsersAux(array,i,callback);
 }
 
-function loginUsersAux(array,i,test,callback){
+function loginUsersAux(array,i,callback){
 	if(i < array.length){
 		var user = array[i];
 		User.login(user.username,user.password,function(err,object){
 		
-			test.ok(!err,"There was an error: "+err);
-		    test.ok(object != null, "Token was null");
+			if(err) return callback(err);
+
 		    user.err = err;
 		    user.token = object;
 		    
 			i++;	
-			loginUsersAux(array,i,test,callback)		
+			loginUsersAux(array,i,callback)
 		});
 	} else {
 		callback();
@@ -62,6 +62,7 @@ function createUsersAux(array,i,callback){
 			user.err = err;
 			if(err){
 				console.log(err);
+                return callback(err);
 			}
 			i++;	
 			createUsersAux(array,i,callback)		
