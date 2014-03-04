@@ -26,9 +26,21 @@ describe('Media', function(){
             this.timeout(5000);//S3 requires longer timeout
             Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                 if(err) return done(err);
+                data.should.be.ok;
                 done();
             });
 		});
 	});
-
+    describe('#get()', function(){
+        it('should get a media object',function (done) {
+            this.timeout(10000);//S3 requires longer timeout
+            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                if(err) return done(err);
+                Media.get(data,users[0].token,"test/resources/testimagedownloaded.jpg",function(err,data){
+                    if(err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
 });

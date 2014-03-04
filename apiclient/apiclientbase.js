@@ -71,3 +71,40 @@ exports.postFile = function(method,pathfile,params,callback) {
     });
 
 }
+
+exports.postSaveFile = function(method,params,pathfile,callback) {
+    // Build the post string from an object
+    var postData = querystring.stringify(params);
+
+    // An object of options to indicate where to post to
+    var postOptions = {
+        host: HOST,
+        port: PORT,
+        path: method,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': postData.length
+        }
+    };
+
+    // Set up the request
+
+    var file = fs.createWriteStream(pathfile);
+    var postRequest = http.request(postOptions, function(res) {
+        res.pipe(file);
+        file.on('finish', function() {
+            file.close();
+            callback(res.statusCode,res.headers);
+        });
+    });
+
+    // post the data
+    postRequest.write(postData);
+    postRequest.on('error', function(error) {
+        callback(500);
+    });
+    postRequest.end();
+
+
+}
