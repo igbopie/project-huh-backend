@@ -5,7 +5,13 @@ SEEM BACKEND
 This is the seem backend. To start it up you would a localhost mongodb installation.
 
 * Setup:
+
 npm install
+
+Need image magick to resize images... (http://aaronheckmann.tumblr.com/post/48943531250/graphicsmagick-on-heroku-with-nodejs)
+
+brew install imagemagick
+
 
 * ENV needed:
  - AWS (Required)

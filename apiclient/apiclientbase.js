@@ -89,7 +89,6 @@ exports.postSaveFile = function(method,params,pathfile,callback) {
     };
 
     // Set up the request
-
     var file = fs.createWriteStream(pathfile);
     var postRequest = http.request(postOptions, function(res) {
         res.pipe(file);
@@ -102,6 +101,7 @@ exports.postSaveFile = function(method,params,pathfile,callback) {
     // post the data
     postRequest.write(postData);
     postRequest.on('error', function(error) {
+        console.log(error);
         callback(500);
     });
     postRequest.end();

@@ -12,8 +12,8 @@ exports.create = function(filepath,token,callback){
     });
 }
 
-exports.get = function(id,token,pathfile,callback){
-    var params ={token:token,imageId:id};
+exports.get = function(id,format,token,pathfile,callback){
+    var params ={token:token,format:format,imageId:id};
     apiClientBase.postSaveFile("/api/media/get",params,pathfile,function(code,headers){
         if(code != 200){
             callback("The server responded with an invalid code:"+code);

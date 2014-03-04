@@ -23,7 +23,7 @@ describe('Media', function(){
 
     describe('#create()', function(){
         it('should create a media object',function (done) {
-            this.timeout(5000);//S3 requires longer timeout
+            this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                 if(err) return done(err);
                 data.should.be.ok;
@@ -31,12 +31,25 @@ describe('Media', function(){
             });
 		});
 	});
-    describe('#get()', function(){
+    describe('#get("thumb")', function(){
         it('should get a media object',function (done) {
-            this.timeout(10000);//S3 requires longer timeout
+            this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                 if(err) return done(err);
-                Media.get(data,users[0].token,"test/resources/testimagedownloaded.jpg",function(err,data){
+                Media.get(data,"thumb",users[0].token,"test/resources/testimagedownloadedthumb.jpg",function(err){
+                    if(err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#get("large")', function(){
+        it('should get a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                if(err) return done(err);
+                Media.get(data,"large",users[0].token,"test/resources/testimagedownloadedlarge.jpg",function(err){
                     if(err) return done(err);
                     done();
                 });
