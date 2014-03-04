@@ -1,25 +1,42 @@
 /**
  * APP ENV VARS
  *
- * AWS
+ * AWS (Required)
  * --------
  * AWS_ACCESS_KEY_ID
  * AWS_SECRET_ACCESS_KEY
  * AWS_SESSION_TOKEN (optional?)
+ * AWS_S3_BUCKET
  *
- * TWILIO
+ * TWILIO (Optional)
  * ----------
  * TWILIO_ACCOUNT_SID
  * TWILIO_TOKEN
  * TWILIO_FROM
  *
- * MONGO
+ * MONGO (Required)
  * ----------
  * MONGOLAB_URI || MONGOHQ_URL (HEROKU CONFIG)
  *
- *
- *
  */
+console.log("STARTING UP CHECKING ENV...")
+if(process.env.MONGOLAB_URI){
+    console.log("Using MONGO LAB")
+} else if(process.env.MONGOHQ_URL){
+    console.log("Using MONGO HQ")
+} else {
+    console.log("Using localhost MONGO");
+}
+if(!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY && !process.env.AWS_S3_BUCKET){
+    console.log("Please configure correctly S3: AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET");
+    process.exit(-1);
+}
+
+if(!process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_TOKEN && !process.env.TWILIO_FROM){
+    console.log("WARNING: Twilio not configured: using log for SMS");
+}
+
+console.log("STARTING UP ENV CHECKED.")
 /**
  * Module dependencies.
  */

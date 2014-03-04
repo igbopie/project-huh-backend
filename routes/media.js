@@ -5,7 +5,7 @@ var UserService = require('../models/user').Service;
 var MediaService = require('../models/media').Service;
 var fs = require('fs');
 var s3 = new AWS.S3();
-var s3Bucket = 'seem-dev-test';
+var s3Bucket = process.env.AWS_S3_BUCKET;
 
 exports.create = function(req, res){
 	
