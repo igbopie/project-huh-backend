@@ -57,4 +57,30 @@ describe('Media', function(){
             });
         });
     });
+
+    describe('#get("thumb") - unauthorized', function(){
+        it('should get a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                if(err) return done(err);
+                Media.get(data,"thumb",users[1].token,"test/resources/testimagedownloadedlarge.jpg",function(err,code){
+                    if(code != 401) done("Invalid response code: "+code+". Expected 401 Unauthorized")
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#delete()', function(){
+        it('should delete a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                if(err) return done(err);
+                Media.delete(data,users[0].token,function(err){
+                    if(err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
 });

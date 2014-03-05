@@ -11,13 +11,13 @@ var mongoose = require('mongoose')
   , s3 = new AWS.S3()
   , S3_BUCKET = process.env.AWS_S3_BUCKET
   , FORMAT_THUMB = {name:"thumb",height:50,width:50}
-  , FORMAT_LARGE = {name:"large",height:500,width:500};
+  , FORMAT_LARGE = {name:"large",height:500,width:500}
 ;
 
 
 
 var mediaSchema = new Schema({
-	ownerId			: {	type: Schema.Types.ObjectId, required: true, index: { unique: false}}
+	ownerId			: {	type: Schema.Types.ObjectId, required: true}
   , created			: { type: Date	, required: true, default: Date.now }
   , name            : { type: String	, required: true}
   , location		: { type: String	, required: false }
@@ -25,35 +25,66 @@ var mediaSchema = new Schema({
  
  });
 
+mediaSchema.index({ ownerId: 1 });
 
 var Media = mongoose.model('media', mediaSchema);
 
-//Service?
 var service = {};
 
-service.get = function(id,formatName,callback){
+service.findById = function(id,callback){
     Media.findOne({"_id":id},function(err,media){
-        if(err) {
-            callback(err);
-        }else if (media == null){
-            callback(null,null);
-        }else {
-            var file = temp.createWriteStream();
-            var params = {Bucket: S3_BUCKET, Key: media._id+"_"+formatName+"_"+media.name};
+        callback(err,media);
+    });
+}
 
-            s3.getObject(params).
-                on('httpData', function(chunk) {
-                    file.write(chunk);
-                }).
-                on('httpDone', function() {
-                    file.on('close', function() {
-                        //If you don't do this in a event then the size would be incorrect
-                        media.tempPath = file.path;
-                        callback(null,media);
+service.get = function(media,formatName,callback){
+    var file = temp.createWriteStream();
+    var params = {Bucket: S3_BUCKET, Key: media._id+"_"+formatName+"_"+media.name};
+
+    s3.getObject(params).
+        on('httpData', function(chunk) {
+            file.write(chunk);
+        }).
+        on('httpDone', function() {
+            file.on('close', function() {
+                //If you don't do this in a event then the size would be incorrect
+                media.tempPath = file.path;
+                callback(null,media);
+            });
+            file.end();
+        }).
+        send();
+};
+
+service.delete = function(media,callback){
+    service.deleteAux(media,FORMAT_LARGE.name,function(err){
+        if(err){
+            callback(err);
+        } else {
+            service.deleteAux(media,FORMAT_THUMB.name,function(err){
+                if(err){
+                    callback(err);
+                } else {
+                    media.delete(function(err){
+                        //TODO But we have deleted the s3 files....
+                        if(err){
+                            callback(err);
+                        } else {
+                            callback();
+                        }
                     });
-                    file.end();
-                }).
-                send();
+                }
+            });
+        }
+    });
+};
+service.deleteAux = function(media,formatName,callback){
+    var params = {Bucket: S3_BUCKET, Key: media._id+"_"+formatName+"_"+media.name};
+    s3.deleteObject(params, function(err, data) {
+        if(err){
+            callback(err)
+        } else {
+            callback();
         }
     });
 };

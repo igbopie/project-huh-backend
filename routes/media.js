@@ -30,16 +30,37 @@ exports.create = function(req, res){
 };
 
 
-exports.remove = function(req, res){
+exports.delete = function(req, res){
 	
 	var token = req.body.token;
+    var imageId = req.body.imageId;
 	UserService.findUserByToken(token,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
 		} else {
-			//TODO
+            MediaService.findById(imageId,function(err,media){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else if (media == null){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+                } else {
+                    if(media.ownerId != (user._id+"")){
+                        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+                    } else {
+                        MediaService.delete(media,function(err){
+                            if(err){
+                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                            } else {
+                                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                            }
+                        });
+                    }
+
+                }
+            });
+
 		}
 	})
 };
@@ -55,23 +76,33 @@ exports.get = function(req, res){
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
 		} else {
-			//TODO
-            MediaService.get(imageId,formatName,function(err,media){
+            MediaService.findById(imageId,function(err,media){
                 if(err){
                     ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else if (media == null){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
                 } else {
-                    var stat = fs.statSync(media.tempPath);
-                    res.writeHead(200, {
-                        'Content-Type' : media.contentType,
-                        'Content-Length': stat.size
-                    });
+                    if(media.ownerId != (user._id+"")){
+                        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+                    } else {
+                        MediaService.get(media,formatName,function(err,media){
+                            if(err){
+                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                            } else {
+                                var stat = fs.statSync(media.tempPath);
+                                res.writeHead(200, {
+                                    'Content-Type' : media.contentType,
+                                    'Content-Length': stat.size
+                                });
 
-                    var file = fs.createReadStream(media.tempPath);
-                    file.pipe(res);
+                                var file = fs.createReadStream(media.tempPath);
+                                file.pipe(res);
 
+                            }
+                        });
+                    }
                 }
             });
-			
 		}
 	})
 };

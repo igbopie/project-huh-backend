@@ -3,26 +3,70 @@ var User = require('../apiclient/user');
 var Utils = require('../utils/utils');
 
 exports.cleanDatabase = function(callback){
+    var db = mongoose.createConnection();
 	//Resest DB
-    mongoose.connect('mongodb://localhost/seem',function() {
-    	mongoose.connection.collection('users').remove( function(err) {
-    		mongoose.connection.collection('follows').remove(	function(err) {
-               mongoose.disconnect(function(err){
+    db.open('mongodb://localhost/seem',function(err) {
+        if(err) {
+            console.log(err);
+            callback(err);
+            return;
+        }
+        db.collection('users').remove( function(err) {
+            if(err) {
+                console.log(err);
+                callback(err);
+                return;
+            }
+            db.collection('media').remove(	function(err) {
+                if(err) {
+                    console.log(err);
+                    callback(err);
+                    return;
+                }
+                db.collection('follows').remove(	function(err) {
                     if(err) {
-                        logger.error(err);
+                        console.log(err);
+                        callback(err);
                         return;
                     }
-                    callback();
-               });
-
+                    db.close(function(err){
+                        if(err) {
+                            console.log(err);
+                            callback(err);
+                            return;
+                        }
+                        callback();
+                    });
+                });
 			});
 		});
     });
 }
 
 exports.findDBUser = function(username,callback){
-	mongoose.connect('mongodb://localhost/seem',function() {
-    	mongoose.connection.collection('users').findOne({username:username},callback);
+    var db = mongoose.createConnection();
+    //Resest DB
+    db.open('mongodb://localhost/seem',function(err) {
+        if(err) {
+            console.log(err);
+            callback(err);
+            return;
+        }
+        db.collection('users').findOne({username:username},function(err,user){
+            if(err){
+                callback(err);
+            }else{
+                db.close(function(err){
+                    if(err) {
+                        console.log(err);
+                        callback(err);
+                        return;
+                    }
+                    callback(null,user);
+                });
+            }
+
+        });
     });
 }
 

@@ -16,9 +16,20 @@ exports.get = function(id,format,token,pathfile,callback){
     var params ={token:token,format:format,imageId:id};
     apiClientBase.postSaveFile("/api/media/get",params,pathfile,function(code,headers){
         if(code != 200){
-            callback("The server responded with an invalid code:"+code);
+            callback("The server responded with an invalid code:"+code,code);
         } else {
             callback(null);
+        }
+    });
+}
+
+exports.delete = function(id,token,callback){
+    var params ={token:token,imageId:id};
+    apiClientBase.post("/api/media/delete",params,function(code,headers,body){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" "+body,code);
+        } else {
+            callback(null,JSON.parse(data).response);
         }
     });
 }
