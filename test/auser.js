@@ -21,6 +21,30 @@ describe('User', function(){
 	    });
     });
 
+    describe('#create() - Username exists', function(){
+        it('should create a user',function (done) {
+            User.create("igbopie@gmail.com","igbopie","123456",function(err){
+                if (err) return done(err);
+                User.create("pepe@gmail.com","igbopie","123456",function(err){
+                    if (err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#create() - Email exists', function(){
+        it('should create a user',function (done) {
+            User.create("igbopie@gmail.com","igbopie","123456",function(err){
+                if (err) return done(err);
+                User.create("igbopie@gmail.com","pepe","123456",function(err){
+                    if (err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
+
     describe('#login()', function(){
         it('should login '+nUsers+' users',function (done) {
             var users = TestUtils.randomUsers(nUsers);
