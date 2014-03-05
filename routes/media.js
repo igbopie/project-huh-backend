@@ -30,7 +30,7 @@ exports.create = function(req, res){
 };
 
 
-exports.delete = function(req, res){
+exports.remove = function(req, res){
 	
 	var token = req.body.token;
     var imageId = req.body.imageId;
@@ -49,7 +49,7 @@ exports.delete = function(req, res){
                     if(media.ownerId != (user._id+"")){
                         ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
                     } else {
-                        MediaService.delete(media,function(err){
+                        MediaService.remove(media,function(err){
                             if(err){
                                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                             } else {

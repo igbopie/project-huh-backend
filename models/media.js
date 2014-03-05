@@ -56,29 +56,35 @@ service.get = function(media,formatName,callback){
         send();
 };
 
-service.delete = function(media,callback){
-    service.deleteAux(media,FORMAT_LARGE.name,function(err){
+service.remove = function(media,callback){
+    media.remove(function(err){
         if(err){
             callback(err);
         } else {
-            service.deleteAux(media,FORMAT_THUMB.name,function(err){
-                if(err){
-                    callback(err);
-                } else {
-                    media.delete(function(err){
-                        //TODO But we have deleted the s3 files....
+            // There is a bug in S3 Lib
+            // https://github.com/aws/aws-sdk-js/issues/240
+            try {
+                service.removeAux(media,FORMAT_LARGE.name,function(err){
+                    if(err){
+                        console.log("Could not delete from s3: "+ media+" err:"+err);
+                    }
+                    service.removeAux(media,FORMAT_THUMB.name,function(err){
                         if(err){
-                            callback(err);
-                        } else {
-                            callback();
+                            console.log("Could not delete from s3: "+ media+" err:"+err);
                         }
+                        callback();
                     });
-                }
-            });
+                });
+            }
+            catch (e) {
+                console.log("Could not delete from s3: "+ media+" err:"+e);
+                callback();
+            }
         }
     });
+
 };
-service.deleteAux = function(media,formatName,callback){
+service.removeAux = function(media,formatName,callback){
     var params = {Bucket: S3_BUCKET, Key: media._id+"_"+formatName+"_"+media.name};
     s3.deleteObject(params, function(err, data) {
         if(err){

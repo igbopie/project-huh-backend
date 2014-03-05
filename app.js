@@ -87,7 +87,7 @@ app.post('/api/notification', user.notifications);
 
 //MEDIA
 app.post('/api/media/create', media.create);
-app.post('/api/media/delete', media.delete);
+app.post('/api/media/remove', media.remove);
 app.post('/api/media/get', media.get);
 
 

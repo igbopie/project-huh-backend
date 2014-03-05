@@ -23,11 +23,11 @@ exports.get = function(id,format,token,pathfile,callback){
     });
 }
 
-exports.delete = function(id,token,callback){
+exports.remove = function(id,token,callback){
     var params ={token:token,imageId:id};
-    apiClientBase.post("/api/media/delete",params,function(code,headers,body){
+    apiClientBase.post("/api/media/remove",params,function(code,headers,data){
         if(code != 200){
-            callback("The server responded with an invalid code:"+code+" "+body,code);
+            callback("The server responded with an invalid code:"+code+" "+data,code);
         } else {
             callback(null,JSON.parse(data).response);
         }

@@ -71,12 +71,12 @@ describe('Media', function(){
         });
     });
 
-    describe('#delete()', function(){
+    describe('#remove()', function(){
         it('should delete a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                 if(err) return done(err);
-                Media.delete(data,users[0].token,function(err){
+                Media.remove(data,users[0].token,function(err){
                     if(err) return done(err);
                     done();
                 });
