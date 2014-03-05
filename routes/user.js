@@ -66,10 +66,72 @@ exports.login = function(req, res) {
 		} 
 	});
 }
+exports.profile = function(req, res) {
+    var token = req.body.token;
+    var username = req.body.username;
+    UserService.findUserByToken(token,function(err,user){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        } else if (user == null){
+            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+        } else {
+            var fields = {  username        :1,
+                            profileImageId  :1
+                            };
+            if(username == user.username){
+                //is me?
+                fields.phone = 1;
+                fields.facebookId = 1;
+                fields.email = 1;
+            }
+            UserService.findUserProfile(username,fields,function(err,userProfile){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else if (userProfile == null){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+                } else {
+                    ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+                }
+            });
+        }
+    });
+}
+
+exports.update = function(req, res) {
+    var token = req.body.token;
+    var email = req.body.email;
+    var profileImageId = req.body.profileImageId;
+    var facebookId = req.body.facebookId;
+    UserService.findUserByToken(token,function(err,user){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        } else if (user == null){
+            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+        } else {
+            if(email){
+                user.email = email;
+            }
+            if(profileImageId){
+                user.profileImageId = profileImageId;
+            }
+            if(facebookId){
+                user.facebookId = facebookId;
+            }
+            user.save(function(err){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else {
+                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                }
+            });
+
+        }
+    });
+}
+
 
 exports.notifications = function(req, res) {
 	var token = req.body.token;
-	var phone = req.body.phone;
 	UserService.findUserByToken(token,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);

@@ -43,19 +43,21 @@ var tokenSchema = new Schema({
 });
 
 var userSchema = new Schema({
-    username	: { type: String, required: true, trim: true, index: { unique: true } }
-  ,	password	: { type: String, required: true }
-  , email   	: { type: String, required: true, index: { unique: true }  }
-  , created		: { type: Date	, required: true, default: Date.now }
-  , modified	: { type: Date	, required: true, default: Date.now }
+    username	    : { type: String, required: true, trim: true, index: { unique: true } }
+  ,	password	    : { type: String, required: true }
+  , email   	    : { type: String, required: true, index: { unique: true }  }
+  , created		    : { type: Date	, required: true, default: Date.now }
+  , modified	    : { type: Date	, required: true, default: Date.now }
   , phone			: {	type: String  , required: false, index: { unique: true, sparse: true } } // HASHED
   , phoneVerificationCode: { type: String  , required: false }
   , phoneVerificationTries: { type: Number	  , required: false }
   , phoneVerified		: { type: Boolean , required: true, default: false }
   , phoneDateVerified	: { type: Date	  , required: false }
   , phoneDateAdded		: { type: Date	  , required: false }
-  , tokens		: [tokenSchema]
-  , notifications:[notificationSchema]
+  , tokens		    : [tokenSchema]
+  , notifications   :[notificationSchema]
+  , profileImageId	: {	type: Schema.Types.ObjectId, required: false}
+  , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
   //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
@@ -231,6 +233,17 @@ var user = mongoose.model('user', userSchema);
 
 //Service?
 var service = {};
+
+service.findUserProfile = function(username,fields,callback){
+    user.findOne({ username: { $regex: new RegExp(username, "i") } },fields, function(err, doc) {
+        if(err) {
+            callback(err);
+        } else {
+            callback(err,doc);
+        }
+    });
+}
+
 service.findUserByToken = function(token,callback){
 	user.findOne({"tokens.token":token},function(err,user){
 			if(err) {

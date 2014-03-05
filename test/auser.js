@@ -1,7 +1,9 @@
 var assert = require("assert")
 var should = require('should')
 var TestUtils = require('../utils/testutils');
+var Utils = require('../utils/utils');
 var User = require('../apiclient/user');
+var Media = require('../apiclient/media');
 var nUsers = 5;
 
 describe('User', function(){
@@ -31,6 +33,78 @@ describe('User', function(){
                         users[i].should.be.ok;
                     }
                     done();
+                });
+            });
+        });
+    });
+
+    describe('#update()', function(){
+        it('should update user details',function (done) {
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    var newEmail = Utils.randomString(5)+"@"+Utils.randomString(5)+".com";
+                    var facebookId = Utils.randomNumber(10);
+                    User.update(newEmail,facebookId,null,users[0].token,function(err){
+                        if (err) return done(err);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#update(profileImage)', function(){
+        it('should update only the image profile',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                        if(err) return done(err);
+                        User.update(null,null,data,users[0].token,function(err){
+                            if (err) return done(err);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#profile1()', function(){
+        it('should get user details',function (done) {
+            var users = TestUtils.randomUsers(2);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    User.profile(users[1].username,users[0].token,function(err,data){
+                        if (err) return done(err);
+                        should(data.username).be.eql(users[1].username);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#profile2()', function(){
+        it('should get user details',function (done) {
+            var users = TestUtils.randomUsers(2);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    User.profile(users[0].username,users[0].token,function(err,data){
+                        if (err) return done(err);
+                        should(data.email).be.eql(users[0].email);
+                        done();
+                    });
                 });
             });
         });

@@ -75,6 +75,8 @@ app.get('/', routes.index);
 //USER
 app.post('/api/user/create', user.create);
 app.post('/api/user/login', user.login);
+app.post('/api/user/profile', user.profile);
+app.post('/api/user/update', user.update);
 app.post('/api/user/addphone', user.addPhone);
 app.post('/api/user/verifyphone', user.verifyPhone);
 //FOLLOW
