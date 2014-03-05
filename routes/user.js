@@ -17,20 +17,29 @@ exports.create = function(req, res) {
 		if(err) { 
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (doc){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS,"User already exists",null);
+			ApiUtils.api(req,res,ApiUtils.CLIENT_USERNAME_ALREADY_EXISTS,"Username already exists",null);
 		} else{
-			var newUser = new User(); 
-			newUser.email = email; 
-			newUser.username = username; 
-			newUser.password = password;
-			newUser.save(function(err) {
-				if(!err) {
-					ApiUtils.api(req,res,ApiUtils.OK_CREATED,null,null);
-				} else {
-					ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-				}
-			
-			});
+
+            UserService.findUserByEmail(email, function(err, doc) {
+                if(err) {
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else if (doc){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_EMAIL_ALREADY_EXISTS,"Email already exists",null);
+                } else{
+                    var newUser = new User();
+                    newUser.email = email;
+                    newUser.username = username;
+                    newUser.password = password;
+                    newUser.save(function(err) {
+                        if(!err) {
+                            ApiUtils.api(req,res,ApiUtils.OK_CREATED,null,null);
+                        } else {
+                            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                        }
+                    });
+
+                }
+            });
 		}   
 	});
 }

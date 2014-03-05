@@ -287,6 +287,19 @@ service.findUserByUsername = function(username,callback){
 
 };
 
+service.findUserByEmail = function(email,callback){
+    // Using RegEx - search is case insensitive
+    user.findOne({ email: { $regex: new RegExp(email, "i") } }, function(err, doc) {
+        if(err) {
+            callback(err);
+        } else {
+            callback(err,doc);
+        }
+
+    });
+
+};
+
 service.findUserById = function(id,callback){
 	// Using RegEx - search is case insensitive
 	user.findOne({ _id: id }, function(err, doc) { 

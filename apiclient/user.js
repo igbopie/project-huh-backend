@@ -6,7 +6,7 @@ exports.create = function(email,username,password,callback){
 	var params ={email:email,username:username,password:password};
 	apiClientBase.post('/api/user/create',params,function(code,headers,data){
 		if(code != 201){
-			callback("The server responded with an invalid code: "+code+" : "+data);
+			callback("The server responded with an invalid code: "+code+" : "+data,code);
 		} else {
 	    	callback(null,JSON.parse(data).response);
 	    }

@@ -25,8 +25,8 @@ describe('User', function(){
         it('should create a user',function (done) {
             User.create("igbopie@gmail.com","igbopie","123456",function(err){
                 if (err) return done(err);
-                User.create("pepe@gmail.com","igbopie","123456",function(err){
-                    if (err) return done(err);
+                User.create("pepe@gmail.com","igbopie","123456",function(err,code){
+                    should(code).be.eql(466);//username already exists
                     done();
                 });
             });
@@ -37,8 +37,8 @@ describe('User', function(){
         it('should create a user',function (done) {
             User.create("igbopie@gmail.com","igbopie","123456",function(err){
                 if (err) return done(err);
-                User.create("igbopie@gmail.com","pepe","123456",function(err){
-                    if (err) return done(err);
+                User.create("igbopie@gmail.com","pepe","123456",function(err,code){
+                    should(code).be.eql(467);//email already exists
                     done();
                 });
             });
