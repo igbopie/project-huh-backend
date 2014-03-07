@@ -43,13 +43,17 @@ console.log("STARTING UP ENV CHECKED.")
 
 var express = require('express');
 var routes = require('./routes');
-var user = require('./routes/user');
-var follow = require('./routes/follow');
-var media = require('./routes/media');
 var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose');
 var app = express();
+
+//ROUTES
+
+var user = require('./routes/user');
+var follow = require('./routes/follow');
+var media = require('./routes/media');
+var seem = require('./routes/seem');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -72,6 +76,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
+
 //USER
 app.post('/api/user/create', user.create);
 app.post('/api/user/login', user.login);
@@ -79,11 +84,13 @@ app.post('/api/user/profile', user.profile);
 app.post('/api/user/update', user.update);
 app.post('/api/user/addphone', user.addPhone);
 app.post('/api/user/verifyphone', user.verifyPhone);
+
 //FOLLOW
 app.post('/api/followers', follow.followers);
 app.post('/api/following', follow.following);
 app.post('/api/follow', follow.follow);
 app.post('/api/unfollow', follow.unfollow);
+
 //NOTIFICATION
 app.post('/api/notification', user.notifications);
 
@@ -91,6 +98,14 @@ app.post('/api/notification', user.notifications);
 app.post('/api/media/create', media.create);
 app.post('/api/media/remove', media.remove);
 app.post('/api/media/get', media.get);
+
+//SEEM
+app.post('/api/seem/create', seem.create);
+app.post('/api/seem/get', seem.get);
+app.post('/api/seem/search', seem.search);
+app.post('/api/seem', seem.myseems);
+app.post('/api/seem/item/create', seem.createItem);
+app.post('/api/seem/item/comment/create', seem.createComment);
 
 
 http.createServer(app).listen(app.get('port'), function(){
