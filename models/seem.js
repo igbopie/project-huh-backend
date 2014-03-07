@@ -1,5 +1,7 @@
 var mongoose = require('mongoose')
-  , Schema = mongoose.Schema;
+  , Schema = mongoose.Schema
+  , VISIBILITY_PUBLIC = "public"
+  , VISIBILITY_PRIVATE = "private";
 
 var seemItemCommentSchema = new Schema({
     userId  : {	type: Schema.Types.ObjectId, required: true},
@@ -33,14 +35,38 @@ var seemSchema = new Schema({
 
 
 
-var seem = mongoose.model('seem', seemSchema);
+var Seem = mongoose.model('seem', seemSchema);
 
 //Service?
 var service = {};
 
+service.create = function(user,title,visibility,callback){
+    var seem = new Seem();
+    seem.ownerId = user._id;
+    seem.visibility = visibility;
+    seem.title = title;
+    seem.save(function(err){
+        if(err){
+            callback(err);
+        } else {
+            callback(null,seem);
+        }
+    });
+
+}
+
+service.findById = function(id,callback){
+    Seem.findOne({"_id":id},function(err,seemObj){
+        if(err){
+            callback(err);
+        } else {
+            callback(null,seemObj);
+        }
+    });
+}
 
 
 module.exports = {
-  Seem: seem,
+  Seem: Seem,
   Service:service
 };
