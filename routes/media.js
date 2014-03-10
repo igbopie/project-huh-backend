@@ -20,6 +20,8 @@ exports.create = function(req, res){
                     user._id,
                 function(err,imageId){
                     if(err){
+                        console.error("There was an error creating an image:");
+                        console.error(err);
                         ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                     }else{
                         ApiUtils.api(req,res,ApiUtils.OK,null,imageId);

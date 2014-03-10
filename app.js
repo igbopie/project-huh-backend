@@ -104,8 +104,7 @@ app.post('/api/seem/create', seem.create);
 app.post('/api/seem/get', seem.get);
 app.post('/api/seem/search', seem.search);
 app.post('/api/seem', seem.myseems);
-app.post('/api/seem/item/create', seem.createItem);
-app.post('/api/seem/item/comment/create', seem.createComment);
+app.post('/api/seem/reply', seem.reply);
 
 
 http.createServer(app).listen(app.get('port'), function(){
