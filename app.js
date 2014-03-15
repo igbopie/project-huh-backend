@@ -54,6 +54,7 @@ var user = require('./routes/user');
 var follow = require('./routes/follow');
 var media = require('./routes/media');
 var seem = require('./routes/seem');
+var m1seem = require('./routes/m1seem');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -97,15 +98,22 @@ app.post('/api/notification', user.notifications);
 //MEDIA
 app.post('/api/media/create', media.create);
 app.post('/api/media/remove', media.remove);
-app.post('/api/media/get', media.get);
+app.post('/api/media/get/:format/:id', media.get);
 
 //SEEM
+/*
 app.post('/api/seem/create', seem.create);
 app.post('/api/seem/get', seem.get);
 app.post('/api/seem/search', seem.search);
 app.post('/api/seem', seem.myseems);
-app.post('/api/seem/reply', seem.reply);
+app.post('/api/seem/reply', seem.reply);*/
 
+//SEEM MOCKUP 1
+app.post('/api/m1/seem', m1seem.list);
+app.post('/api/m1/seem/create', m1seem.create);
+app.post('/api/m1/seem/item/get', m1seem.getItem);
+app.post('/api/m1/seem/item/replies', m1seem.getItemReplies);
+app.post('/api/m1/seem/item/reply', m1seem.reply);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

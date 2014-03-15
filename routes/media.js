@@ -5,19 +5,19 @@ var MediaService = require('../models/media').Service;
 var fs = require('fs');
 
 exports.create = function(req, res){
-	
+	/*
 	var token = req.body.token;
 	UserService.findUserByToken(token,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
+		} else {*/
             MediaService.create(
                     req.files.file.path,
                     req.files.file.type,
                     req.files.file.name,
-                    user._id,
+                    null,
                 function(err,imageId){
                     if(err){
                         console.error("There was an error creating an image:");
@@ -26,67 +26,68 @@ exports.create = function(req, res){
                     }else{
                         ApiUtils.api(req,res,ApiUtils.OK,null,imageId);
                     }
-            });
+            });/*
 		}
-	})
+	})*/
 };
 
 
 exports.remove = function(req, res){
 	
-	var token = req.body.token;
+	//var token = req.body.token;
     var imageId = req.body.imageId;
-	UserService.findUserByToken(token,function(err,user){
+	/*UserService.findUserByToken(token,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
+		} else {*/
             MediaService.findById(imageId,function(err,media){
                 if(err){
                     ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                 } else if (media == null){
                     ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
                 } else {
-                    if(media.ownerId != (user._id+"")){
+                    /*if(media.ownerId != (user._id+"")){
                         ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                    } else {
+                    } else {*/
                         MediaService.remove(media,function(err){
                             if(err){
                                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                             } else {
                                 ApiUtils.api(req,res,ApiUtils.OK,null,null);
                             }
-                        });
-                    }
+                        });/*
+                    }*/
 
                 }
-            });
+            });/*
 
 		}
-	})
+	})*/
 };
 
 
 exports.get = function(req, res){
-	var token = req.body.token;
-    var imageId = req.body.imageId;
-    var formatName = req.body.format;
-	UserService.findUserByToken(token,function(err,user){
+	//var token = req.body.token;
+    var imageId = req.params.id;
+    var formatName = req.params.format;
+    console.log("ID:"+imageId+" Format:"+formatName);
+	/*UserService.findUserByToken(token,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
+		} else {*/
             MediaService.findById(imageId,function(err,media){
                 if(err){
                     ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                 } else if (media == null){
                     ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
                 } else {
-                    if(media.ownerId != (user._id+"")){
+                   /* if(media.ownerId != (user._id+"")){
                         ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                    } else {
+                    } else {*/
                         MediaService.get(media,formatName,function(err,media){
                             if(err){
                                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
@@ -102,9 +103,10 @@ exports.get = function(req, res){
 
                             }
                         });
-                    }
+                        /*
+                    }*/
                 }
-            });
+            });/*
 		}
-	})
+	})*/
 };

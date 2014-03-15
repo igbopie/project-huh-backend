@@ -16,7 +16,11 @@ var mongoose = require('mongoose')
 
 
 var mediaSchema = new Schema({
-    ownerId: {    type: Schema.Types.ObjectId, required: true}, created: { type: Date, required: true, default: Date.now }, name: { type: String, required: true}, location: { type: String, required: false }, contentType: { type: String, required: true }
+    ownerId: {    type: Schema.Types.ObjectId, required: false},
+    created: { type: Date, required: true, default: Date.now },
+    name: { type: String, required: true},
+    location: { type: String, required: false },
+    contentType: { type: String, required: true }
 
 });
 
@@ -94,7 +98,7 @@ service.removeAux = function (media, formatName, callback) {
 
 service.create = function (originalPath, contentType, name, ownerId, callback) {
     var media = new Media();
-    media.ownerId = ownerId;
+    //media.ownerId = ownerId;
     media.contentType = contentType;
     media.name = name;
     //TODO

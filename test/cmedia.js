@@ -25,7 +25,7 @@ describe('Media', function(){
     describe('#create()', function(){
         it('should create a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+            Media.create("test/resources/testimage.jpg",function(err,data){
                 if(err) return done(err);
                 should(data).be.ok;
                 done();
@@ -35,9 +35,9 @@ describe('Media', function(){
     describe('#get("thumb")', function(){
         it('should get a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+            Media.create("test/resources/testimage.jpg",function(err,data){
                 if(err) return done(err);
-                Media.get(data,"thumb",users[0].token,"test/resources/testimagedownloadedthumb.jpg",function(err){
+                Media.get(data,"thumb","test/resources/testimagedownloadedthumb.jpg",function(err){
                     if(err) return done(err);
                     done();
                 });
@@ -48,33 +48,33 @@ describe('Media', function(){
     describe('#get("large")', function(){
         it('should get a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+            Media.create("test/resources/testimage.jpg",function(err,data){
                 if(err) return done(err);
-                Media.get(data,"large",users[0].token,"test/resources/testimagedownloadedlarge.jpg",function(err){
+                Media.get(data,"large","test/resources/testimagedownloadedlarge.jpg",function(err){
                     if(err) return done(err);
                     done();
                 });
             });
         });
     });
-
+/*
     describe('#get("thumb") - unauthorized', function(){
         it('should get a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+            Media.create("test/resources/testimage.jpg",function(err,data){
                 if(err) return done(err);
-                Media.get(data,"thumb",users[1].token,"test/resources/testimagedownloadedlarge.jpg",function(err,code){
+                Media.get(data,"thumb","test/resources/testimagedownloadedlarge.jpg",function(err,code){
                     if(code != 401) done("Invalid response code: "+code+". Expected 401 Unauthorized")
                     done();
                 });
             });
         });
-    });
+    });*/
 
     describe('#remove()', function(){
         it('should delete a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+            Media.create("test/resources/testimage.jpg",function(err,data){
                 if(err) return done(err);
                 Media.remove(data,users[0].token,function(err){
                     if(err) return done(err);
