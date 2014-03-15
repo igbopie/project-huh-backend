@@ -77,6 +77,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
+app.get('/upload', routes.imageupload);
 
 //USER
 app.post('/api/user/create', user.create);
@@ -99,6 +100,7 @@ app.post('/api/notification', user.notifications);
 app.post('/api/media/create', media.create);
 app.post('/api/media/remove', media.remove);
 app.post('/api/media/get/:format/:id', media.get);
+app.get('/api/media/get/:format/:id', media.get);
 
 //SEEM
 /*
