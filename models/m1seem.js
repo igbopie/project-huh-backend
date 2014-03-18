@@ -19,7 +19,7 @@ var m1itemSchema = new Schema({
 
 var m1seemSchema = new Schema({
     created		    : { type: Date	, required: true, default: Date.now },
-    item            : {	type: Schema.Types.ObjectId, required: true},
+    itemId            : {	type: Schema.Types.ObjectId, required: true},
     title           : {	type: String, required: false}
 });
 
@@ -42,7 +42,7 @@ service.create = function(title,caption,mediaId,callback){
 
         var seem = new M1Seem();
         seem.title = title;
-        seem.item = mainItem._id;
+        seem.itemId = mainItem._id;
         seem.save(function(err){
             if(err){
                 callback(err);
@@ -60,7 +60,7 @@ service.list = function(callback){
 }
 
 service.getItem = function(id,callback){
-    M1Item.find({_id:id},function(err,seemObj){
+    M1Item.findOne({_id:id},function(err,seemObj){
         callback(err,seemObj);
     });
 }

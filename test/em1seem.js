@@ -12,7 +12,7 @@ describe('M1Seem', function(){
 
     beforeEach(function (done) {
 
-        this.timeout(5000);//S3 requires longer timeout
+        this.timeout(10000);//S3 requires longer timeout
         TestUtils.cleanDatabase(function(err){
             if(err) return done(err);
             Media.create("test/resources/testimage.jpg",function(err,data){
@@ -49,7 +49,7 @@ describe('M1Seem', function(){
 
     describe('#getItem()', function(){
         it('should get the first item',function (done) {
-            M1Seem.getItem(seem.item,function(err){
+            M1Seem.getItem(seem.itemId,function(err){
                 if (err) return done(err);
 
                 done();
@@ -59,7 +59,7 @@ describe('M1Seem', function(){
 
     describe('#reply()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.item,"This is a reply",media,function(err){
+            M1Seem.reply(seem.itemId,"This is a reply",media,function(err){
                 if (err) return done(err);
 
                 done();
@@ -69,9 +69,9 @@ describe('M1Seem', function(){
 
     describe('#getItemReplies()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.item,"This is a reply",media,function(err){
+            M1Seem.reply(seem.itemId,"This is a reply",media,function(err){
                 if (err) return done(err);
-                M1Seem.getItemReplies(seem.item,0,function(err,data){
+                M1Seem.getItemReplies(seem.itemId,0,function(err,data){
                     if (err) return done(err);
 
                     should(data.length).be.equal(1);

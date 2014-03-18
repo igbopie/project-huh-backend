@@ -21,7 +21,9 @@ exports.getItem = function(req, res) {
         if(err){
             console.error(err);
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else {
+        } else if(!item) {
+            ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+        } else{
             ApiUtils.api(req,res,ApiUtils.OK,null,item);
         }
     });
