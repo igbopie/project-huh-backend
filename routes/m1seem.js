@@ -49,12 +49,12 @@ exports.reply = function(req, res) {
     var caption = req.body.caption;
     var mediaId = req.body.mediaId;
     var itemId = req.body.itemId;
-    SeemService.reply(itemId,caption,mediaId,function(err){
+    SeemService.reply(itemId,caption,mediaId,function(err,doc){
         if(err){
             console.error(err);
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
         } else {
-            ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            ApiUtils.api(req,res,ApiUtils.OK,null,doc);
         }
     });
 

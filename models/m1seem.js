@@ -84,7 +84,7 @@ service.reply = function(replyId,caption,mediaId,callback){
         item.save(function(err){
             if(err) return callback(err)
             M1Item.update({_id:parentItem._id}, {$inc : {replyCount : 1}}, function(err){
-                callback(err);
+                callback(err,item);
             });
         });
     });
