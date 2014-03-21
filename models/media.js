@@ -10,8 +10,8 @@ var mongoose = require('mongoose')
     , AWS = require('aws-sdk')
     , s3 = new AWS.S3()
     , S3_BUCKET = process.env.AWS_S3_BUCKET
-    , FORMAT_THUMB = {name: "thumb", height: 50, width: 50}
-    , FORMAT_LARGE = {name: "large", height: 500, width: 500}
+    , FORMAT_THUMB = {name: "thumb", height: 250, width: 250}
+    , FORMAT_LARGE = {name: "large", height: 1000, width: 1000}
     ;
 
 
