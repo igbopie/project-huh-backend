@@ -12,7 +12,7 @@ describe('M1Seem', function(){
 
     beforeEach(function (done) {
 
-        this.timeout(10000);//S3 requires longer timeout
+        this.timeout(20000);//S3 requires longer timeout
         TestUtils.cleanDatabase(function(err){
             if(err) return done(err);
             Media.create("test/resources/testimage.jpg",function(err,data){
@@ -59,10 +59,29 @@ describe('M1Seem', function(){
 
     describe('#reply()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.itemId,"This is a reply",media,function(err){
+            M1Seem.reply(seem.itemId,"This is a reply",media,function(err,reply){
                 if (err) return done(err);
 
+                should(reply.depth).be.equal(1);
+
                 done();
+            });
+        });
+    });
+
+    describe('#replyRecursive()', function(){
+        it('should reply',function (done) {
+            M1Seem.reply(seem.itemId,"This is a reply",media,function(err,reply){
+                if (err) return done(err);
+                M1Seem.reply(reply._id,"This is another reply",media,function(err,reply2) {
+                    if (err) return done(err);
+
+                    should(reply2.replyTo).be.equal(reply._id);
+                    should(reply2.depth).be.equal(2);
+                    should(reply2.seemId).be.equal(seem._id);
+
+                    done();
+                });
             });
         });
     });
