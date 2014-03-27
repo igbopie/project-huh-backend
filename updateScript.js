@@ -40,7 +40,9 @@ function countAux(db,parentItemId,seem,count,stats){
                 console.log("failed to write item:"+err);
             }
         });
-
+        if(!stats.lastUpdate || stats.lastUpdate < item.created){
+            stats.lastUpdate = item.created;
+        }
         count++;
         stats.seemCount++;
         globalCount++;
@@ -52,6 +54,7 @@ function countAux(db,parentItemId,seem,count,stats){
             } else {
                 console.log("Seem "+seem.title+" ParentItem:"+parentItemId+" Finished subtree? :"+count);
                 seem.itemCount = stats.seemCount;
+                seem.updated = stats.lastUpdate;
                 db.collection("m1seems").save(seem,function(err){
                     if(err){
                         console.log("failed to write seem:"+err);
