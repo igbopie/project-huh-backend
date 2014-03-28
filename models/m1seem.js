@@ -13,7 +13,7 @@ var m1itemSchema = new Schema({
     created : { type: Date	, required: true, default: Date.now },
     caption : {	type: String, required: false},
     replyTo:  {	type: Schema.Types.ObjectId, required: false, index: { unique: false, sparse: true }},
-    replyCount: {type: Number, required:true, default:1},
+    replyCount: {type: Number, required:true, default:0},
     seemId: {	type: Schema.Types.ObjectId, required: false},
     depth : {type: Number, required:true, default:0}
 });
@@ -24,7 +24,7 @@ var m1seemSchema = new Schema({
     updated         :{ type: Date	, required: true, default: Date.now },
     itemId            : {	type: Schema.Types.ObjectId, required: true},
     title           : {	type: String, required: false},
-    itemCount       : {type: Number, required:true, default:0}
+    itemCount       : {type: Number, required:true, default:1}
 });
 
 
