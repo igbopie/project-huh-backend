@@ -13,7 +13,7 @@ var m1itemSchema = new Schema({
     created : { type: Date	, required: true, default: Date.now },
     caption : {	type: String, required: false},
     replyTo:  {	type: Schema.Types.ObjectId, required: false, index: { unique: false, sparse: true }},
-    replyCount: {type: Number, required:true, default:0},
+    replyCount: {type: Number, required:true, default:1},
     seemId: {	type: Schema.Types.ObjectId, required: false},
     depth : {type: Number, required:true, default:0}
 });
@@ -107,8 +107,9 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,callback){
                 item.seemId = seem._id;
 
                 item.save(function (err) {
-                    if (err) return callback(err)
+                    if (err) return callback(err);
                     M1Item.update({_id: parentItem._id}, {$inc: {replyCount: 1}}, function (err) {
+                        if (err) return callback(err);
                         M1Seem.update({itemId: parentItem._id}, {$inc: {itemCount: 1},$set:{updated:Date.now()}}, function (err) {
                             callback(err, item);
                         });
