@@ -101,6 +101,135 @@ describe('M1Seem', function(){
 
         });
     });
+    describe('#randomSeemAndReplies()', function(){
+        it('should be consistent',function (done) {
 
+            this.timeout(20000);
+            var seemsArray = new Array();
+            var itemsArray = new Array();
+            var nSeems = 10;
+            var nItems = 1000;
+            var seemName= "Seem name ";
+            var itemCaption= "Item caption ";
+
+            auxCreateSeem(0,seemsArray,itemsArray,seemName,itemCaption,nSeems,function(err){
+                if(err){
+                    return done(err);
+                }
+                auxCreateItems(0,itemsArray,itemCaption,nItems,function(err){
+                    if(err){
+                        return done(err);
+                    }
+                    //console.log("Done no errors ");
+                    var seemRetCount = 0;
+                    seemsArray.forEach(function(seem){
+                        var parentItemId = seem.itemId;
+                        var stats={seemCount:0,seemDepth:0}
+                        countAux(parentItemId,seem,0,stats,function() {
+                            //TODO seem test count but there is no API seem count
+                            /*
+                            if (seem.itemCount != stats.seemCount) {
+                                console.log("WARNING Seem " + seem.title + " ParentItem:" + parentItemId +
+                                    " Depth:" + stats.seemDepth + " Seem count:" + seem.itemCount + " calculated:" + stats.seemCount);
+                            }
+
+                            should(seem.itemCount).be.equal(stats.seemCount);
+                            */
+                            seemRetCount++;
+                            if(seemRetCount > nSeems){
+                                console.log("Finished");
+                                done();
+                            }
+                        });
+                    });
+
+                });
+
+            });
+        });
+    });
 
 });
+
+function auxCreateSeem(depth,seemsArray,itemsArray,seemName,itemCaption,nSeems,callback){
+    M1Seem.create(seemName+depth,itemCaption+depth,media,function(err,data){
+        if(err) return callback(err);
+        seemsArray.push(data);
+        itemsArray.push(data.itemId);
+        if(depth < nSeems  ){
+            auxCreateSeem(depth+1,seemsArray,itemsArray,seemName,itemCaption,nSeems,callback);
+        }else{
+            callback(null);
+        }
+    });
+}
+
+function auxCreateItems(depth,itemsArray,itemCaption,nItems,callback){
+
+
+    var randomReplyIndex = Math.floor((Math.random()*itemsArray.length));
+    var randomReplyId = itemsArray[randomReplyIndex];
+    //console.log("RandomIndex:"+randomReplyIndex+" Size:"+itemsArray.length);
+
+    M1Seem.reply(randomReplyId,itemCaption+depth,media,function(err,data){
+        if(err) return callback(err);
+        itemsArray.push(data._id);
+        if(depth < nItems  ){
+            auxCreateItems(depth+1,itemsArray,itemCaption,nItems,callback);
+        }else{
+            callback(null);
+        }
+    });
+}
+function getAllRepliesAux(parentItemId,page,replies,callback){
+
+    M1Seem.getItemReplies(parentItemId,page,function(err,data){
+        //console.log("getItemReplies:"+parentItemId+"Lenght:"+data.length);
+        if(data != null && data.length > 0 ){
+            getAllRepliesAux(parentItemId,page+1,replies.concat(data),callback);
+        }else{
+            callback(replies);
+        }
+    })
+}
+function countAux(parentItemId,seem,count,stats,callback){
+    M1Seem.getItem(parentItemId,function(err,parentItem){
+        parentItem.depth = count;
+        parentItem.seemId = seem._id;
+        if(!stats.lastUpdate || stats.lastUpdate < parentItem.created){
+            stats.lastUpdate = parentItem.created;
+        }
+        count++;
+        stats.seemCount++;
+
+        var replyCount = 0;
+        var recCount = 0;
+        //fetch collection
+        getAllRepliesAux(parentItemId,0,new Array(),function(replies) {
+            //console.log("getAllRepliesAux."+replies.length);
+            for(var i = 0;i < replies.length;i++){
+                var item = replies[i];
+                countAux(item._id, seem, count, stats, function () {
+                    recCount--;
+                    if (recCount == 0) {
+                        //console.log("Finished subtree");
+                        callback();
+                    }
+                });
+                replyCount++;
+                recCount++;
+            }
+            if (parentItem.replyCount != replyCount) {
+                console.log("WARNING Item:" + parentItem._id + "(Seem:" + seem.title + ") Count:" + parentItem.replyCount + " Calculated:" + replyCount);
+            }
+            should(parentItem.replyCount).be.equal(replyCount);
+            if (replyCount == 0) {
+                if (count > stats.seemDepth) {
+                    stats.seemDepth = count;
+                }
+                callback();
+            }
+        });
+    });
+}
+

@@ -27,6 +27,7 @@ exports.getItem = function(itemId,callback){
 exports.getItemReplies = function(itemId,page,callback){
     var params ={itemId:itemId,page:page};
     apiClientBase.post('/api/m1/seem/item/replies',params,function(code,headers,data){
+        //console.log("Data:"+data);
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {

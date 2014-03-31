@@ -108,7 +108,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,callback){
 
                 item.save(function (err) {
                     if (err) return callback(err);
-                    M1Item.update({_id: parentItem._id}, {$inc: {replyCount: 1}}, function (err) {
+                    M1Item.update({_id: replyId}, {$inc: {replyCount: 1}}, function (err) {
                         if (err) return callback(err);
                         M1Seem.update({itemId: parentItem._id}, {$inc: {itemCount: 1},$set:{updated:Date.now()}}, function (err) {
                             callback(err, item);
