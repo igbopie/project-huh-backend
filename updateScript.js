@@ -27,13 +27,13 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
                     if(seem.itemCount != stats.seemCount) {
                         console.log("WARNING Seem " + seem.title + " ParentItem:" + parentItemId + " Depth:" + stats.seemDepth + " Seem count:" + seem.itemCount + " calculated:" + stats.seemCount);
                     }
-                    //seem.itemCount = stats.seemCount;
-                    //seem.updated = stats.lastUpdate;
-                    /*db.collection("m1seems").save(seem,function(err){
-                     if(err){
-                     console.log("failed to write seem:"+err);
-                     }
-                     });*/
+                    seem.itemCount = stats.seemCount;
+                    seem.updated = stats.lastUpdate;
+                    db.collection("m1seems").save(seem,function(err){
+                        if(err){
+                            console.log("failed to write seem:"+err);
+                        }
+                    });
 
                 });
 
@@ -47,11 +47,7 @@ function countAux(db,parentItemId,seem,count,stats,callback){
     db.collection('m1items').findOne({_id:parentItemId},function(err,parentItem){
         parentItem.depth = count;
         parentItem.seemId = seem._id;
-        /*db.collection('m1items').save(item,function(err){
-            if(err){
-                console.log("failed to write item:"+err);
-            }
-        });*/
+
         if(!stats.lastUpdate || stats.lastUpdate < parentItem.created){
             stats.lastUpdate = parentItem.created;
         }
@@ -77,6 +73,12 @@ function countAux(db,parentItemId,seem,count,stats,callback){
                 if(parentItem.replyCount != replyCount){
                     console.log("WARNING Item:"+parentItem._id+"(Seem:"+seem.title+") Count:"+parentItem.replyCount+" Calculated:"+replyCount);
                 }
+                parentItem.replyCount = replyCount;
+                db.collection('m1items').save(parentItem,function(err){
+                    if(err){
+                        console.log("failed to write item:"+err);
+                    }
+                });
                 if(replyCount == 0){
                     if(count > stats.seemDepth){
                         stats.seemDepth = count;
