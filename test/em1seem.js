@@ -7,21 +7,28 @@ var Media = require('../apiclient/media');
 var M1Seem = require('../apiclient/m1seem');
 var media = null;
 var seem = null;
+var users = null;
 
 describe('M1Seem', function(){
 
     beforeEach(function (done) {
-
         this.timeout(20000);//S3 requires longer timeout
         TestUtils.cleanDatabase(function(err){
             if(err) return done(err);
-            Media.create("test/resources/testimage.jpg",function(err,data){
+            users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
                 if(err) return done(err);
-                media = data;
-                M1Seem.create("A title for a seam","A caption for the photo",data,function(err,data){
-                    if (err) return done(err);
-                    seem = data;
-                    done();
+                TestUtils.loginUsers(users,function(err){
+                    if(err) return done(err);
+                    Media.create("test/resources/testimage.jpg",function(err,data){
+                        if(err) return done(err);
+                        media = data;
+                        M1Seem.create("A title for a seam","A caption for the photo",data,users[0].token,function(err,data){
+                            if (err) return done(err);
+                            seem = data;
+                            done();
+                        });
+                    });
                 });
             });
         });
@@ -29,7 +36,7 @@ describe('M1Seem', function(){
 
     describe('#create()', function(){
         it('should create a seem',function (done) {
-            M1Seem.create("A title for a seam","A caption for the photo",media,function(err,data){
+            M1Seem.create("A title for a seam","A caption for the photo",media,users[0].token,function(err,data){
                 if (err) return done(err);
                 done();
             });
@@ -59,7 +66,7 @@ describe('M1Seem', function(){
 
     describe('#reply()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.itemId,"This is a reply",media,function(err,reply){
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err,reply){
                 if (err) return done(err);
 
                 should(reply.depth).be.equal(1);
@@ -71,9 +78,9 @@ describe('M1Seem', function(){
 
     describe('#replyRecursive()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.itemId,"This is a reply",media,function(err,reply){
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err,reply){
                 if (err) return done(err);
-                M1Seem.reply(reply._id,"This is another reply",media,function(err,reply2) {
+                M1Seem.reply(reply._id,"This is another reply",media,users[0].token,function(err,reply2) {
                     if (err) return done(err);
 
                     should(reply2.replyTo).be.equal(reply._id);
@@ -88,7 +95,7 @@ describe('M1Seem', function(){
 
     describe('#getItemReplies()', function(){
         it('should reply',function (done) {
-            M1Seem.reply(seem.itemId,"This is a reply",media,function(err){
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err){
                 if (err) return done(err);
                 M1Seem.getItemReplies(seem.itemId,0,function(err,data){
                     if (err) return done(err);
@@ -152,7 +159,7 @@ describe('M1Seem', function(){
 });
 
 function auxCreateSeem(depth,seemsArray,itemsArray,seemName,itemCaption,nSeems,callback){
-    M1Seem.create(seemName+depth,itemCaption+depth,media,function(err,data){
+    M1Seem.create(seemName+depth,itemCaption+depth,media,users[0].token,function(err,data){
         if(err) return callback(err);
         seemsArray.push(data);
         itemsArray.push(data.itemId);
@@ -171,7 +178,7 @@ function auxCreateItems(depth,itemsArray,itemCaption,nItems,callback){
     var randomReplyId = itemsArray[randomReplyIndex];
     //console.log("RandomIndex:"+randomReplyIndex+" Size:"+itemsArray.length);
 
-    M1Seem.reply(randomReplyId,itemCaption+depth,media,function(err,data){
+    M1Seem.reply(randomReplyId,itemCaption+depth,media,users[0].token,function(err,data){
         if(err) return callback(err);
         itemsArray.push(data._id);
         if(depth < nItems  ){

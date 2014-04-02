@@ -2,8 +2,8 @@ var apiClientBase = require('./apiclientbase');
  
  
  
-exports.create = function(title,caption,mediaId,callback){
-	var params ={title:title,caption:caption,mediaId:mediaId};
+exports.create = function(title,caption,mediaId,token,callback){
+	var params ={title:title,caption:caption,mediaId:mediaId,token:token};
 	apiClientBase.post('/api/m1/seem/create',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);
@@ -47,8 +47,8 @@ exports.list = function(callback){
     });
 }
 
-exports.reply = function(itemId,caption,mediaId,callback){
-    var params ={itemId:itemId,caption:caption,mediaId:mediaId};
+exports.reply = function(itemId,caption,mediaId,token,callback){
+    var params ={itemId:itemId,caption:caption,mediaId:mediaId,token:token};
     apiClientBase.post('/api/m1/seem/item/reply',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);

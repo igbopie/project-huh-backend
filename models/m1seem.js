@@ -15,7 +15,9 @@ var m1itemSchema = new Schema({
     replyTo:  {	type: Schema.Types.ObjectId, required: false, index: { unique: false, sparse: true }},
     replyCount: {type: Number, required:true, default:0},
     seemId: {	type: Schema.Types.ObjectId, required: false},
-    depth : {type: Number, required:true, default:0}
+    depth : {type: Number, required:true, default:0},
+    userId:   {	type: Schema.Types.ObjectId, required: false},
+    username:{	type: String, required: false}
 });
 
 
@@ -24,7 +26,9 @@ var m1seemSchema = new Schema({
     updated         :{ type: Date	, required: true, default: Date.now },
     itemId            : {	type: Schema.Types.ObjectId, required: true},
     title           : {	type: String, required: false},
-    itemCount       : {type: Number, required:true, default:1}
+    itemCount       : {type: Number, required:true, default:1},
+    userId:   {	type: Schema.Types.ObjectId, required: false},
+    username:{	type: String, required: false}
 });
 
 
@@ -37,12 +41,15 @@ var M1Item = mongoose.model('m1item', m1itemSchema);
 //Service?
 var service = {};
 
-service.create = function(title,caption,mediaId,callback){
+service.create = function(title,caption,mediaId,user,callback){
 
     var mainItem = new M1Item();
     mainItem.mediaId = mediaId;
     mainItem.caption = caption;
-
+    if(user) {
+        mainItem.userId = user._id;
+        mainItem.username = user.username;
+    }
 
     mainItem.save(function(err){
         if(err) return callback(err);
@@ -50,6 +57,10 @@ service.create = function(title,caption,mediaId,callback){
         var seem = new M1Seem();
         seem.title = title;
         seem.itemId = mainItem._id;
+        if(user) {
+            seem.userId = user._id;
+            seem.username = user.username;
+        }
 
         seem.save(function(err){
             if(err){
@@ -82,17 +93,17 @@ service.getItemReplies = function(id,page,callback){
     });
 }
 
-service.reply = function(replyId,caption,mediaId,callback){
-    service.replyAux(replyId,caption,mediaId,replyId,1,callback);
+service.reply = function(replyId,caption,mediaId,user,callback){
+    service.replyAux(replyId,caption,mediaId,replyId,1,user,callback);
 
 }
-service.replyAux = function(replyId,caption,mediaId,nextParent,depth,callback){
+service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callback){
     M1Item.findOne({_id:nextParent},function(err,parentItem){
         if(err) return callback(err);
         if(!parentItem) return callback("parent reply not found");
 
         if(parentItem.replyTo){
-            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,callback);
+            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,callback);
         }else {
             console.log("ParentItem "+parentItem._id+" Depth:"+depth);
             M1Seem.findOne({itemId:parentItem._id},function(err,seem){
@@ -105,6 +116,10 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,callback){
                 item.replyTo = replyId;
                 item.depth = depth;
                 item.seemId = seem._id;
+                if(user) {
+                    item.userId = user._id;
+                    item.username = user.username;
+                }
 
                 item.save(function (err) {
                     if (err) return callback(err);
