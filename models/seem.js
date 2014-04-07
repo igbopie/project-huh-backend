@@ -1,83 +1,143 @@
 var mongoose = require('mongoose')
-  , Schema = mongoose.Schema;
+  , Schema = mongoose.Schema
+  , MAX_RESULTS_ITEMS = 100;
 
-/*
-var seemItemCommentSchema = new Schema({
-    userId  : {	type: Schema.Types.ObjectId, required: true},
-    comment : {	type: String , required: true},
-    created : { type: Date	, required: true, default: Date.now }
-});*/
+/**
+ * THIS IS A QUICK AND DIRTY BACKEND FOR TESTING THE USER EXPERIENCE
+ * IT WILL NOT SCALE!! IT WILL NOT WORK WELL WITH BIG NUMBERS
+ * @type {Schema}
+ */
 
-var replySchema = new Schema({
-    userId  : {	type: Schema.Types.ObjectId, required: true},
+var itemSchema = new Schema({
     mediaId : {	type: Schema.Types.ObjectId, required: true},
     created : { type: Date	, required: true, default: Date.now },
-    caption : {	type: String, required: false}
+    caption : {	type: String, required: false},
+    replyTo:  {	type: Schema.Types.ObjectId, required: false, index: { unique: false, sparse: true }},
+    replyCount: {type: Number, required:true, default:0},
+    seemId: {	type: Schema.Types.ObjectId, required: false},
+    depth : {type: Number, required:true, default:0},
+    userId:   {	type: Schema.Types.ObjectId, required: false},
+    username:{	type: String, required: false}
 });
-/*
-var seemParticipantSchema =  new Schema({
-    userId  : {	type: Schema.Types.ObjectId, required: true},
-    invited : { type: Date	, required: true, default: Date.now },
-    left : { type: Date	, required: false}
-});
-*/
+
+
 var seemSchema = new Schema({
-    ownerId	    : {	type: Schema.Types.ObjectId, required: true}
-  , created		    : { type: Date	, required: true, default: Date.now }
-  , modified	    : { type: Date	, required: true, default: Date.now }
-  , mediaId : {	type: Schema.Types.ObjectId, required: true}
-  , caption : {	type: String, required: false}
-  , replies: [replySchema]
+    created		    : { type: Date	, required: true, default: Date.now },
+    updated         :{ type: Date	, required: true, default: Date.now },
+    itemId            : {	type: Schema.Types.ObjectId, required: true},
+    title           : {	type: String, required: false},
+    itemCount       : {type: Number, required:true, default:1},
+    userId:   {	type: Schema.Types.ObjectId, required: false},
+    username:{	type: String, required: false}
 });
 
 
+seemSchema.index({ itemId: 1 });
 
 var Seem = mongoose.model('seem', seemSchema);
+var Item = mongoose.model('item', itemSchema);
+
 
 //Service?
 var service = {};
 
-service.create = function(user,caption,mediaId,callback){
+service.create = function(title,caption,mediaId,user,callback){
 
-    var seem = new Seem();
-    seem.ownerId = user._id;
-    seem.mediaId = mediaId;
-    seem.caption = caption;
-    seem.save(function(err){
-        if(err){
-            callback(err);
-        } else {
-            callback(null,seem);
+    var mainItem = new Item();
+    mainItem.mediaId = mediaId;
+    mainItem.caption = caption;
+    if(user) {
+        mainItem.userId = user._id;
+        mainItem.username = user.username;
+    }
+
+    mainItem.save(function(err){
+        if(err) return callback(err);
+
+        var seem = new Seem();
+        seem.title = title;
+        seem.itemId = mainItem._id;
+        if(user) {
+            seem.userId = user._id;
+            seem.username = user.username;
+        }
+
+        seem.save(function(err){
+            if(err){
+                callback(err);
+            } else {
+                mainItem.seemId = seem._id;
+                mainItem.save(function(err){
+                    callback(null,seem);
+                });
+            }
+        });
+    });
+}
+
+service.list = function(callback){
+    Seem.find(function(err,seemObj){
+        callback(err,seemObj);
+    });
+}
+
+service.getItem = function(id,callback){
+    Item.findOne({_id:id},function(err,seemObj){
+        callback(err,seemObj);
+    });
+}
+
+service.getItemReplies = function(id,page,callback){
+    Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+
+service.reply = function(replyId,caption,mediaId,user,callback){
+    service.replyAux(replyId,caption,mediaId,replyId,1,user,callback);
+
+}
+service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callback){
+    Item.findOne({_id:nextParent},function(err,parentItem){
+        if(err) return callback(err);
+        if(!parentItem) return callback("parent reply not found");
+
+        if(parentItem.replyTo){
+            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,callback);
+        }else {
+            console.log("ParentItem "+parentItem._id+" Depth:"+depth);
+            Seem.findOne({itemId:parentItem._id},function(err,seem){
+
+                if (err) return callback(err)
+
+                var item = new Item();
+                item.mediaId = mediaId;
+                item.caption = caption;
+                item.replyTo = replyId;
+                item.depth = depth;
+                item.seemId = seem._id;
+                if(user) {
+                    item.userId = user._id;
+                    item.username = user.username;
+                }
+
+                item.save(function (err) {
+                    if (err) return callback(err);
+                    Item.update({_id: replyId}, {$inc: {replyCount: 1}}, function (err) {
+                        if (err) return callback(err);
+                        Seem.update({itemId: parentItem._id}, {$inc: {itemCount: 1},$set:{updated:Date.now()}}, function (err) {
+                            callback(err, item);
+                        });
+                    });
+                });
+
+            });
         }
     });
-
 }
-service.reply = function(seem,user,caption,mediaId,callback){
-
-    var seemReply = {};
-    seemReply.userId = user._id;
-    seemReply.caption = caption;
-    seemReply.mediaId = mediaId;
-
-    seem.replies.push(seemReply);
-
-    seem.save(function(err){
-        callback(err);
-    });
-
-}
-service.findById = function(id,callback){
-    Seem.findOne({"_id":id},function(err,seemObj){
-        if(err){
-            callback(err);
-        } else {
-            callback(null,seemObj);
-        }
-    });
-}
-
 
 module.exports = {
-  Seem: Seem,
-  Service:service
+    Seem: Seem,
+    Item: Item,
+    Service:service
 };

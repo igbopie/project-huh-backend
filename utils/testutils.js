@@ -17,12 +17,12 @@ exports.cleanDatabase = function(callback){
                 callback(err);
                 return;
             }
-            db.collection('media').remove(	function(err) {
+            /*db.collection('media').remove(	function(err) {
                 if(err) {
                     console.log(err);
                     callback(err);
                     return;
-                }
+                }*/
                 db.collection('follows').remove(	function(err) {
                     if(err) {
                         console.log(err);
@@ -35,31 +35,24 @@ exports.cleanDatabase = function(callback){
                             callback(err);
                             return;
                         }
-                        db.collection('m1seems').remove(	function(err) {
+                        db.collection('items').remove(	function(err) {
                             if(err) {
                                 console.log(err);
                                 callback(err);
                                 return;
                             }
-                            db.collection('m1items').remove(	function(err) {
+                            db.close(function(err){
                                 if(err) {
                                     console.log(err);
                                     callback(err);
                                     return;
                                 }
-                                db.close(function(err){
-                                    if(err) {
-                                        console.log(err);
-                                        callback(err);
-                                        return;
-                                    }
-                                    callback();
-                                });
+                                callback();
                             });
                         });
                     });
                 });
-			});
+			//});
 		});
     });
 }

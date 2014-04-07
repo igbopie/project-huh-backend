@@ -130,7 +130,7 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
 service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
     imageMagick(originalPath)
-        .resize(format.width, format.height)
+        .resize(format.width, format.height+ ">")
         .write(tempPath, function (err) {
             if (err) {
                 callback(err);
