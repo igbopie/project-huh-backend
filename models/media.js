@@ -38,7 +38,7 @@ service.findById = function (id, callback) {
 
 service.get = function (media, formatName, callback) {
     var file = temp.createWriteStream();
-    var params = {Bucket: S3_BUCKET, Key: getName(media)};
+    var params = {Bucket: S3_BUCKET, Key: getName(media,formatName)};
 
     s3.getObject(params).
         on('httpData',function (chunk) {
@@ -86,7 +86,7 @@ service.remove = function (media, callback) {
 
 
 service.removeAux = function (media, formatName, callback) {
-    var params = {Bucket: S3_BUCKET, Key: getName(media)};
+    var params = {Bucket: S3_BUCKET, Key: getName(media,formatName)};
     s3.deleteObject(params, function (err, data) {
         if (err) {
             callback(err)
@@ -139,7 +139,7 @@ service.createAux = function (originalPath, media, format, callback) {
 
                 var params = {
                     Bucket: S3_BUCKET,
-                    Key: "" + media._id + "_" + format.name + "_" + media.name,
+                    Key: getName(media,format.name),
                     Body: bodyStream,
                     ContentType: media.contentType
                 };
@@ -157,8 +157,8 @@ service.createAux = function (originalPath, media, format, callback) {
         });
 }
 
-function getName(media){
-    return media._id + "_" + format;
+function getName(media,formatName){
+    return media._id + "_" + formatName;
 }
 
 module.exports = {
