@@ -1,12 +1,8 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
-  , MAX_RESULTS_ITEMS = 100;
+  , MAX_RESULTS_ITEMS = 100
+  , MAX_LASTEST_ITEMS_SEEM = 5;
 
-/**
- * THIS IS A QUICK AND DIRTY BACKEND FOR TESTING THE USER EXPERIENCE
- * IT WILL NOT SCALE!! IT WILL NOT WORK WELL WITH BIG NUMBERS
- * @type {Schema}
- */
 
 var itemSchema = new Schema({
     mediaId : {	type: Schema.Types.ObjectId, required: true},
@@ -22,13 +18,16 @@ var itemSchema = new Schema({
 
 
 var seemSchema = new Schema({
-    created		    : { type: Date	, required: true, default: Date.now },
-    updated         :{ type: Date	, required: true, default: Date.now },
-    itemId            : {	type: Schema.Types.ObjectId, required: true},
-    title           : {	type: String, required: false},
-    itemCount       : {type: Number, required:true, default:1},
-    userId:   {	type: Schema.Types.ObjectId, required: false},
-    username:{	type: String, required: false}
+    created		    :   {   type: Date	, required: true, default: Date.now },
+    updated         :   {   type: Date	, required: true, default: Date.now },
+    itemId          :   {	type: Schema.Types.ObjectId, required: true},
+    itemMediaId     :   {	type: Schema.Types.ObjectId, required: false},
+    itemCaption     :   {	type: String, required: false},
+    latestItems     :       [itemSchema],
+    title           :   {	type: String, required: false},
+    itemCount       :   {   type: Number, required:true, default:1},
+    userId          :   {	type: Schema.Types.ObjectId, required: false},
+    username        :   {	type: String, required: false}
 });
 
 
@@ -46,6 +45,7 @@ service.create = function(title,caption,mediaId,user,callback){
     var mainItem = new Item();
     mainItem.mediaId = mediaId;
     mainItem.caption = caption;
+
     if(user) {
         mainItem.userId = user._id;
         mainItem.username = user.username;
@@ -61,6 +61,9 @@ service.create = function(title,caption,mediaId,user,callback){
             seem.userId = user._id;
             seem.username = user.username;
         }
+        seem.itemMediaId = mainItem.mediaId;
+        seem.itemCaption = mainItem.caption;
+        seem.latestItems.push(mainItem);
 
         seem.save(function(err){
             if(err){
@@ -123,11 +126,32 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
 
                 item.save(function (err) {
                     if (err) return callback(err);
+                    //Update its parent
                     Item.update({_id: replyId}, {$inc: {replyCount: 1}}, function (err) {
                         if (err) return callback(err);
-                        Seem.update({itemId: parentItem._id}, {$inc: {itemCount: 1},$set:{updated:Date.now()}}, function (err) {
-                            callback(err, item);
-                        });
+                        //update Seem
+                        Seem.update({itemId: parentItem._id},
+                            {   $inc: {itemCount: 1},
+                                $set:{updated:Date.now()},
+                                //$pop: { latestItems: -1 },
+                                $push: {latestItems: {
+                                            $each: [item],
+                                            $slice: -MAX_LASTEST_ITEMS_SEEM
+                                        }
+                                }
+                            }
+                            ,
+                            function (err) {
+                                if (err) return callback(err);
+                                //Update seem cache...
+                                Seem.update({"latestItems._id": parentItem._id},
+                                             {$inc: {"latestItems.$.replyCount": 1}},
+                                    function(err)  {
+                                        callback(err, item);
+                                    }
+                                );
+                            }
+                        );
                     });
                 });
 

@@ -269,7 +269,7 @@ service.extendToken= function(token,callback){
             if(err) return callback(err);
             callback();
         });*/
-
+        //user.tokens.id(my_id).....
         for(var i = 0;i<user.tokens.length;i++){
             var tokenObj = user.tokens[i];
             if(tokenObj.token == token){
