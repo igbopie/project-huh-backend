@@ -15,7 +15,7 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
     }
 
     globalCount = 0;
-    var cursor = db.collection('m1seems').find({});
+    var cursor = db.collection('seems').find({});
     cursor.each( function(err,seem) {
             if(seem) {
                 console.log("Seem: " + seem.title);
@@ -27,12 +27,16 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
                     if(seem.itemCount != stats.seemCount) {
                         console.log("WARNING Seem " + seem.title + " ParentItem:" + parentItemId + " Depth:" + stats.seemDepth + " Seem count:" + seem.itemCount + " calculated:" + stats.seemCount);
                     }
-                    seem.itemCount = stats.seemCount;
-                    seem.updated = stats.lastUpdate;
-                    db.collection("m1seems").save(seem,function(err){
-                        if(err){
-                            console.log("failed to write seem:"+err);
-                        }
+                    db.collection('items').findOne({_id:seem.itemId},function(err,item) {
+                        seem.itemMediaId = item.mediaId;
+                        seem.itemCaption = item.caption;
+                        //seem.itemCount = stats.seemCount;
+                        //seem.updated = stats.lastUpdate;
+                        db.collection("seems").save(seem, function (err) {
+                            if (err) {
+                                console.log("failed to write seem:" + err);
+                            }
+                        });
                     });
 
                 });
@@ -44,7 +48,7 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
 });
 
 function countAux(db,parentItemId,seem,count,stats,callback){
-    db.collection('m1items').findOne({_id:parentItemId},function(err,parentItem){
+    db.collection('items').findOne({_id:parentItemId},function(err,parentItem){
         parentItem.depth = count;
         parentItem.seemId = seem._id;
 
@@ -55,7 +59,7 @@ function countAux(db,parentItemId,seem,count,stats,callback){
         stats.seemCount++;
         globalCount++;
         //console.log("Seem "+seem.title+" Item: " + parentItem._id+" count:"+count+" globalcount:"+globalCount+" seemCount:"+stats.seemCount);
-        var cursor = db.collection('m1items').find({replyTo:parentItemId});
+        var cursor = db.collection('items').find({replyTo:parentItemId});
         var replyCount = 0;
         var recCount = 0;
         cursor.each( function(err,item) {
@@ -74,11 +78,11 @@ function countAux(db,parentItemId,seem,count,stats,callback){
                     console.log("WARNING Item:"+parentItem._id+"(Seem:"+seem.title+") Count:"+parentItem.replyCount+" Calculated:"+replyCount);
                 }
                 parentItem.replyCount = replyCount;
-                db.collection('m1items').save(parentItem,function(err){
+                /*db.collection('m1items').save(parentItem,function(err){
                     if(err){
                         console.log("failed to write item:"+err);
                     }
-                });
+                });*/
                 if(replyCount == 0){
                     if(count > stats.seemDepth){
                         stats.seemDepth = count;
