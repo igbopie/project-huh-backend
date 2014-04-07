@@ -75,6 +75,17 @@ exports.login = function(req, res) {
 		} 
 	});
 }
+
+exports.extendToken =  function(req, res) {
+    var token = req.body.token;
+    UserService.extendToken(token,function(err){
+        if(err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else {
+            ApiUtils.api(req,res,ApiUtils.OK,null,null);
+        }
+    });
+};
 exports.profile = function(req, res) {
     var token = req.body.token;
     var username = req.body.username;

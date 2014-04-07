@@ -62,6 +62,31 @@ describe('User', function(){
         });
     });
 
+    describe('#extendtoken()', function(){
+        it('should extend '+nUsers+' users',function (done) {
+            var users = TestUtils.randomUsers(nUsers);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    var calledBack = 0;
+                    for(var i = 0; i < users.length;i++){
+                        User.extendToken(users[i].token,function(err){
+                            calledBack++;
+                            if(err){
+                                done(err);
+                            } else if(calledBack >= users.length){
+                                done();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
+
+
+
     describe('#update()', function(){
         it('should update user details',function (done) {
             var users = TestUtils.randomUsers(1);

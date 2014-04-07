@@ -23,6 +23,15 @@ exports.login = function(username,password,callback){
 	    }
     });
 }
+exports.extendToken = function(token,callback){
+    apiClientBase.post('/api/user/extendtoken',{token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null);
+        }
+    });
+}
 
 exports.profile = function(username,token,callback){
     apiClientBase.post('/api/user/profile',{username:username,token:token},function(code,headers,data){

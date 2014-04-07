@@ -10,7 +10,9 @@ var mongoose = require('mongoose')
   , SMS_VERIFICATION_LENGTH = 6
   , MAX_PHONE_VERIFICATION_TRIES = 3
   , MAX_NOTIFICATIONS = 200
-  , NOTIFICATION_TYPES = {FOLLOW:"FOLLOW"};
+  , NOTIFICATION_TYPES = {FOLLOW:"FOLLOW"}
+  ,TOKEN_EXPIRATION_DAYS = 30
+  ,TOKEN_EXPIRATION_HOURS = 0;
 
 /*var friendRequestSchema = new Schema({
     friendId		: {	type: Schema.Types.ObjectId, required: true}
@@ -139,8 +141,8 @@ userSchema.methods.createToken = function(cb) {
 	expiration.add({ 	milliseconds: 0,
 	        seconds: 0,
 			minutes: 0,
-	        hours: 1,
-	        days: 0,
+	        hours: TOKEN_EXPIRATION_HOURS,
+	        days: TOKEN_EXPIRATION_DAYS,
 	        weeks: 0,
 	        months: 0,
 	        years: 0});
@@ -244,6 +246,41 @@ service.findUserProfile = function(username,fields,callback){
     });
 }
 
+service.extendToken= function(token,callback){
+    service.findUserByToken(token,function(err,user){
+        if(err) return callback(err);
+        if(!user) return callback("Timedout");
+
+
+        var expiration = new Date();
+        expiration.add({ 	milliseconds: 0,
+            seconds: 0,
+            minutes: 0,
+            hours: TOKEN_EXPIRATION_HOURS,
+            days: TOKEN_EXPIRATION_DAYS,
+            weeks: 0,
+            months: 0,
+            years: 0});
+
+        /*var conditions = {"_id":user._id,"tokens.token":token}
+            , update = { "$set": { "tokens.$.expiration": expiration }};
+
+        user.update(conditions, update,function(err){
+            if(err) return callback(err);
+            callback();
+        });*/
+
+        for(var i = 0;i<user.tokens.length;i++){
+            var tokenObj = user.tokens[i];
+            if(tokenObj.token == token){
+                tokenObj.expiration = expiration;
+                break;
+            }
+        }
+        user.save(callback);
+
+    });
+}
 service.findUserByToken = function(token,callback){
 	user.findOne({"tokens.token":token},function(err,user){
 			if(err) {

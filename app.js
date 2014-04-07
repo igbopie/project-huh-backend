@@ -82,6 +82,7 @@ app.get('/upload', routes.imageupload);
 //USER
 app.post('/api/user/create', user.create);
 app.post('/api/user/login', user.login);
+app.post('/api/user/extendtoken', user.extendToken);
 app.post('/api/user/profile', user.profile);
 app.post('/api/user/update', user.update);
 app.post('/api/user/addphone', user.addPhone);
