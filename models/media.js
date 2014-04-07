@@ -10,8 +10,8 @@ var mongoose = require('mongoose')
     , AWS = require('aws-sdk')
     , s3 = new AWS.S3()
     , S3_BUCKET = process.env.AWS_S3_BUCKET
-    , FORMAT_THUMB = {name: "thumb", height: 250, width: 250}
-    , FORMAT_LARGE = {name: "large", height: 1000, width: 1000}
+    , FORMAT_THUMB = {name: "thumb", height: 640, width: 320}
+    , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
     ;
 
 
@@ -38,7 +38,7 @@ service.findById = function (id, callback) {
 
 service.get = function (media, formatName, callback) {
     var file = temp.createWriteStream();
-    var params = {Bucket: S3_BUCKET, Key: media._id + "_" + formatName + "_" + media.name};
+    var params = {Bucket: S3_BUCKET, Key: getName(media)};
 
     s3.getObject(params).
         on('httpData',function (chunk) {
@@ -86,7 +86,7 @@ service.remove = function (media, callback) {
 
 
 service.removeAux = function (media, formatName, callback) {
-    var params = {Bucket: S3_BUCKET, Key: media._id + "_" + formatName + "_" + media.name};
+    var params = {Bucket: S3_BUCKET, Key: getName(media)};
     s3.deleteObject(params, function (err, data) {
         if (err) {
             callback(err)
@@ -155,6 +155,10 @@ service.createAux = function (originalPath, media, format, callback) {
                 });
             }
         });
+}
+
+function getName(media){
+    return media._id + "_" + format;
 }
 
 module.exports = {
