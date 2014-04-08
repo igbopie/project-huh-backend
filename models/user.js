@@ -60,6 +60,8 @@ var userSchema = new Schema({
   , notifications   :[notificationSchema]
   , profileImageId	: {	type: Schema.Types.ObjectId, required: false}
   , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
+  , following : { type: Number	  , required: true, default: 0}
+  , followers : { type: Number	  , required: true, default: 0}
   //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 

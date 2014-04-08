@@ -1,5 +1,6 @@
 var NOTIFICATION_TYPES = require('../models/user').NOTIFICATION_TYPES;
 var UserService = require('../models/user').Service;
+var User = require('../models/user').User;
 var FollowService = require('../models/follow').Service; 
 var Follow = require('../models/follow').Follow;
 var ApiUtils = require('../utils/apiutils'); 
@@ -89,14 +90,23 @@ exports.follow = function(req, res){
 									if(err){
 										ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 									} else {
-										//Send notification
-										userToBeFollowed.createNotification(NOTIFICATION_TYPES.FOLLOW,user.username,function(err){
-											if(err){
-												ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-											} else {
-												ApiUtils.api(req,res,ApiUtils.OK,null,null);
-											}
-										});
+                                        //Increase count of follow/followers
+                                        User.update({_id: user._id}, {$inc: {following: 1}}, function (err) {
+                                            if(err) return ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+
+                                            User.update({_id: userToBeFollowed._id}, {$inc: {followers: 1}}, function (err) {
+                                                if (err) return ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+
+                                                //Send notification
+                                                userToBeFollowed.createNotification(NOTIFICATION_TYPES.FOLLOW, user.username, function (err) {
+                                                    if (err) {
+                                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                                                    } else {
+                                                        ApiUtils.api(req, res, ApiUtils.OK, null, null);
+                                                    }
+                                                });
+                                            });
+                                        });
 										
 									}
 							});
@@ -132,11 +142,18 @@ exports.unfollow = function(req, res){
 							ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS,"Not following",null);
 						} else {
 							alreadyFollow.remove(function(err){
-								if(err){
-									ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-								} else	{
-									ApiUtils.api(req,res,ApiUtils.OK,null,null);
-								}
+                                //Decrease count of follow/followers
+                                User.update({_id: user._id}, {$inc: {following: -1}}, function (err) {
+                                    if (err) return ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+
+                                    User.update({_id: userToBeFollowed._id}, {$inc: {followers: -1}}, function (err) {
+                                        if (err) {
+                                            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                                        } else {
+                                            ApiUtils.api(req, res, ApiUtils.OK, null, null);
+                                        }
+                                    });
+                                });
 								
 							});
 						}
