@@ -5,7 +5,7 @@ var Utils = require('../utils/utils');
 var User = require('../apiclient/user');
 var Media = require('../apiclient/media');
 var M1Seem = require('../apiclient/seem');
-var media = null;
+var media = "5343ce700ceeccdd20189502";//fake
 var seem = null;
 var users = null;
 
@@ -20,23 +20,12 @@ describe('Seem', function(){
                 if(err) return done(err);
                 TestUtils.loginUsers(users,function(err){
                     if(err) return done(err);
-                    if(!media) {
-                        Media.create("test/resources/testimage.jpg", function (err, data) {
-                            if (err) return done(err);
-                            media = data;
-                            M1Seem.create("A title for a seam", "A caption for the photo", data, users[0].token, function (err, data) {
-                                if (err) return done(err);
-                                seem = data;
-                                done();
-                            });
-                        });
-                    }else{
-                        M1Seem.create("A title for a seam", "A caption for the photo", media, users[0].token, function (err, data) {
-                            if (err) return done(err);
-                            seem = data;
-                            done();
-                        });
-                    }
+
+                    M1Seem.create("A title for a seam", "A caption for the photo", media, users[0].token, function (err, data) {
+                        if (err) return done(err);
+                        seem = data;
+                        done();
+                    });
                 });
             });
         });
@@ -120,82 +109,43 @@ describe('Seem', function(){
         it('should be consistent',function (done) {
 
             this.timeout(20000);
-            var seemsArray = new Array();
-            var itemsArray = new Array();
             var nSeems = 10;
             var nItems = 100;
-            var seemName= "Seem name ";
-            var itemCaption= "Item caption ";
-
-            auxCreateSeem(0,seemsArray,itemsArray,seemName,itemCaption,nSeems,function(err){
+            TestUtils.createSeemsAndItems(nSeems,nItems,users,function(err,seemsArray,itemsArray){
                 if(err){
                     return done(err);
                 }
-                auxCreateItems(0,itemsArray,itemCaption,nItems,function(err){
-                    if(err){
-                        return done(err);
-                    }
-                    //console.log("Done no errors ");
-                    var seemRetCount = 0;
-                    seemsArray.forEach(function(seem){
-                        var parentItemId = seem.itemId;
-                        var stats={seemCount:0,seemDepth:0}
-                        countAux(parentItemId,seem,0,stats,function() {
-                            //TODO seem test count but there is no API seem count
-                            /*
-                            if (seem.itemCount != stats.seemCount) {
-                                console.log("WARNING Seem " + seem.title + " ParentItem:" + parentItemId +
-                                    " Depth:" + stats.seemDepth + " Seem count:" + seem.itemCount + " calculated:" + stats.seemCount);
-                            }
+                //console.log("Done no errors ");
+                var seemRetCount = 0;
+                seemsArray.forEach(function(seem){
+                    var parentItemId = seem.itemId;
+                    var stats={seemCount:0,seemDepth:0}
+                    countAux(parentItemId,seem,0,stats,function() {
+                        //TODO seem test count but there is no API seem count
+                        /*
+                        if (seem.itemCount != stats.seemCount) {
+                            console.log("WARNING Seem " + seem.title + " ParentItem:" + parentItemId +
+                                " Depth:" + stats.seemDepth + " Seem count:" + seem.itemCount + " calculated:" + stats.seemCount);
+                        }
 
-                            should(seem.itemCount).be.equal(stats.seemCount);
-                            */
-                            seemRetCount++;
-                            if(seemRetCount > nSeems){
-                                console.log("Finished");
-                                done();
-                            }
-                        });
+                        should(seem.itemCount).be.equal(stats.seemCount);
+                        */
+                        seemRetCount++;
+                        if(seemRetCount > nSeems){
+                            console.log("Finished");
+                            done();
+                        }
                     });
-
                 });
 
             });
+
         });
     });
 
 });
 
-function auxCreateSeem(depth,seemsArray,itemsArray,seemName,itemCaption,nSeems,callback){
-    M1Seem.create(seemName+depth,itemCaption+depth,media,users[0].token,function(err,data){
-        if(err) return callback(err);
-        seemsArray.push(data);
-        itemsArray.push(data.itemId);
-        if(depth < nSeems  ){
-            auxCreateSeem(depth+1,seemsArray,itemsArray,seemName,itemCaption,nSeems,callback);
-        }else{
-            callback(null);
-        }
-    });
-}
 
-function auxCreateItems(depth,itemsArray,itemCaption,nItems,callback){
-
-
-    var randomReplyIndex = Math.floor((Math.random()*itemsArray.length));
-    var randomReplyId = itemsArray[randomReplyIndex];
-    //console.log("RandomIndex:"+randomReplyIndex+" Size:"+itemsArray.length);
-
-    M1Seem.reply(randomReplyId,itemCaption+depth,media,users[0].token,function(err,data){
-        if(err) return callback(err);
-        itemsArray.push(data._id);
-        if(depth < nItems  ){
-            auxCreateItems(depth+1,itemsArray,itemCaption,nItems,callback);
-        }else{
-            callback(null);
-        }
-    });
-}
 function getAllRepliesAux(parentItemId,page,replies,callback){
 
     M1Seem.getItemReplies(parentItemId,page,function(err,data){

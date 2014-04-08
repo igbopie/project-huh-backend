@@ -1,7 +1,10 @@
 var mongoose = require('mongoose')
-  , Schema = mongoose.Schema
-  , MAX_RESULTS_ITEMS = 100
-  , MAX_LASTEST_ITEMS_SEEM = 5;
+    , Schema = mongoose.Schema
+    , Feed = require("../models/feed").Feed
+    , MAX_RESULTS_ITEMS = 100
+    , MAX_LASTEST_ITEMS_SEEM = 5
+    , FEED_ACTION_REPLY_TO = "replyTo"
+    , FEED_ACTION_CREATE_SEEM = "createSeem";
 
 
 var itemSchema = new Schema({
@@ -31,8 +34,8 @@ var seemSchema = new Schema({
 });
 
 
-seemSchema.index({ itemId: 1 });
 
+seemSchema.index({ itemId: 1 });
 var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
 
@@ -45,11 +48,8 @@ service.create = function(title,caption,mediaId,user,callback){
     var mainItem = new Item();
     mainItem.mediaId = mediaId;
     mainItem.caption = caption;
-
-    if(user) {
-        mainItem.userId = user._id;
-        mainItem.username = user.username;
-    }
+    mainItem.userId = user._id;
+    mainItem.username = user.username;
 
     mainItem.save(function(err){
         if(err) return callback(err);
@@ -71,7 +71,22 @@ service.create = function(title,caption,mediaId,user,callback){
             } else {
                 mainItem.seemId = seem._id;
                 mainItem.save(function(err){
-                    callback(null,seem);
+
+                    var feed = new Feed();
+
+                    feed.itemId = mainItem._id;
+                    feed.itemMediaId  = mainItem.mediaId;
+                    feed.itemCaption = mainItem.caption;
+                    feed.seemId = seem._id;
+                    feed.seemTitle = seem.title;
+                    feed.action = FEED_ACTION_CREATE_SEEM;
+                    feed.userId = user._id;
+                    feed.username = user.username;
+
+                    feed.save(function(err){
+                        callback(null,seem);
+                    });
+
                 });
             }
         });
@@ -108,7 +123,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
         if(parentItem.replyTo){
             service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,callback);
         }else {
-            console.log("ParentItem "+parentItem._id+" Depth:"+depth);
+            //console.log("ParentItem "+parentItem._id+" Depth:"+depth);
             Seem.findOne({itemId:parentItem._id},function(err,seem){
 
                 if (err) return callback(err)
@@ -123,31 +138,62 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
                     item.userId = user._id;
                     item.username = user.username;
                 }
-
+                //----------------
+                //Save Item
+                //----------------
                 item.save(function (err) {
                     if (err) return callback(err);
+                    //----------------
                     //Update its parent
+                    //----------------
                     Item.update({_id: replyId}, {$inc: {replyCount: 1}}, function (err) {
                         if (err) return callback(err);
+                        //----------------
                         //update Seem
+                        //----------------
                         Seem.update({itemId: parentItem._id},
                             {   $inc: {itemCount: 1},
                                 $set:{updated:Date.now()},
                                 //$pop: { latestItems: -1 },
                                 $push: {latestItems: {
-                                            $each: [item],
-                                            $slice: -MAX_LASTEST_ITEMS_SEEM
-                                        }
+                                    $each: [item],
+                                    $slice: -MAX_LASTEST_ITEMS_SEEM
+                                }
                                 }
                             }
                             ,
                             function (err) {
                                 if (err) return callback(err);
-                                //Update seem cache...
+                                //----------------
+                                //Update seem latest items
+                                //----------------
                                 Seem.update({"latestItems._id": parentItem._id},
-                                             {$inc: {"latestItems.$.replyCount": 1}},
+                                    {$inc: {"latestItems.$.replyCount": 1}},
                                     function(err)  {
-                                        callback(err, item);
+
+                                        if (err) return callback(err);
+                                        //----------------
+                                        //Create a feed item
+                                        //----------------
+                                        var feed = new Feed();
+
+                                        feed.itemId = item._id;
+                                        feed.itemMediaId  = item.mediaId;
+                                        feed.itemCaption = item.caption;
+                                        feed.replyToId = parentItem._id;
+                                        feed.replyToMediaId = parentItem.mediaId;
+                                        feed.replyToCaption = parentItem.caption;
+                                        feed.replyToUserId = parentItem.userId;
+                                        feed.replyToUsername = parentItem.username;
+                                        feed.seemId = seem._id;
+                                        feed.seemTitle = seem.title;
+                                        feed.action = FEED_ACTION_REPLY_TO;
+                                        feed.userId = user._id;
+                                        feed.username = user.username;
+
+                                        feed.save(function(err){
+                                            callback(err, item);
+                                        });
                                     }
                                 );
                             }

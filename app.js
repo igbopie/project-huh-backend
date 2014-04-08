@@ -54,6 +54,7 @@ var user = require('./routes/user');
 var follow = require('./routes/follow');
 var media = require('./routes/media');
 var seem = require('./routes/seem');
+var feed = require('./routes/feed');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -116,6 +117,10 @@ app.post('/api/seem/create', seem.create);
 app.post('/api/seem/item/get', seem.getItem);
 app.post('/api/seem/item/replies', seem.getItemReplies);
 app.post('/api/seem/item/reply', seem.reply);
+
+//FEED
+app.post('/api/feed',feed.findByMyFeed);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
