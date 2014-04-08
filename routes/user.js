@@ -87,35 +87,54 @@ exports.extendToken =  function(req, res) {
     });
 };
 exports.profile = function(req, res) {
+    var fields = {
+        username        :1,
+        profileImageId  :1,
+        following       :1,
+        followers       :1
+    };
     var token = req.body.token;
     var username = req.body.username;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            var fields = {  username        :1,
-                            profileImageId  :1
-                            };
-            if(username == user.username){
-                //is me?
-                fields.phone = 1;
-                fields.facebookId = 1;
-                fields.email = 1;
-            }
-            UserService.findUserProfile(username,fields,function(err,userProfile){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else if (userProfile == null){
-                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+    if(token){
+        UserService.findUserByToken(token,function(err,user){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else if (user == null){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+            } else {
+
+                if(username == user.username){
+                    //is me?
+                    fields.phone = 1;
+                    fields.facebookId = 1;
+                    fields.email = 1;
                 }
-            });
-        }
-    });
+                UserService.findUserProfile(username,fields,function(err,userProfile){
+                    if(err){
+                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                    } else if (userProfile == null){
+                        ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+                    } else {
+                        ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+                    }
+                });
+            }
+        });
+    } else if(username){
+        UserService.findUserProfile(username,fields,function(err,userProfile){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else if (userProfile == null){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+            }
+        });
+    } else {
+        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,null,null);
+    }
 }
+
 
 exports.update = function(req, res) {
     var token = req.body.token;
