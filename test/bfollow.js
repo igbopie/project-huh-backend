@@ -1,6 +1,7 @@
 var assert = require("assert")
 var TestUtils = require('../utils/testutils');
 var Follow = require('../apiclient/follow');
+var User = require('../apiclient/user');
 var nUsers = 2;
 var users = null;
 
@@ -90,6 +91,49 @@ describe('Follow', function(){
 			});
 		});
 	});
+
+    describe('#followMaxLimit()', function(){
+        it('should follow a user',function (done) {
+
+            this.timeout(60000);//S3 requires longer timeout
+            //Clean and create some test users
+            TestUtils.cleanDatabase(function(err){
+                if(err) return done(err);
+                users = TestUtils.randomUsers(1010);
+                TestUtils.createUsers(users,function(err){
+                    if(err) return done(err);
+                    User.login(users[0].username,users[0].password,function(err,token){
+                        if(err) return done(err);
+                        followMaxLimitAux(1,token,0,function(err,data){
+                            if(err){
+                                if(data == 471){
+                                    return done();
+                                }else{
+                                    return done(err);
+                                }
+                            }
+                            return done("Should return an error here");
+                        });
+                    });
+                });
+            });
+
+        });
+    })
 });
+
+
+function followMaxLimitAux(index,followerToken,count,callback){
+    if(index < users.length){
+        Follow.follow(users[index].username,followerToken,function(err,data){
+            if(err){
+                return callback(err,data);
+            }
+            followMaxLimitAux(index+1,followerToken,count+1,callback);
+        });
+    }else{
+        callback()
+    }
+}
 
 

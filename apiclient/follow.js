@@ -26,7 +26,7 @@ exports.follow = function(username,token,callback){
 	var params ={username:username,token:token};
 	apiClientBase.post('/api/follow',params,function(code,headers,data){
 		if(code != 200){
-			callback("The server responded with an invalid code:"+code+ " "+data);
+			callback("The server responded with an invalid code:"+code+ " "+data,code);
 		} else {
 	    	callback(null,JSON.parse(data).response);
 	    }

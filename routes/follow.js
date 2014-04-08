@@ -3,7 +3,8 @@ var UserService = require('../models/user').Service;
 var User = require('../models/user').User;
 var FollowService = require('../models/follow').Service; 
 var Follow = require('../models/follow').Follow;
-var ApiUtils = require('../utils/apiutils'); 
+var ApiUtils = require('../utils/apiutils');
+var MAX_FOLLOW = 1000;
 
 
 /*
@@ -65,6 +66,9 @@ exports.follow = function(req, res){
 		} else if (user == null){
 			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
 		} else {
+            if(user.following >= MAX_FOLLOW){
+                return ApiUtils.api(req,res,ApiUtils.CLIENT_MAX_LIMIT,null,null);
+            }
 			//find user by username
 			UserService.findUserByUsername(username,function(err,userToBeFollowed){
 				if(err){
