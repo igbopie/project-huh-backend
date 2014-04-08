@@ -36,7 +36,7 @@ describe('Follow', function(){
         it('should list the followers of a user',function (done) {
             Follow.follow(users[1].username,users[0].token,function(err,docs){
                 if(err) return done(err);
-			    Follow.followers(0,users[1].token,function(err,followers){
+			    Follow.followers(0,users[1].username,function(err,followers){
                     if(err) return done(err);
 
                     followers[0].followerUsername.should.be.equal(users[0].username);
@@ -51,7 +51,7 @@ describe('Follow', function(){
         it('should list the followings of a user',function (done) {
 			Follow.follow(users[1].username,users[0].token,function(err,docs){
                 if(err) return done(err);
-				Follow.following( 0 , users[0].token , function(err,following){
+				Follow.following( 0 , users[0].username , function(err,following){
                     if(err) return done(err);
 
                     following[0].followedUsername.should.be.equal(users[1].username);

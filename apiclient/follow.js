@@ -2,8 +2,8 @@ var apiClientBase = require('./apiclientbase');
  
  
  
-exports.followers = function(page,token,callback){ 
-	var params ={page:page,token:token};
+exports.followers = function(page,username,callback){
+	var params ={page:page,username:username};
 	apiClientBase.post('/api/followers',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code:"+code+ " "+data);
@@ -12,8 +12,8 @@ exports.followers = function(page,token,callback){
 	    }
     });
 }
-exports.following = function(page,token,callback){ 
-	var params ={page:page,token:token};
+exports.following = function(page,username,callback){
+	var params ={page:page,username:username};
 	apiClientBase.post('/api/following',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code:"+code+ " "+data);

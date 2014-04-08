@@ -12,9 +12,9 @@ var ApiUtils = require('../utils/apiutils');
 
 exports.followers = function(req, res){
 	
-	var token = req.body.token;
+	var username = req.body.username;
 	var page = req.body.page;
-	UserService.findUserByToken(token,function(err,user){
+	UserService.findUserByUsername(username,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
@@ -34,10 +34,10 @@ exports.followers = function(req, res){
 
 
 exports.following = function(req, res){
-	
-	var token = req.body.token;
+
+    var username = req.body.username;
 	var page = req.body.page;
-	UserService.findUserByToken(token,function(err,user){
+	UserService.findUserByUsername(username,function(err,user){
 		if(err){
 			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 		} else if (user == null){
