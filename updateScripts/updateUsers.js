@@ -18,8 +18,9 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
     var cursor = db.collection('users').find({});
     cursor.each( function(err,user) {
             if(user) {
+                delete user.followings;
                 user.followers = 0;
-                user.followings = 0;
+                user.following = 0;
                 console.log("user: " + user.username);
                 db.collection("users").save(user, function (err) {
                     if (err) {
