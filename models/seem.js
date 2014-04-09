@@ -112,16 +112,20 @@ service.getItemReplies = function(id,page,callback){
 }
 
 service.reply = function(replyId,caption,mediaId,user,callback){
-    service.replyAux(replyId,caption,mediaId,replyId,1,user,callback);
+    service.replyAux(replyId,caption,mediaId,replyId,1,user,null,callback);
 
 }
-service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callback){
+service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyToObj,callback){
     Item.findOne({_id:nextParent},function(err,parentItem){
         if(err) return callback(err);
         if(!parentItem) return callback("parent reply not found");
 
+        if(parentItem._id == replyId){
+            replyToObj = parentItem;
+        }
+
         if(parentItem.replyTo){
-            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,callback);
+            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,replyToObj,callback);
         }else {
             //console.log("ParentItem "+parentItem._id+" Depth:"+depth);
             Seem.findOne({itemId:parentItem._id},function(err,seem){
@@ -151,7 +155,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
                         //----------------
                         //update Seem
                         //----------------
-                        Seem.update({itemId: parentItem._id},
+                        Seem.update({_id: seem._id},
                             {   $inc: {itemCount: 1},
                                 $set:{updated:Date.now()},
                                 //$pop: { latestItems: -1 },
@@ -167,7 +171,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
                                 //----------------
                                 //Update seem latest items
                                 //----------------
-                                Seem.update({"latestItems._id": parentItem._id},
+                                Seem.update({"latestItems._id": replyToObj._id},
                                     {$inc: {"latestItems.$.replyCount": 1}},
                                     function(err)  {
 
@@ -180,11 +184,13 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,callba
                                         feed.itemId = item._id;
                                         feed.itemMediaId  = item.mediaId;
                                         feed.itemCaption = item.caption;
-                                        feed.replyToId = parentItem._id;
-                                        feed.replyToMediaId = parentItem.mediaId;
-                                        feed.replyToCaption = parentItem.caption;
-                                        feed.replyToUserId = parentItem.userId;
-                                        feed.replyToUsername = parentItem.username;
+                                        feed.replyToId = replyId;
+                                        if(replyToObj) {
+                                            feed.replyToMediaId = replyToObj.mediaId;
+                                            feed.replyToCaption = replyToObj.caption;
+                                            feed.replyToUserId = replyToObj.userId;
+                                            feed.replyToUsername = replyToObj.username;
+                                        }
                                         feed.seemId = seem._id;
                                         feed.seemTitle = seem.title;
                                         feed.action = FEED_ACTION_REPLY_TO;
