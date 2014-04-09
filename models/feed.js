@@ -53,7 +53,19 @@ service.findByMyFeed = function (user,page,callback){
                  });
         });
 }
-
+service.findByUser =  function (user,page,callback) {
+    Feed.find({"userId":user._id})
+        .sort({ created: -1})
+        .limit(PAGE_LIMIT)
+        .skip(PAGE_LIMIT*page)
+        .exec(function(err, myfeed) {
+            if(err) {
+                callback(err);
+            } else {
+                callback(null,myfeed);
+            }
+        });
+}
 
 module.exports = {
     Feed: Feed,

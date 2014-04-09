@@ -1,11 +1,11 @@
 var assert = require("assert")
 var TestUtils = require('../utils/testutils');
 var Feed = require('../apiclient/feed');
-
+var should = require('should')
 var Media = require('../apiclient/media');
 var Seem = require('../apiclient/seem');
 var Follow = require('../apiclient/follow');
-var nUsers = 5;
+var nUsers = 2;
 var nSeems = 2;
 var nItems = 10;
 var users = null;
@@ -38,7 +38,16 @@ describe('Feed', function(){
         it('should fetch the news feed',function (done) {
             Feed.feed(0,users[0].token,function(err,data){
                 if (err) return done(err);
-                //console.log(data);
+                data.length.should.be.above(1);
+                done();
+            })
+        });
+    });
+    describe('#feedByUser()', function(){
+        it('should fetch the news feed',function (done) {
+            Feed.feedByUser(0,users[1].username,function(err,data){
+                if (err) return done(err);
+                data.length.should.be.above(1);
                 done();
             })
         });

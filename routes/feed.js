@@ -33,3 +33,29 @@ exports.findByMyFeed = function(req, res){
 	})
 };
 
+
+exports.findByUser = function(req, res){
+
+    var username = req.body.username;
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    UserService.findUserByUsername(username,function(err,user){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        } else if (user == null){
+            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+        } else {
+            FeedService.findByUser(user,page,function(err,docs){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else{
+                    ApiUtils.api(req,res,ApiUtils.OK,null,docs);
+                }
+
+            });
+        }
+    })
+};
+

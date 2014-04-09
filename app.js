@@ -120,7 +120,7 @@ app.post('/api/seem/item/reply', seem.reply);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);
-
+app.post('/api/feed/user',feed.findByUser);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
