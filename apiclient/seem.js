@@ -58,3 +58,27 @@ exports.reply = function(itemId,caption,mediaId,token,callback){
     });
 }
 
+exports.favourite = function(itemId,token,callback){
+    var params ={itemId:itemId,token:token};
+    apiClientBase.post('/api/seem/item/favourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+
+exports.unfavourite = function(itemId,token,callback){
+    var params ={itemId:itemId,token:token};
+    apiClientBase.post('/api/seem/item/unfavourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+

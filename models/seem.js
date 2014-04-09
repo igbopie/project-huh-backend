@@ -4,7 +4,8 @@ var mongoose = require('mongoose')
     , MAX_RESULTS_ITEMS = 100
     , MAX_LASTEST_ITEMS_SEEM = 5
     , FEED_ACTION_REPLY_TO = "replyTo"
-    , FEED_ACTION_CREATE_SEEM = "createSeem";
+    , FEED_ACTION_CREATE_SEEM = "createSeem"
+    , FEED_ACTION_FAVOURITE = "favourite";
 
 
 var itemSchema = new Schema({
@@ -14,6 +15,18 @@ var itemSchema = new Schema({
     replyTo:  {	type: Schema.Types.ObjectId, required: false, index: { unique: false, sparse: true }},
     replyCount: {type: Number, required:true, default:0},
     seemId: {	type: Schema.Types.ObjectId, required: false},
+    depth : {type: Number, required:true, default:0},
+    userId:   {	type: Schema.Types.ObjectId, required: false},
+    username:{	type: String, required: false},
+    favouriteCount:{type: Number, required:true, default:0}
+});
+
+
+var reducedItemSchema = new Schema({
+    mediaId : {	type: Schema.Types.ObjectId, required: true},
+    created : { type: Date	, required: true, default: Date.now },
+    caption : {	type: String, required: false},
+    replyTo:  {	type: Schema.Types.ObjectId, required: false},
     depth : {type: Number, required:true, default:0},
     userId:   {	type: Schema.Types.ObjectId, required: false},
     username:{	type: String, required: false}
@@ -26,18 +39,26 @@ var seemSchema = new Schema({
     itemId          :   {	type: Schema.Types.ObjectId, required: true},
     itemMediaId     :   {	type: Schema.Types.ObjectId, required: false},
     itemCaption     :   {	type: String, required: false},
-    latestItems     :       [itemSchema],
+    latestItems     :       [reducedItemSchema],
     title           :   {	type: String, required: false},
     itemCount       :   {   type: Number, required:true, default:1},
     userId          :   {	type: Schema.Types.ObjectId, required: false},
     username        :   {	type: String, required: false}
 });
 
+var favouriteSchema = new Schema({
+    created		    :   {   type: Date	, required: true, default: Date.now },
+    userId          :   {	type: Schema.Types.ObjectId, required: true},
+    username        :   {	type: String, required: true},
+    itemId          :   {	type: Schema.Types.ObjectId, required: true}
+});
 
 
+favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 seemSchema.index({ itemId: 1 });
 var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
+var Favourite = mongoose.model('favourite', favouriteSchema);
 
 
 //Service?
@@ -89,6 +110,59 @@ service.create = function(title,caption,mediaId,user,callback){
 
                 });
             }
+        });
+    });
+}
+
+service.favourite = function(item,user,callback){
+
+    var favourite = new Favourite();
+    favourite.userId = user._id;
+    favourite.username = user.username;
+    favourite.itemId = item._id;
+    favourite.save(function(err){
+        if(err) return callback(err);
+
+        Item.update({"_id": item._id},
+            {$inc: {"favouriteCount": 1}},function(err){
+                if(err) return callback(err);
+
+                Seem.findOne({"_id":item.seemId},function(err,seem){
+                    if(err) return callback(err);
+
+                    var feed = new Feed();
+                    feed.itemId = item._id;
+                    feed.itemMediaId  = item.mediaId;
+                    feed.itemCaption = item.caption;
+                    feed.seemId = seem._id;
+                    feed.seemTitle = seem.title;
+                    feed.action = FEED_ACTION_FAVOURITE;
+                    feed.userId = user._id;
+                    feed.username = user.username;
+
+                    feed.save(function(err){
+                        callback(err);
+                    });
+                });
+            });
+
+    })
+
+
+}
+
+service.unfavourite = function(item,user,callback){
+
+    Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite){
+        if(err) return callback(err);
+
+        favourite.remove(function(err){
+            if(err) return callback(err);
+            Item.update({"_id": item._id},
+                {$inc: {"favouriteCount": -1}},function(err){
+                    callback(err);
+                });
+
         });
     });
 }
@@ -152,15 +226,26 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                     //----------------
                     Item.update({_id: replyId}, {$inc: {replyCount: 1}}, function (err) {
                         if (err) return callback(err);
+
+                        // we just want to save some fields
+                        var itemReduced = {};
+                        itemReduced._id = item._id;
+                        itemReduced.mediaId = item.mediaId;
+                        itemReduced.depth = item.depth;
+                        itemReduced.replyTo =  item.replyTo;
+                        itemReduced.caption = item.caption;
+                        itemReduced.userId = item.userId;
+                        itemReduced.username = item.username;
+                        itemReduced.created = item.created;
+
                         //----------------
                         //update Seem
                         //----------------
                         Seem.update({_id: seem._id},
                             {   $inc: {itemCount: 1},
                                 $set:{updated:Date.now()},
-                                //$pop: { latestItems: -1 },
                                 $push: {latestItems: {
-                                    $each: [item],
+                                    $each: [itemReduced],
                                     $slice: -MAX_LASTEST_ITEMS_SEEM
                                 }
                                 }
@@ -168,40 +253,31 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                             ,
                             function (err) {
                                 if (err) return callback(err);
+
                                 //----------------
-                                //Update seem latest items
+                                //Create a feed item
                                 //----------------
-                                Seem.update({"latestItems._id": replyToObj._id},
-                                    {$inc: {"latestItems.$.replyCount": 1}},
-                                    function(err)  {
+                                var feed = new Feed();
 
-                                        if (err) return callback(err);
-                                        //----------------
-                                        //Create a feed item
-                                        //----------------
-                                        var feed = new Feed();
+                                feed.itemId = item._id;
+                                feed.itemMediaId  = item.mediaId;
+                                feed.itemCaption = item.caption;
+                                feed.replyToId = replyId;
+                                if(replyToObj) {
+                                    feed.replyToMediaId = replyToObj.mediaId;
+                                    feed.replyToCaption = replyToObj.caption;
+                                    feed.replyToUserId = replyToObj.userId;
+                                    feed.replyToUsername = replyToObj.username;
+                                }
+                                feed.seemId = seem._id;
+                                feed.seemTitle = seem.title;
+                                feed.action = FEED_ACTION_REPLY_TO;
+                                feed.userId = user._id;
+                                feed.username = user.username;
 
-                                        feed.itemId = item._id;
-                                        feed.itemMediaId  = item.mediaId;
-                                        feed.itemCaption = item.caption;
-                                        feed.replyToId = replyId;
-                                        if(replyToObj) {
-                                            feed.replyToMediaId = replyToObj.mediaId;
-                                            feed.replyToCaption = replyToObj.caption;
-                                            feed.replyToUserId = replyToObj.userId;
-                                            feed.replyToUsername = replyToObj.username;
-                                        }
-                                        feed.seemId = seem._id;
-                                        feed.seemTitle = seem.title;
-                                        feed.action = FEED_ACTION_REPLY_TO;
-                                        feed.userId = user._id;
-                                        feed.username = user.username;
-
-                                        feed.save(function(err){
-                                            callback(err, item);
-                                        });
-                                    }
-                                );
+                                feed.save(function(err){
+                                    callback(err, item);
+                                });
                             }
                         );
                     });
@@ -213,6 +289,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
 }
 
 module.exports = {
+    Favourite: Favourite,
     Seem: Seem,
     Item: Item,
     Service:service

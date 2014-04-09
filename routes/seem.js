@@ -1,4 +1,5 @@
 var Seem = require('../models/seem').Seem;
+var Favourite = require('../models/seem').Favourite;
 var SeemService = require('../models/seem').Service;
 var UserService = require('../models/user').Service;
 var ApiUtils = require('../utils/apiutils');
@@ -100,4 +101,84 @@ exports.list = function(req, res) {
     });
 };
 
+exports.favourite = function(req,res){
+    var itemId = req.body.itemId;
+    var token = req.body.token;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.getItem(itemId, function (err, item) {
+                    if (err) {
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else if (item == null) {
+                        ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+                    } else {
+
+                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
+                            if(err){
+                                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                            } else if(favourite){
+                                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS, err, null);
+                            } else {
+                                SeemService.favourite(item, user, function (err) {
+                                    if (err) {
+                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                                    } else {
+                                        ApiUtils.api(req, res, ApiUtils.OK, null, null);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    } else {
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+    }
+}
+
+exports.unfavourite = function(req,res){
+    var itemId = req.body.itemId;
+    var token = req.body.token;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.getItem(itemId, function (err, item) {
+                    if (err) {
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else if (item == null) {
+                        ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+                    } else {
+                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
+                            if(err){
+                                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                            } else if(!favourite){
+                                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, err, null);
+                            } else {
+                                SeemService.unfavourite(item, user, function (err) {
+                                    if (err) {
+                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                                    } else {
+                                        ApiUtils.api(req, res, ApiUtils.OK, null, null);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    } else {
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+    }
+}
 

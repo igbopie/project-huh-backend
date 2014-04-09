@@ -117,6 +117,8 @@ app.post('/api/seem/create', seem.create);
 app.post('/api/seem/item/get', seem.getItem);
 app.post('/api/seem/item/replies', seem.getItemReplies);
 app.post('/api/seem/item/reply', seem.reply);
+app.post('/api/seem/item/favourite', seem.favourite);
+app.post('/api/seem/item/unfavourite', seem.unfavourite);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);
