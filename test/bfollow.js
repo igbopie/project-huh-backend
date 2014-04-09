@@ -63,6 +63,22 @@ describe('Follow', function(){
 		});
 	});
 
+    describe('#followUserProfile()', function(){
+        it('should return that I follow that user',function (done) {
+            Follow.follow(users[1].username,users[0].token,function(err,docs){
+                if(err) return done(err);
+                User.profile(users[1].username,users[0].token,function(err,profile){
+                    if(err) return done(err);
+                    //console.log(profile);
+                    profile.isFollowedByMe.should.be.ok;
+                    profile.isFollowingMe.should.be.not.ok;
+
+                    done();
+                });
+            });
+        });
+    });
+
 
     describe('#unfollow()', function(){
         it('should list the unfollow a user',function (done) {

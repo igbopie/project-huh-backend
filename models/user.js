@@ -62,8 +62,11 @@ var userSchema = new Schema({
   , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
   , following : { type: Number	  , required: true, default: 0}
   , followers : { type: Number	  , required: true, default: 0}
+  , isFollowingMe: { type: Boolean , required: false} //TRANSIENT!!! DO NOT PERSIST
+  , isFollowedByMe: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
   //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
+
 
 
 

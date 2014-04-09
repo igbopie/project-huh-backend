@@ -1,6 +1,7 @@
 
 var User = require('../models/user').User; 
-var UserService = require('../models/user').Service; 
+var UserService = require('../models/user').Service;
+var FollowService = require('../models/follow').Service;
 var ApiUtils = require('../utils/apiutils'); 
 var SMS = require('../utils/sms'); 
 
@@ -115,7 +116,35 @@ exports.profile = function(req, res) {
                     } else if (userProfile == null){
                         ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
                     } else {
-                        ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+                        var isFollowingMe = false;
+                        //is the user following me?
+                        FollowService.findFollow(userProfile._id,user._id,function(err,follow){
+                            if(err){
+                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                            }else{
+                                if(follow){
+                                    isFollowingMe = true;
+                                }
+
+                                userProfile.isFollowingMe = isFollowingMe;
+                                //am I following the user?
+                                var isFollowedByMe = false;
+
+                                FollowService.findFollow(user._id,userProfile._id,function(err,follow) {
+                                    if(err){
+                                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                                    }else {
+                                        if(follow){
+                                            isFollowedByMe = true;
+                                        }
+                                        userProfile.isFollowedByMe = isFollowedByMe;
+
+                                        ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
+                                    }
+                                });
+                            }
+
+                        });
                     }
                 });
             }
