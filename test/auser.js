@@ -199,4 +199,35 @@ describe('User', function(){
             });
         });
     });
+
+    describe('#apnToken()', function(){
+        it('should add a apn token',function (done) {
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    User.addApnToken("<THIS IS A APN TOKEN>",users[0].token,function(err){
+                        if (err) return done(err);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+    describe('#gcmToken()', function(){
+        it('should add a gcm token',function (done) {
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    User.addGcmToken("<THIS IS A GCM TOKEN>",users[0].token,function(err){
+                        if (err) return done(err);
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });

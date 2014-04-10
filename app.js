@@ -88,6 +88,9 @@ app.post('/api/user/update', user.update);
 app.post('/api/user/addphone', user.addPhone);
 app.post('/api/user/verifyphone', user.verifyPhone);
 
+app.post('/api/user/addapntoken', user.addApnToken);
+app.post('/api/user/addgcmtoken', user.addGcmToken);
+
 //FOLLOW
 app.post('/api/followers', follow.followers);
 app.post('/api/following', follow.following);

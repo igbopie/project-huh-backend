@@ -64,7 +64,10 @@ var userSchema = new Schema({
   , followers : { type: Number	  , required: true, default: 0}
   , isFollowingMe: { type: Boolean , required: false} //TRANSIENT!!! DO NOT PERSIST
   , isFollowedByMe: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
-  //TODO photo, iOS Device ID,Android Device ID,Facebook ID
+  , apnToken        : { type: String  , required: false } //iOs notification
+  , gcmToken        : { type: String  , required: false } //Android notification
+
+    //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
 

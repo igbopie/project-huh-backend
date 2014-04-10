@@ -259,3 +259,47 @@ exports.verifyPhone = function(req, res) {
 		}
 	});
 }
+
+
+exports.addApnToken = function(req, res) {
+    var token = req.body.token;
+    var apntoken = req.body.apntoken;
+    UserService.findUserByToken(token,function(err,user){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        } else if (user == null){
+            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+        } else {
+            user.apnToken = apntoken;
+            user.save(function(err){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else {
+                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                }
+            });
+        }
+    });
+}
+
+exports.addGcmToken = function(req, res) {
+    var token = req.body.token;
+    var gcmtoken = req.body.gcmtoken;
+    UserService.findUserByToken(token,function(err,user){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        } else if (user == null){
+            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
+        } else {
+            user.gcmToken = gcmtoken;
+            user.save(function(err){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else {
+                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                }
+            });
+        }
+    });
+}
+

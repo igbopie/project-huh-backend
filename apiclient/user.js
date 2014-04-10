@@ -72,3 +72,23 @@ exports.verifyPhone = function(phone,verificationCode,token,callback){
     });
 }
 
+exports.addApnToken = function(apntoken,token,callback){
+    apiClientBase.post('/api/user/addapntoken',{apntoken:apntoken,token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null);
+        }
+    });
+}
+exports.addGcmToken = function(gcmtoken,token,callback){
+    apiClientBase.post('/api/user/addgcmtoken',{gcmtoken:gcmtoken,token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+

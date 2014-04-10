@@ -2,8 +2,6 @@ var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , Follow = require('../models/follow').Follow
     , Schema = mongoose.Schema
-    , FEED_ACTION_REPLY_TO = "replyTo"
-    , FEED_ACTION_CREATE_SEEM = "createSeem"
     , PAGE_LIMIT = 20;
 
 
