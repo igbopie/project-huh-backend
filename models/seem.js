@@ -121,10 +121,10 @@ service.create = function(title,caption,mediaId,user,callback){
                                 var follow = followers[i];
                                 UserService.findUserById(follow.followerId,function(err,followerInfo){
                                     if(followerInfo.apnToken){
-                                        Apn.send(followerInfo.apnToken,"@"+user.username+" has created a seem",feed);
+                                        Apn.send(followerInfo.apnToken,"@"+user.username+" has created a seem");
                                     }
                                     if(followerInfo.gcmToken){
-                                        Gcm.send(followerInfo.gcmToken,"@"+user.username+" has created a seem",feed);
+                                        Gcm.send(followerInfo.gcmToken,"@"+user.username+" has created a seem");
                                     }
                                 });
                             }
@@ -317,10 +317,10 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                                             var follow = followers[i];
                                             UserService.findUserById(follow.followerId,function(err,followerInfo){
                                                 if(followerInfo.apnToken){
-                                                    Apn.send(followerInfo.apnToken,"@"+user.username+" has replied to @"+replyToObj.username,feed);
+                                                    Apn.send(followerInfo.apnToken,"@"+user.username+" has replied to @"+replyToObj.username);
                                                 }
                                                 if(followerInfo.gcmToken){
-                                                    Gcm.send(followerInfo.gcmToken,"@"+user.username+" has replied to @"+replyToObj.username,feed);
+                                                    Gcm.send(followerInfo.gcmToken,"@"+user.username+" has replied to @"+replyToObj.username);
                                                 }
                                             });
                                         }
