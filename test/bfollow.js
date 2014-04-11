@@ -27,11 +27,20 @@ describe('Follow', function(){
         it('should follow a user',function (done) {
 	        Follow.follow(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
-				done();
+                done();
 			});
 		});
 	});
 
+
+    describe('#followyourself()', function(){
+        it('shouldnt follow followyourself',function (done) {
+            Follow.follow(users[0].username,users[0].token,function(err){
+                if(!err) return done("Should return an error");
+                done();
+            });
+        });
+    });
 
     describe('#followers()', function(){
         it('should list the followers of a user',function (done) {

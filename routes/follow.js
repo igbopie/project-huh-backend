@@ -71,11 +71,11 @@ exports.follow = function(req, res){
             }
 			//find user by username
 			UserService.findUserByUsername(username,function(err,userToBeFollowed){
-				if(err){
+                if(err){
 					ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 				} else if(!userToBeFollowed){
 					ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"User not found",null);
-				} else if(userToBeFollowed._id == user._id){
+				} else if(userToBeFollowed._id.equals(user._id)){
                     ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,"Cannot follow yourself",null);
                 }else {
 					FollowService.findFollow(user._id,userToBeFollowed._id,function(err,alreadyFollow){
