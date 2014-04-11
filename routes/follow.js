@@ -75,7 +75,9 @@ exports.follow = function(req, res){
 					ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 				} else if(!userToBeFollowed){
 					ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,"User not found",null);
-				} else {
+				} else if(userToBeFollowed._id == user._id){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,"Cannot follow yourself",null);
+                }else {
 					FollowService.findFollow(user._id,userToBeFollowed._id,function(err,alreadyFollow){
 						if(err){
 							ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);

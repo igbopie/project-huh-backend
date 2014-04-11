@@ -38,6 +38,7 @@ service.findByMyFeed = function (user,page,callback){
                  var fItem = follows[i];
                  followArray.push(fItem.followedId);
              }
+             followArray.push(user._id);
              Feed.find({"userId":{"$in":followArray}})
                  .sort({ created: -1})
                  .limit(PAGE_LIMIT)
