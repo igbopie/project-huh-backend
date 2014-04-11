@@ -56,6 +56,10 @@ agent.connect(function (err) {
     console.log('apnagent [%s] gateway connected', env);
 
 
+});
+
+exports.send = function(token,message,data){
+
     //b401a0af2b7edb04732cfb3575db3bdbbbd700ed940dbe0217b1d90329adc3a4
     //var nachoToken ="<b401a0af 2b7edb04 732cfb35 75db3bdb bbd700ed 940dbe02 17b1d903 29adc3a4>";
     //var nachoToken ="b401a0af2b7edb04732cfb3575db3bdbbbd700ed940dbe0217b1d90329adc3a4";
@@ -63,15 +67,27 @@ agent.connect(function (err) {
     //abf625ad5b82741dede97f6be25c68e1aee2c714d5afff9fb7ee2bff90542cc0
     //var dougToken ="<abf625ad 5b82741d ede97f6b e25c68e1 aee2c714 d5afff9f b7ee2bff 90542cc0>";
     //var azaToken="7ecf94e5dc0b627442b3b86897fb2332c7cfe533d0c50b3be13d7b2271b07926";
-    agent.createMessage()
-        .device(dougToken)
-        .alert('Hey! this a SEEM notification :)')
-        .expires('1h')
-        .send(function (err) {
+
+    var message = agent.createMessage()
+        .device(token)
+        .alert(message)
+        .expires(0);
+
+    if(data){
+        for (var prop in data) {
+            // important check that this is objects own property
+            // not from prototype prop inherited
+            if(data.hasOwnProperty(prop)){
+                message.set(data,data[prop]);
+            }
+        }
+    }
+
+    message.send(function (err) {
             if(err){
                 console.log("Error:"+err);
             }   else {
                 console.log("Sent!");
             }
         });
-});
+}

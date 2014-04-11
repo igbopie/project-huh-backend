@@ -1,11 +1,15 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , Feed = require("../models/feed").Feed
+    , UserService = require("../models/user").Service
     , MAX_RESULTS_ITEMS = 100
     , MAX_LASTEST_ITEMS_SEEM = 5
     , FEED_ACTION_REPLY_TO = "replyTo"
     , FEED_ACTION_CREATE_SEEM = "createSeem"
-    , FEED_ACTION_FAVOURITE = "favourite";
+    , FEED_ACTION_FAVOURITE = "favourite"
+    , Apn = require("../utils/apn")
+    , Gcm = require("../utils/gcm")
+    , FollowService = require("../models/follow").Service;
 
 
 var itemSchema = new Schema({
@@ -105,7 +109,29 @@ service.create = function(title,caption,mediaId,user,callback){
                     feed.username = user.username;
 
                     feed.save(function(err){
-                        callback(null,seem);
+                        console.log("Error sending feed"+err);
+                        //TODO do this on a background job
+                        FollowService.findFollowers(user._id,0,function(err,followers){
+                            if(err){
+                                console.log("Error sending notifications"+err);
+                                return  callback(null,seem);// ignore errors here
+                            }
+
+                            for(var i = 0;i < followers.length;i++){
+                                var follow = followers[i];
+                                UserService.findUserById(follow.followerId,function(err,followerInfo){
+                                    if(followerInfo.apnToken){
+                                        Apn.send(followerInfo.apnToken,"@"+user.username+" has created a seem",feed);
+                                    }
+                                    if(followerInfo.gcmToken){
+                                        Gcm.send(followerInfo.gcmToken,"@"+user.username+" has created a seem",feed);
+                                    }
+                                });
+                            }
+
+                            callback(null,seem);// ignore errors here
+                        });
+
                     });
 
                 });
@@ -276,7 +302,32 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                                 feed.username = user.username;
 
                                 feed.save(function(err){
-                                    callback(err, item);
+                                    if(err){
+                                        console.log("Error sending notifications"+err);
+                                        return  callback(null,item);// ignore errors here
+                                    }
+                                    //TODO do this on a background job
+                                    FollowService.findFollowers(user._id,0,function(err,followers){
+                                        if(err){
+                                            console.log("Error sending notifications"+err);
+                                            return  callback(null,seem);// ignore errors here
+                                        }
+
+                                        for(var i = 0;i < followers.length;i++){
+                                            var follow = followers[i];
+                                            UserService.findUserById(follow.followerId,function(err,followerInfo){
+                                                if(followerInfo.apnToken){
+                                                    Apn.send(followerInfo.apnToken,"@"+user.username+" has replied to @"+replyToObj.username,feed);
+                                                }
+                                                if(followerInfo.gcmToken){
+                                                    Gcm.send(followerInfo.gcmToken,"@"+user.username+" has replied to @"+replyToObj.username,feed);
+                                                }
+                                            });
+                                        }
+
+                                        callback(null, item);
+                                    });
+
                                 });
                             }
                         );
