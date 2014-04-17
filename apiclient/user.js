@@ -81,6 +81,17 @@ exports.addApnToken = function(apntoken,token,callback){
         }
     });
 }
+
+exports.removeApnToken = function(token,callback){
+    apiClientBase.post('/api/user/removeapntoken',{token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null);
+        }
+    });
+}
+
 exports.addGcmToken = function(gcmtoken,token,callback){
     apiClientBase.post('/api/user/addgcmtoken',{gcmtoken:gcmtoken,token:token},function(code,headers,data){
         if(code != 200){
@@ -91,4 +102,12 @@ exports.addGcmToken = function(gcmtoken,token,callback){
     });
 }
 
-
+exports.removeGcmToken = function(token,callback){
+    apiClientBase.post('/api/user/removegcmtoken',{token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null);
+        }
+    });
+}

@@ -65,8 +65,9 @@ var userSchema = new Schema({
   , isFollowingMe: { type: Boolean , required: false} //TRANSIENT!!! DO NOT PERSIST
   , isFollowedByMe: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
   , apnToken        : { type: String  , required: false } //iOs notification
+  , apnSubscribeDate: { type: Date	  , required: false }
   , gcmToken        : { type: String  , required: false } //Android notification
-
+  , gcmSubscribeDate: { type: Date	  , required: false }
     //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 

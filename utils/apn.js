@@ -5,9 +5,60 @@
 var join = require('path').join;
 // Create a new agent
 var apnagent = require('apnagent');
+var feedback = new apnagent.MockFeedback();
 var pfx = join(__dirname, '../_certs/aps_production.p12');
 var agent = new apnagent.Agent();
+var User = require('../models/user').User;
 
+
+
+//---------------------------------------
+//      Worker part
+//---------------------------------------
+
+feedback
+    .set('interval', '30s') // default is 30 minutes?
+    .connect();
+feedback.set('concurrency', 1);
+
+
+
+feedback.use(function (device, timestamp, done) {
+    var token = device.toString()
+        , ts = timestamp.getTime();
+
+    User
+        .where("apnToken").equals(token)
+        .exec(function(err,users){
+            if(err){
+                console.log("Error apn unsubscribing:"+err);
+            }else {
+                users.forEach(function (user, next) {
+                    console.log("Unsubscribing user:"+user)
+                    // this device hasn't pinged our api since it unsubscribed
+                    if (device.apnSubscribeDate <= ts) {
+                        device.apnToken = null;
+                        device.apnSubscribeDate = null;
+                        device.save(next);
+                    }
+                    // we have seen this device recently so we don't need to deactive it
+                    else {
+                        next();
+                    }
+                }, done);
+            }
+
+    });
+
+
+
+});
+
+
+
+//---------------------------------------
+//      Send notifications part
+//---------------------------------------
 
 // set our credentials
 agent.set("pfx file", pfx);
