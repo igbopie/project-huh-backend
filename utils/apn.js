@@ -5,7 +5,7 @@
 var join = require('path').join;
 // Create a new agent
 var apnagent = require('apnagent');
-var feedback = new apnagent.MockFeedback();
+var feedback = new apnagent.Feedback();
 var pfx = join(__dirname, '../_certs/aps_production.p12');
 var agent = new apnagent.Agent();
 var User = require('../models/user').User;
@@ -17,7 +17,7 @@ var User = require('../models/user').User;
 //---------------------------------------
 
 feedback
-    .set('interval', '30s') // default is 30 minutes?
+    //.set('interval', '30s') // default is 30 minutes?
     .connect();
 feedback.set('concurrency', 1);
 
@@ -27,6 +27,8 @@ feedback.use(function (device, timestamp, done) {
     var token = device.toString()
         , ts = timestamp.getTime();
 
+
+    console.log("I should unsubscribe token:"+token)
     User
         .where("apnToken").equals(token)
         .exec(function(err,users){

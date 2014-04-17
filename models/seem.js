@@ -1,15 +1,9 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , Feed = require("../models/feed").Feed
-    , UserService = require("../models/user").Service
+    , FeedService = require("../models/feed").Service
     , MAX_RESULTS_ITEMS = 100
-    , MAX_LASTEST_ITEMS_SEEM = 5
-    , FEED_ACTION_REPLY_TO = "replyTo"
-    , FEED_ACTION_CREATE_SEEM = "createSeem"
-    , FEED_ACTION_FAVOURITE = "favourite"
-    , Apn = require("../utils/apn")
-    , Gcm = require("../utils/gcm")
-    , FollowService = require("../models/follow").Service;
+    , MAX_LASTEST_ITEMS_SEEM = 5;
 
 
 var itemSchema = new Schema({
@@ -96,43 +90,13 @@ service.create = function(title,caption,mediaId,user,callback){
             } else {
                 mainItem.seemId = seem._id;
                 mainItem.save(function(err){
+                    //TODO handle this error
+                    if(err) return callback(err,null);
 
-                    var feed = new Feed();
+                    callback(null,seem);// ignore errors here
 
-                    feed.itemId = mainItem._id;
-                    feed.itemMediaId  = mainItem.mediaId;
-                    feed.itemCaption = mainItem.caption;
-                    feed.seemId = seem._id;
-                    feed.seemTitle = seem.title;
-                    feed.action = FEED_ACTION_CREATE_SEEM;
-                    feed.userId = user._id;
-                    feed.username = user.username;
-
-                    feed.save(function(err){
-                        console.log("Error sending feed"+err);
-                        //TODO do this on a background job
-                        FollowService.findFollowers(user._id,0,function(err,followers){
-                            if(err){
-                                console.log("Error sending notifications"+err);
-                                return  callback(null,seem);// ignore errors here
-                            }
-
-                            for(var i = 0;i < followers.length;i++){
-                                var follow = followers[i];
-                                UserService.findUserById(follow.followerId,function(err,followerInfo){
-                                    if(followerInfo.apnToken){
-                                        Apn.send(followerInfo.apnToken,"@"+user.username+" has created a seem");
-                                    }
-                                    if(followerInfo.gcmToken){
-                                        Gcm.send(followerInfo.gcmToken,"@"+user.username+" has created a seem");
-                                    }
-                                });
-                            }
-
-                            callback(null,seem);// ignore errors here
-                        });
-
-                    });
+                    //Kind of background?
+                    FeedService.onSeemCreated(seem,mainItem,user);
 
                 });
             }
@@ -156,19 +120,10 @@ service.favourite = function(item,user,callback){
                 Seem.findOne({"_id":item.seemId},function(err,seem){
                     if(err) return callback(err);
 
-                    var feed = new Feed();
-                    feed.itemId = item._id;
-                    feed.itemMediaId  = item.mediaId;
-                    feed.itemCaption = item.caption;
-                    feed.seemId = seem._id;
-                    feed.seemTitle = seem.title;
-                    feed.action = FEED_ACTION_FAVOURITE;
-                    feed.userId = user._id;
-                    feed.username = user.username;
+                    callback();
 
-                    feed.save(function(err){
-                        callback(err);
-                    });
+                    FeedService.onFavourited(seem,item,user);
+
                 });
             });
 
@@ -280,55 +235,9 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                             function (err) {
                                 if (err) return callback(err);
 
-                                //----------------
-                                //Create a feed item
-                                //----------------
-                                var feed = new Feed();
+                                callback(null, item);
 
-                                feed.itemId = item._id;
-                                feed.itemMediaId  = item.mediaId;
-                                feed.itemCaption = item.caption;
-                                feed.replyToId = replyId;
-                                if(replyToObj) {
-                                    feed.replyToMediaId = replyToObj.mediaId;
-                                    feed.replyToCaption = replyToObj.caption;
-                                    feed.replyToUserId = replyToObj.userId;
-                                    feed.replyToUsername = replyToObj.username;
-                                }
-                                feed.seemId = seem._id;
-                                feed.seemTitle = seem.title;
-                                feed.action = FEED_ACTION_REPLY_TO;
-                                feed.userId = user._id;
-                                feed.username = user.username;
-
-                                feed.save(function(err){
-                                    if(err){
-                                        console.log("Error sending notifications"+err);
-                                        return  callback(null,item);// ignore errors here
-                                    }
-                                    //TODO do this on a background job
-                                    FollowService.findFollowers(user._id,0,function(err,followers){
-                                        if(err){
-                                            console.log("Error sending notifications"+err);
-                                            return  callback(null,seem);// ignore errors here
-                                        }
-
-                                        for(var i = 0;i < followers.length;i++){
-                                            var follow = followers[i];
-                                            UserService.findUserById(follow.followerId,function(err,followerInfo){
-                                                if(followerInfo.apnToken){
-                                                    Apn.send(followerInfo.apnToken,"@"+user.username+" has replied to @"+replyToObj.username);
-                                                }
-                                                if(followerInfo.gcmToken){
-                                                    Gcm.send(followerInfo.gcmToken,"@"+user.username+" has replied to @"+replyToObj.username);
-                                                }
-                                            });
-                                        }
-
-                                        callback(null, item);
-                                    });
-
-                                });
+                                FeedService.onReply(seem,item,replyToObj,user);
                             }
                         );
                     });
