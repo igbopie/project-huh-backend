@@ -13,8 +13,11 @@ exports.create = function(title,caption,mediaId,token,callback){
     });
 }
 
-exports.getItem = function(itemId,callback){
+exports.getItem = function(itemId,token,callback){
     var params ={itemId:itemId};
+    if(token){
+        params.token = token;
+    }
     apiClientBase.post('/api/seem/item/get',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);

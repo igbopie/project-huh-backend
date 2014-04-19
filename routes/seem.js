@@ -32,20 +32,61 @@ exports.create = function(req, res) {
 
 exports.getItem = function(req, res) {
     var itemId = req.body.itemId;
+    var token = req.body.token;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.getItem(itemId, function (err, item) {
+                    if (err) {
+                        console.error(err);
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else if (!item) {
+                        ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+                    } else {
+                        var favourited = false;
+                        var thumbedUp = false;
+                        var thumbedDown = false;
+                        //Check if favourited
+                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
+                            if (err) {
+                                console.error(err);
+                                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                            } else {
+                                if(favourite){
+                                    favourited = true;
+                                }
+                                item.favourited = favourited;
+                                item.thumbedDown = thumbedDown;
+                                item.thumbedUp = thumbedUp;
+                                ApiUtils.api(req, res, ApiUtils.OK, null, item);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    } else {
+        SeemService.getItem(itemId, function (err, item) {
+            if (err) {
+                console.error(err);
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (!item) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+            } else {
+                ApiUtils.api(req, res, ApiUtils.OK, null, item);
+            }
+        });
+    }
 
 
-    SeemService.getItem(itemId, function (err, item) {
-        if (err) {
-            console.error(err);
-            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-        } else if (!item) {
-            ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
-        } else {
-            ApiUtils.api(req, res, ApiUtils.OK, null, item);
-        }
-    });
 
 };
+
+
 
 exports.getItemReplies = function(req, res) {
     var itemId = req.body.itemId;

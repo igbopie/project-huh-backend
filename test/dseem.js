@@ -239,6 +239,27 @@ describe('Seem', function(){
         });
     });
 
+    describe('#favouriteAndGetItem()', function(){
+        it('should favourite',function (done) {
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err,reply){
+                if (err) return done(err);
+                M1Seem.reply(reply._id,"This is another reply",media,users[0].token,function(err,reply2) {
+                    if (err) return done(err);
+                    M1Seem.favourite(reply._id,users[0].token,function(err){
+                        if (err) return done(err);
+                        M1Seem.getItem(reply._id,users[0].token,function(err,reply){
+                            if(err) return done(err);
+
+                            reply.favouriteCount.should.be.equal(1);
+                            reply.favourited.should.be.ok;
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
 });
 
 

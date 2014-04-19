@@ -16,7 +16,10 @@ var itemSchema = new Schema({
     depth : {type: Number, required:true, default:0},
     userId:   {	type: Schema.Types.ObjectId, required: false},
     username:{	type: String, required: false},
-    favouriteCount:{type: Number, required:true, default:0}
+    favouriteCount:{type: Number, required:true, default:0},
+    favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
+    thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
+    thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
 });
 
 
