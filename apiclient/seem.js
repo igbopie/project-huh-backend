@@ -84,4 +84,36 @@ exports.unfavourite = function(itemId,token,callback){
     });
 }
 
+exports.thumbUp = function(itemId,token,callback){
+    var params ={itemId:itemId,token:token};
+    apiClientBase.post('/api/seem/item/thumbup',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+exports.thumbDown = function(itemId,token,callback){
+    var params ={itemId:itemId,token:token};
+    apiClientBase.post('/api/seem/item/thumbdown',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+exports.thumbClear = function(itemId,token,callback){
+    var params ={itemId:itemId,token:token};
+    apiClientBase.post('/api/seem/item/thumbclear',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
 

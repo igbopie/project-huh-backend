@@ -109,14 +109,6 @@ app.post('/api/media/get/:format/:id', media.get);
 app.get('/api/media/get/:format/:id', media.get);
 
 //SEEM
-//@Deprecated use without m1
-app.post('/api/m1/seem', seem.list);
-app.post('/api/m1/seem/create', seem.create);
-app.post('/api/m1/seem/item/get', seem.getItem);
-app.post('/api/m1/seem/item/replies', seem.getItemReplies);
-app.post('/api/m1/seem/item/reply', seem.reply);
-//
-
 app.post('/api/seem', seem.list);
 app.post('/api/seem/create', seem.create);
 app.post('/api/seem/item/get', seem.getItem);
@@ -124,6 +116,9 @@ app.post('/api/seem/item/replies', seem.getItemReplies);
 app.post('/api/seem/item/reply', seem.reply);
 app.post('/api/seem/item/favourite', seem.favourite);
 app.post('/api/seem/item/unfavourite', seem.unfavourite);
+app.post('/api/seem/item/thumbup', seem.thumbUp);
+app.post('/api/seem/item/thumbdown', seem.thumbDown);
+app.post('/api/seem/item/thumbclear', seem.thumbClear);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);

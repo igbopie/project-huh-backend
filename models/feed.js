@@ -158,6 +158,17 @@ service.onFavourited =function (seem,item,user){
 
 }
 
+
+
+service.onThumbUp =function (seem,item,user){
+
+}
+
+
+service.onThumbDown =function (seem,item,user){
+
+}
+
 module.exports = {
     Feed: Feed,
     Service:service

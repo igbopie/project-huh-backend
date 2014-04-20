@@ -3,7 +3,9 @@ var mongoose = require('mongoose')
     , Feed = require("../models/feed").Feed
     , FeedService = require("../models/feed").Service
     , MAX_RESULTS_ITEMS = 100
-    , MAX_LASTEST_ITEMS_SEEM = 5;
+    , MAX_LASTEST_ITEMS_SEEM = 5
+    , THUMB_SCORE_UP = 1
+    , THUMB_SCORE_DOWN = -1;
 
 
 var itemSchema = new Schema({
@@ -17,6 +19,9 @@ var itemSchema = new Schema({
     userId:   {	type: Schema.Types.ObjectId, required: false},
     username:{	type: String, required: false},
     favouriteCount:{type: Number, required:true, default:0},
+    thumbUpCount:{type: Number, required:true, default:0},
+    thumbDownCount:{type: Number, required:true, default:0},
+    thumbScoreCount:{type: Number, required:true, default:0},
     favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
@@ -54,12 +59,23 @@ var favouriteSchema = new Schema({
     itemId          :   {	type: Schema.Types.ObjectId, required: true}
 });
 
+var thumbSchema = new Schema({
+    created		    :   {   type: Date	, required: true, default: Date.now },
+    userId          :   {	type: Schema.Types.ObjectId, required: true},
+    username        :   {	type: String, required: true},
+    itemId          :   {	type: Schema.Types.ObjectId, required: true},
+    score           :   {   type: Number, required:true, default:1} //1 UP, -1 DOWN
+});
+
+
 
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
+thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
 seemSchema.index({ itemId: 1 });
 var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
 var Favourite = mongoose.model('favourite', favouriteSchema);
+var Thumb = mongoose.model('thumb', thumbSchema);
 
 
 //Service?
@@ -104,6 +120,118 @@ service.create = function(title,caption,mediaId,user,callback){
                 });
             }
         });
+    });
+}
+service.thumbUp = function(item,user,callback){
+    //
+    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+        if(err) return callback(err);
+
+        //Standard update
+        var incUpdate = {$inc: {"thumbUpCount": 1,"thumbDownCount": 0,"thumbScoreCount": 1}};
+        if(thumb){
+            if (thumb.score == THUMB_SCORE_UP) {
+                //DO NOTHING
+                return callback();
+            } else {
+                incUpdate = {$inc: {"thumbUpCount": 1,"thumbDownCount": -1,"thumbScoreCount": 2}};
+            }
+        } else {
+            var thumb = new Thumb();
+            thumb.userId = user._id;
+            thumb.username = user.username;
+            thumb.itemId = item._id;
+        }
+
+        thumb.score = THUMB_SCORE_UP;
+
+        thumb.save(function(err){
+            if(err) return callback(err);
+
+            Item.update({"_id": item._id},incUpdate
+                ,function(err){
+                    if(err) return callback(err);
+
+                    Seem.findOne({"_id":item.seemId},function(err,seem){
+                        if(err) return callback(err);
+
+                        callback();
+
+                        FeedService.onThumbUp(seem,item,user);
+
+                    });
+                });
+        })
+    });
+}
+
+service.thumbDown = function(item,user,callback){
+    //
+    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+        if(err) return callback(err);
+
+        //Standard update
+        var incUpdate = {$inc: {"thumbUpCount": 0,"thumbDownCount": 1,"thumbScoreCount": -1}};
+        if(thumb){
+            if (thumb.score == THUMB_SCORE_DOWN) {
+                //DO NOTHING
+                return callback();
+            } else {
+                incUpdate = {$inc: {"thumbUpCount": -1,"thumbDownCount": 1,"thumbScoreCount": -2}};
+            }
+        } else {
+            var thumb = new Thumb();
+            thumb.userId = user._id;
+            thumb.username = user.username;
+            thumb.itemId = item._id;
+        }
+
+        thumb.score = THUMB_SCORE_DOWN;
+
+        thumb.save(function(err){
+            if(err) return callback(err);
+
+            Item.update({"_id": item._id},incUpdate
+                ,function(err){
+                    if(err) return callback(err);
+
+                    Seem.findOne({"_id":item.seemId},function(err,seem){
+                        if(err) return callback(err);
+
+                        callback();
+
+                        FeedService.onThumbDown(seem,item,user);
+
+                    });
+                });
+        })
+    });
+}
+
+service.thumbClear = function(item,user,callback){
+    //
+    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+        if(err) return callback(err);
+        if(!thumb) return callback();
+
+        //Standard update
+        var incUpdate;
+        if (thumb.score == THUMB_SCORE_UP) {
+            incUpdate = {$inc: {"thumbUpCount": -1,"thumbDownCount": 0,"thumbScoreCount": -1}};
+        } else {
+            incUpdate = {$inc: {"thumbUpCount": 0,"thumbDownCount": -1,"thumbScoreCount": 1}};
+        }
+
+        thumb.remove(function(err){
+            if(err) return callback(err);
+
+            Item.update({"_id": item._id},incUpdate
+                ,function(err){
+                    if(err) return callback(err);
+
+                    callback();
+                });
+        })
     });
 }
 
@@ -252,6 +380,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
 }
 
 module.exports = {
+    Thumb: Thumb,
     Favourite: Favourite,
     Seem: Seem,
     Item: Item,
