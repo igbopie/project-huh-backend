@@ -7,3 +7,46 @@ body{
 img{
     width:100%;
 }
+
+img.seem-item{
+
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+
+}
+.seem-item-caption{
+    background: #465961;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding:10px;
+    font-size: 20px;
+
+}
+.seem-item-info{
+    font-size: 30px;
+}
+
+.seem-item-info-thing{
+    margin-right:20px;
+}
+.username,.date{
+    font-size: 14px;
+}
+.open-in-the-app{
+    display: block;
+    background: #f9b233;
+    padding:10px;
+    border-radius: 10px;
+    font-size: 20px;
+    color:white;
+    cursor: pointer;
+}
+.open-in-the-app:hover{
+    background: #f9c466;
+    color:white;
+}
+.open-in-the-app img{
+    height:50px;
+    width:auto;
+    margin-right: 10px;
+}

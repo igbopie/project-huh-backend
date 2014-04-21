@@ -78,6 +78,8 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/upload', routes.imageupload);
+app.get('/item/:itemId', routes.item);
+
 
 //USER
 app.post('/api/user/create', user.create);
