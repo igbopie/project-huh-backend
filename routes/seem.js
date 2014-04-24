@@ -9,6 +9,7 @@ exports.create = function(req, res) {
     var caption = req.body.caption;
     var mediaId = req.body.mediaId;
     var title = req.body.title;
+    var topicId = req.body.topicId;
     var token = req.body.token;
     if(token) {
         UserService.findUserByToken(token, function (err, user) {
@@ -17,7 +18,7 @@ exports.create = function(req, res) {
             } else if (user == null) {
                 ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
             } else {
-                SeemService.create(title, caption, mediaId, user, function (err, seem) {
+                SeemService.create(title, caption, mediaId, topicId, user, function (err, seem) {
                     if (err) {
                         ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                     } else {
@@ -338,4 +339,16 @@ exports.thumbClear = function(req,res){
     } else {
         ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
     }
+}
+
+
+exports.listTopics = function(req, res) {
+    SeemService.listTopics(function(err,docs){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        } else {
+            ApiUtils.api(req, res, ApiUtils.OK, null, docs);
+        }
+    });
+
 }

@@ -49,7 +49,8 @@ var seemSchema = new Schema({
     title           :   {	type: String, required: false},
     itemCount       :   {   type: Number, required:true, default:1},
     userId          :   {	type: Schema.Types.ObjectId, required: false},
-    username        :   {	type: String, required: false}
+    username        :   {	type: String, required: false},
+    topicId         :   {	type: Schema.Types.ObjectId, required: false}
 });
 
 var favouriteSchema = new Schema({
@@ -68,6 +69,12 @@ var thumbSchema = new Schema({
 });
 
 
+var topicSchema = new Schema({
+    created		    :   {   type: Date	, required: true, default: Date.now },
+    name            : {	type: String, required: true,index: { unique: true }},
+    code            : {	type: String, required: true,index: { unique: true }}
+});
+
 
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
@@ -76,18 +83,77 @@ var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
 var Favourite = mongoose.model('favourite', favouriteSchema);
 var Thumb = mongoose.model('thumb', thumbSchema);
+var Topic = mongoose.model('topic', topicSchema);
 
+function onStartCheck(){
+    var topics = [
+        {name:"Animals",code:"animals"},
+        {name:"Art",code:"art"},
+        {name:"Comedy",code:"comedy"},
+        {name:"Do it yourself",code:"do-it-yourseld"},
+        {name:"Family",code:"family"},
+        {name:"Food",code:"food"},
+        {name:"Music",code:"music"},
+        {name:"Dance",code:"dance"},
+        {name:"News",code:"news"},
+        {name:"Places",code:"places"},
+        {name:"Science and Technology",code:"science-and-technology"},
+        {name:"Sports",code:"sports"},
+        {name:"Style",code:"style"},
+        {name:"Seem Tests",code:"seem-tests"}
+    ];
+
+    topics.forEach(function(topicString){
+        Topic.findOne({"code":topicString.code},function(err,topic){
+            if(err){
+                console.log("Error checking topics:"+err);
+            } else if(topic){
+                console.log("Topic found");
+            } else {
+                console.log("Topic not found... creating: "+topicString);
+                topic = new Topic();
+                topic.name = topicString.name;
+                topic.code = topicString.code;
+                topic.save(function(err){
+                    if(err){
+                        console.log("Error saving topic:"+err);
+                    }else {
+                        console.log("Created "+topicString);
+                    }
+                });
+            }
+        });
+    });
+
+}
+onStartCheck();
 
 //Service?
 var service = {};
 
-service.create = function(title,caption,mediaId,user,callback){
+service.create = function(title,caption,mediaId,topicId,user,callback){
+    if(topicId) {
+        Topic.findOne({"_id": topicId}, function (err, topic) {
+            //ignore errors here just log it
+            if (err) {
+                console.error(err);
+            }
+            createSeemAux(title, caption, mediaId, topic, user, callback);
+        })
+    }else{
+        createSeemAux(title, caption, mediaId, null, user, callback);
+    }
 
+
+}
+
+function createSeemAux(title,caption,mediaId,topic,user,callback){
     var mainItem = new Item();
     mainItem.mediaId = mediaId;
     mainItem.caption = caption;
     mainItem.userId = user._id;
     mainItem.username = user.username;
+
 
     mainItem.save(function(err){
         if(err) return callback(err);
@@ -101,6 +167,10 @@ service.create = function(title,caption,mediaId,user,callback){
         }
         seem.itemMediaId = mainItem.mediaId;
         seem.itemCaption = mainItem.caption;
+
+        if(topic){
+            seem.topicId = topic._id
+        }
         seem.latestItems.push(mainItem);
 
         seem.save(function(err){
@@ -376,6 +446,12 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
 
             });
         }
+    });
+}
+
+service.listTopics = function(callback){
+    Topic.find().exec(function(err,docs){
+        callback(err,docs);
     });
 }
 

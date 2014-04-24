@@ -451,6 +451,34 @@ describe('Seem', function(){
         });
     });
 
+    describe('#listTopics()', function(){
+        it('should list topics',function (done) {
+            M1Seem.listTopics(function(err,topics){
+                if (err) return done(err);
+
+                topics.length.should.be.above(0);
+
+                done();
+            });
+        });
+    });
+
+    describe('#createSeemWithATopic()', function(){
+        it('should create a seem',function (done) {
+            M1Seem.listTopics(function(err,topics){
+                if (err) return done(err);
+
+                M1Seem.createWithTopic("A title for a seam","A caption for the photo",media,topics[0]._id,users[0].token,function(err,seem){
+                    if (err) return done(err);
+
+                    seem.should.have.property('topicId');
+
+                    done();
+                });
+            });
+
+        });
+    });
 
 });
 

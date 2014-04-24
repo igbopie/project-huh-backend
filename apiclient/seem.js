@@ -12,6 +12,17 @@ exports.create = function(title,caption,mediaId,token,callback){
 	    }
     });
 }
+exports.createWithTopic = function(title,caption,mediaId,topicId,token,callback){
+    var params ={title:title,caption:caption,mediaId:mediaId,topicId:topicId,token:token};
+    apiClientBase.post('/api/seem/create',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 
 exports.getItem = function(itemId,token,callback){
     var params ={itemId:itemId};
@@ -113,6 +124,17 @@ exports.thumbClear = function(itemId,token,callback){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
             callback(null);
+        }
+    });
+}
+
+exports.listTopics = function(callback){
+    var params ={};
+    apiClientBase.post('/api/seem/topics',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
         }
     });
 }
