@@ -352,3 +352,43 @@ exports.listTopics = function(req, res) {
     });
 
 }
+
+exports.search = function (req,res){
+
+    var text = req.body.text;
+    if(text){
+        var retObj = {};
+        SeemService.searchSeem(text,function(err,results){
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            }else{
+                retObj.seems = results;
+
+                SeemService.searchItems(text,function(err,results){
+                    if (err) {
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    }else{
+
+                        retObj.replies = results;
+
+                        UserService.search(text,function(err,results) {
+                            if (err) {
+                                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                            } else {
+                                retObj.users = results;
+
+                                ApiUtils.api(req, res, ApiUtils.OK, null, retObj);
+
+                            }
+                        });
+                    }
+                });
+
+            }
+        });
+    }else{
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, null, null);
+    }
+
+
+}

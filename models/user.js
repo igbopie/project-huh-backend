@@ -11,8 +11,9 @@ var mongoose = require('mongoose')
   , MAX_PHONE_VERIFICATION_TRIES = 3
   , MAX_NOTIFICATIONS = 200
   , NOTIFICATION_TYPES = {FOLLOW:"FOLLOW"}
-  ,TOKEN_EXPIRATION_DAYS = 30
-  ,TOKEN_EXPIRATION_HOURS = 0;
+  , TOKEN_EXPIRATION_DAYS = 30
+  , TOKEN_EXPIRATION_HOURS = 0
+  , textSearch = require('mongoose-text-search');
 
 /*var friendRequestSchema = new Schema({
     friendId		: {	type: Schema.Types.ObjectId, required: true}
@@ -71,7 +72,8 @@ var userSchema = new Schema({
     //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
-
+userSchema.plugin(textSearch);
+userSchema.index({username: 'text'});
 
 
 userSchema.pre('save', function(next) {
@@ -356,6 +358,25 @@ service.findUserById = function(id,callback){
 		}
 	});
 };
+
+service.search = function(text,callback){
+    var options = {
+        project: {_id:1,username:1,followers:1,following:1}           // do not include the `created` property
+        //, filter: { likes: { $gt: 1000000 }} // casts queries based on schema
+        ,limit: 20
+        , language: 'english'
+        , lean: true
+    }
+
+    user.textSearch(text, options,  function (err, output) {
+        if (err) return callback(err);
+
+        console.log(output);
+
+        callback(null,output.results);
+
+    });
+}
 
 
 

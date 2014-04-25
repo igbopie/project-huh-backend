@@ -5,7 +5,8 @@ var mongoose = require('mongoose')
     , MAX_RESULTS_ITEMS = 100
     , MAX_LASTEST_ITEMS_SEEM = 5
     , THUMB_SCORE_UP = 1
-    , THUMB_SCORE_DOWN = -1;
+    , THUMB_SCORE_DOWN = -1
+    , textSearch = require('mongoose-text-search');
 
 
 var itemSchema = new Schema({
@@ -79,7 +80,16 @@ var topicSchema = new Schema({
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
 seemSchema.index({ itemId: 1 });
-var Seem = mongoose.model('seem', seemSchema);
+
+seemSchema.plugin(textSearch);
+seemSchema.index({ title: 'text' ,itemCaption:'text'});
+
+itemSchema.plugin(textSearch);
+itemSchema.index({caption: 'text'});
+
+
+
+    var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
 var Favourite = mongoose.model('favourite', favouriteSchema);
 var Thumb = mongoose.model('thumb', thumbSchema);
@@ -454,6 +464,47 @@ service.listTopics = function(callback){
         callback(err,docs);
     });
 }
+
+service.searchSeem = function(text,callback){
+    var options = {
+        //project: {}           // do not include the `created` property
+        //, filter: { likes: { $gt: 1000000 }} // casts queries based on schema
+        limit: 20
+        , language: 'english'
+        , lean: true
+    }
+
+    Seem.textSearch(text, options,  function (err, output) {
+        if (err) return callback(err);
+
+        console.log(output);
+
+        callback(null,output.results);
+
+    });
+}
+
+service.searchItems = function(text,callback){
+    var options = {
+        //project: {}           // do not include the `created` property
+        //, filter: { likes: { $gt: 1000000 }} // casts queries based on schema
+        limit: 20
+        , language: 'english'
+        , lean: true
+    }
+
+    Item.textSearch(text, options,  function (err, output) {
+        if (err) return callback(err);
+
+        console.log(output);
+
+        callback(null,output.results);
+
+    });
+}
+
+
+
 
 module.exports = {
     Thumb: Thumb,
