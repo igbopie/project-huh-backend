@@ -360,7 +360,7 @@ service.findUserById = function(id,callback){
 };
 
 service.search = function(text,callback){
-    var options = {
+    /*var options = {
         project: {_id:1,username:1,followers:1,following:1}           // do not include the `created` property
         //, filter: { likes: { $gt: 1000000 }} // casts queries based on schema
         ,limit: 20
@@ -375,7 +375,11 @@ service.search = function(text,callback){
 
         callback(null,output.results);
 
-    });
+    });*/
+
+    user.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1,followers:1,following:1} ).limit(20).exec(function(err,docs){
+        callback(err,docs);
+    });;
 }
 
 
