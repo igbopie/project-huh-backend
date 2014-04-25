@@ -123,6 +123,7 @@ app.post('/api/seem/item/thumbdown', seem.thumbDown);
 app.post('/api/seem/item/thumbclear', seem.thumbClear);
 app.post('/api/seem/topics', seem.listTopics);
 app.post('/api/search', seem.search);
+app.post('/api/seem/by/topic', seem.findByTopic);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);

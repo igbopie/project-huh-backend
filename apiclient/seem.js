@@ -139,3 +139,15 @@ exports.listTopics = function(callback){
     });
 }
 
+
+exports.findByTopic = function(topicId,page,callback){
+    var params ={topicId:topicId,page:page};
+    apiClientBase.post('/api/seem/by/topic',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+

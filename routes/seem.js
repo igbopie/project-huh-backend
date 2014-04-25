@@ -389,6 +389,26 @@ exports.search = function (req,res){
     }else{
         ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, null, null);
     }
+}
 
+
+exports.findByTopic = function (req,res){
+
+    var topicId = req.body.topicId;
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    if(!topicId){
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, null, null);
+    }else{
+        SeemService.findByTopic(topicId,page,function(err,seems){
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            }else{
+                ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+            }
+        });
+    }
 
 }

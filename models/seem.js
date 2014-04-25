@@ -80,6 +80,7 @@ var topicSchema = new Schema({
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
 seemSchema.index({ itemId: 1 });
+seemSchema.index({ topicId: 1 });
 
 seemSchema.plugin(textSearch);
 seemSchema.index({ title: 'text' ,itemCaption:'text'});
@@ -509,6 +510,11 @@ service.searchItems = function(text,callback){
     });
 }
 
+service.findByTopic = function(topicId,page,callback){
+    Seem.find({topicId:topicId}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
 
 
 

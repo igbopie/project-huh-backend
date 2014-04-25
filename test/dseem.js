@@ -464,7 +464,7 @@ describe('Seem', function(){
     });
 
     describe('#createSeemWithATopic()', function(){
-        it('should create a seem',function (done) {
+        it('should create a seem with a topic',function (done) {
             M1Seem.listTopics(function(err,topics){
                 if (err) return done(err);
 
@@ -479,6 +479,28 @@ describe('Seem', function(){
 
         });
     });
+
+    describe("#topicList()",function(){
+        it('should list a seem in a topic',function (done) {
+            M1Seem.listTopics(function(err,topics){
+                if (err) return done(err);
+
+                M1Seem.createWithTopic("A title for a seam","A caption for the photo",media,topics[0]._id,users[0].token,function(err,seem){
+                    if (err) return done(err);
+                    M1Seem.findByTopic(topics[0]._id,0,function(err,list){
+                        if (err) return done(err);
+
+                        list.length.should.be.equal(1);
+                        list[0]._id.should.be.equal(seem._id);
+
+                        done();
+                    });
+
+                });
+            });
+
+        });
+    })
 
 });
 
