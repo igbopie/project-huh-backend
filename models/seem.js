@@ -479,7 +479,11 @@ service.searchSeem = function(text,callback){
 
         console.log(output);
 
-        callback(null,output.results);
+        var results = [];
+        for(var i = 0;i<output.results.length;i++){
+            results.push(output.results[i].obj);
+        }
+        callback(null,results);
 
     });
 }
@@ -496,9 +500,11 @@ service.searchItems = function(text,callback){
     Item.textSearch(text, options,  function (err, output) {
         if (err) return callback(err);
 
-        console.log(output);
-
-        callback(null,output.results);
+        var results = [];
+        for(var i = 0;i<output.results.length;i++){
+            results.push(output.results[i].obj);
+        }
+        callback(null,results);
 
     });
 }
