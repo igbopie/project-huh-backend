@@ -101,17 +101,18 @@ function onStartCheck(){
         {name:"Animals",code:"animals"},
         {name:"Art",code:"art"},
         {name:"Comedy",code:"comedy"},
-        {name:"Do it yourself",code:"do-it-yourseld"},
+        {name:"Do it yourself",code:"diy"},
         {name:"Family",code:"family"},
         {name:"Food",code:"food"},
         {name:"Music",code:"music"},
         {name:"Dance",code:"dance"},
         {name:"News",code:"news"},
         {name:"Places",code:"places"},
-        {name:"Science and Technology",code:"science-and-technology"},
+        {name:"Science and Technology",code:"sci-tech"},
         {name:"Sports",code:"sports"},
         {name:"Style",code:"style"},
-        {name:"Seem Tests",code:"seem-tests"}
+        {name:"Seem Tests",code:"seem-tests"},
+        {name:"Selfie",code:"selfie"}
     ];
 
     topics.forEach(function(topicString){

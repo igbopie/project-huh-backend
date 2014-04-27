@@ -10,7 +10,7 @@ var mongoose = require('mongoose')
     , AWS = require('aws-sdk')
     , s3 = new AWS.S3()
     , S3_BUCKET = process.env.AWS_S3_BUCKET
-    , FORMAT_THUMB = {name: "thumb", height: 640, width: 320}
+    , FORMAT_THUMB = {name: "thumb", height: 640, width: 360}
     , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
     ;
 
@@ -129,32 +129,50 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
  */
 service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
-    imageMagick(originalPath)
-        .resize(format.width, format.height+ ">")
-        .write(tempPath, function (err) {
-            if (err) {
-                callback(err);
-            } else {
-                var bodyStream = fs.createReadStream(tempPath);
+    imageMagick(originalPath).size(function(err, size){
+        console.log(value);
+        var landscape = true;
+        if( size.height > size.width ){
+            landscape = false;
+        }
+        var widthConstrain = format.width;
+        var heightConstrain = format.height;
 
-                var params = {
-                    Bucket: S3_BUCKET,
-                    Key: getName(media,format.name),
-                    Body: bodyStream,
-                    ContentType: media.contentType
-                };
+        if(!landscape){
+            widthConstrain  = format.height;
+            heightConstrain = format.width;
+        }
 
-                s3.putObject(params, function (err, data) {
-                    if (err) {
-                        //TODO remove image from db
-                        callback(err);
-                    } else {
-                        //there's an e-tag but I am not going to do anything with it.
-                        callback(null);
-                    }
-                });
-            }
-        });
+
+        imageMagick(originalPath)
+            .resize(widthConstrain, heightConstrain+ ">")
+            .write(tempPath, function (err) {
+                if (err) {
+                    callback(err);
+                } else {
+                    var bodyStream = fs.createReadStream(tempPath);
+
+                    var params = {
+                        Bucket: S3_BUCKET,
+                        Key: getName(media,format.name),
+                        Body: bodyStream,
+                        ContentType: media.contentType
+                    };
+
+                    s3.putObject(params, function (err, data) {
+                        if (err) {
+                            //TODO remove image from db
+                            callback(err);
+                        } else {
+                            //there's an e-tag but I am not going to do anything with it.
+                            callback(null);
+                        }
+                    });
+                }
+            });
+        // note : value may be undefined
+    });
+
 }
 
 function getName(media,formatName){
