@@ -10,7 +10,7 @@ var mongoose = require('mongoose')
     , AWS = require('aws-sdk')
     , s3 = new AWS.S3()
     , S3_BUCKET = process.env.AWS_S3_BUCKET
-    , FORMAT_THUMB = {name: "thumb", height: 640, width: 360}
+    , FORMAT_THUMB = {name: "thumb", height: 480, width: 480}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
     , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
     ;
 
@@ -130,7 +130,7 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
 service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
     imageMagick(originalPath).size(function(err, size){
-        
+
         var landscape = true;
         if( size.height > size.width ){
             landscape = false;
