@@ -130,7 +130,7 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
 service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
     imageMagick(originalPath).size(function(err, size){
-        console.log(value);
+        
         var landscape = true;
         if( size.height > size.width ){
             landscape = false;
