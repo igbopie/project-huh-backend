@@ -502,6 +502,73 @@ describe('Seem', function(){
         });
     })
 
+    describe("#hashtags1()",function(){
+        it("should extract hashtags",function(done){
+            var tags = Utils.extractTags("#hola #facil");
+
+            should(tags).containEql("#hola");
+            should(tags).containEql("#facil");
+
+            done();
+
+        });
+    })
+
+    describe("#hashtags2()",function(){
+        it("should extract hashtags",function(done){
+            var tags = Utils.extractTags("A sentence with things ¿#hola?Si!¡No#facil--dd");
+            should(tags).containEql("#hola");
+            should(tags).containEql("#facil");
+            done();
+
+        });
+    })
+
+    describe("#hashtags3()",function(){
+        it("should extract hashtags",function(done){
+            var tags = Utils.extractTags("#rep Repeated tags #rep #nacho");
+            should(tags).containEql("#rep");
+            should(tags).containEql("#nacho");
+            should(tags.length).be.equal(2);
+            done();
+
+        });
+    })
+
+    describe("#hashtags4()",function(){
+        it("should extract hashtags",function(done){
+            var tags = Utils.extractTags("underscore tags #_D");
+            should(tags).containEql("#_D");
+            done();
+
+        });
+    })
+
+    describe("#hashtags5()",function(){
+        it("should extract hashtags",function(done){
+            var tags = Utils.extractTags("case insensitive #Tags #tags #tAgs");
+            should(tags.length).be.equal(1);
+            done();
+
+        });
+    })
+
+    describe("#createASeemWithAHashtag()",function(){
+        it("should create a seem with a Hashtag",function(done){
+
+            M1Seem.create("A title for a #seem", "A #caption for the photo of a #seem", media, users[0].token, function (err, data) {
+                if (err) return done(err);
+                should(data.tags).containEql("#seem");
+                should(data.tags).containEql("#caption");
+
+                should(data.tags.length).be.equal(2);
+                done();
+            });
+
+        });
+    })
+
+
 });
 
 

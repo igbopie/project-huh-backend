@@ -6,6 +6,7 @@ var mongoose = require('mongoose')
     , MAX_LASTEST_ITEMS_SEEM = 5
     , THUMB_SCORE_UP = 1
     , THUMB_SCORE_DOWN = -1
+    , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search');
 
 
@@ -23,6 +24,7 @@ var itemSchema = new Schema({
     thumbUpCount:{type: Number, required:true, default:0},
     thumbDownCount:{type: Number, required:true, default:0},
     thumbScoreCount:{type: Number, required:true, default:0},
+    tags: [String],
     favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
@@ -51,7 +53,8 @@ var seemSchema = new Schema({
     itemCount       :   {   type: Number, required:true, default:1},
     userId          :   {	type: Schema.Types.ObjectId, required: false},
     username        :   {	type: String, required: false},
-    topicId         :   {	type: Schema.Types.ObjectId, required: false}
+    topicId         :   {	type: Schema.Types.ObjectId, required: false},
+    tags: [String]
 });
 
 var favouriteSchema = new Schema({
@@ -83,10 +86,10 @@ seemSchema.index({ itemId: 1 });
 seemSchema.index({ topicId: 1 });
 
 seemSchema.plugin(textSearch);
-seemSchema.index({ title: 'text' ,itemCaption:'text'});
+seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
 
 itemSchema.plugin(textSearch);
-itemSchema.index({caption: 'text'});
+itemSchema.index({caption: 'text',tags:'text'});
 
 
 
@@ -165,7 +168,7 @@ function createSeemAux(title,caption,mediaId,topic,user,callback){
     mainItem.caption = caption;
     mainItem.userId = user._id;
     mainItem.username = user.username;
-
+    mainItem.tags = Utils.extractTags(mainItem.caption);
 
     mainItem.save(function(err){
         if(err) return callback(err);
@@ -184,6 +187,9 @@ function createSeemAux(title,caption,mediaId,topic,user,callback){
             seem.topicId = topic._id
         }
         seem.latestItems.push(mainItem);
+
+        //this way we don't get repeated tags
+        seem.tags = Utils.extractTags(mainItem.caption+" "+seem.title);
 
         seem.save(function(err){
             if(err){
