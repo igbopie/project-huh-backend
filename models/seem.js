@@ -7,7 +7,8 @@ var mongoose = require('mongoose')
     , THUMB_SCORE_UP = 1
     , THUMB_SCORE_DOWN = -1
     , Utils = require('../utils/utils')
-    , textSearch = require('mongoose-text-search');
+    , textSearch = require('mongoose-text-search')
+    , CronJob = require('cron').CronJob;
 
 
 var itemSchema = new Schema({
@@ -54,7 +55,8 @@ var seemSchema = new Schema({
     userId          :   {	type: Schema.Types.ObjectId, required: false},
     username        :   {	type: String, required: false},
     topicId         :   {	type: Schema.Types.ObjectId, required: false},
-    tags: [String]
+    tags: [String],
+    hotScore        :   {	type: Number, required: false}
 });
 
 var favouriteSchema = new Schema({
@@ -87,6 +89,7 @@ seemSchema.index({ topicId: 1 });
 
 seemSchema.plugin(textSearch);
 seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
+seemSchema.index({hotScore:-1,created:-1});
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
@@ -142,6 +145,68 @@ function onStartCheck(){
 
 }
 onStartCheck();
+
+//CRON
+
+var job = new CronJob({
+    cronTime: '0 */10 * * * *',
+    onTick: function() {
+        console.log("CRON!")
+        var stream = Seem.find().stream();
+
+        stream.on('data', function (doc) {
+            // do something with the mongoose document
+            hotness(doc);
+        }).on('error', function (err) {
+            // handle the error
+        }).on('close', function () {
+            // the stream is closed
+        });
+    },
+    start: false,
+    timeZone: "America/Los_Angeles"
+});
+job.start();
+
+
+function hotness(seem){
+    //load main Item
+    Item.findOne({_id:seem.itemId},function(err,item){
+        var s = item.thumbScoreCount;
+
+        var y;
+        if(s > 0){
+            y = 1;
+        } else if(s < 0){
+            y = -1;
+        } else {
+            y = 0;
+        }
+        // 1377966600 is a constant and a very special date :)
+        var seconds = (seem.created.getTime() *1000) - 1377966600;
+
+        var z = Math.abs(s);
+        if(z >= 1){
+            z = z;
+        } else {
+            z = 1;
+        }
+
+        var hotnessValue = log10(z) + (y * seconds / 45000);
+        console.log(hotnessValue+" "+s);
+
+        seem.hotScore = hotnessValue;
+        seem.save(function(err){
+            if(err){
+                console.error(err);
+            }
+        })
+
+    })
+}
+function log10(val) {
+    return Math.log(val) / Math.log(10);
+}
 
 //Service?
 var service = {};
@@ -518,7 +583,13 @@ service.searchItems = function(text,callback){
 }
 
 service.findByTopic = function(topicId,page,callback){
-    Seem.find({topicId:topicId}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({topicId:topicId}).sort({hotScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+
+service.findByHotness = function(page, callback){
+    Seem.find({}).sort({hotScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }

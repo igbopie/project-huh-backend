@@ -21,6 +21,7 @@
     "temp": "^0.7.0",
     "apnagent": "1.0.x",
     "node-gcm": "^0.9.10",
-    "mongoose-text-search": "0.0.2"
+    "mongoose-text-search": "0.0.2",
+    "cron": "^1.0.4"
   }
 }

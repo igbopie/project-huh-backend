@@ -124,6 +124,7 @@ app.post('/api/seem/item/thumbclear', seem.thumbClear);
 app.post('/api/seem/topics', seem.listTopics);
 app.post('/api/search', seem.search);
 app.post('/api/seem/by/topic', seem.findByTopic);
+app.post('/api/seem/by/hotness', seem.findByHotness);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);

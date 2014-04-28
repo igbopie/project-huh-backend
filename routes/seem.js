@@ -412,3 +412,18 @@ exports.findByTopic = function (req,res){
     }
 
 }
+
+exports.findByHotness = function (req,res){
+
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findByHotness(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+}
