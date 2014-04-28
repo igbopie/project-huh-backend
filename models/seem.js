@@ -183,7 +183,7 @@ function hotness(seem){
             y = 0;
         }
         // 1377966600 is a constant and a very special date :)
-        var seconds = (seem.created.getTime() *1000) - 1377966600;
+        var seconds = (seem.created.getTime() /1000) - 1377966600;
 
         var z = Math.abs(s);
         if(z >= 1){
@@ -193,7 +193,7 @@ function hotness(seem){
         }
 
         var hotnessValue = log10(z) + (y * seconds / 45000);
-        console.log(hotnessValue+" "+s);
+        //console.log(hotnessValue+" "+s);
 
         seem.hotScore = hotnessValue;
         seem.save(function(err){
