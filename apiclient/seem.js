@@ -151,3 +151,26 @@ exports.findByTopic = function(topicId,page,callback){
     });
 }
 
+
+exports.findByHotness = function(page,callback){
+    var params ={page:page};
+    apiClientBase.post('/api/seem/by/hotness',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
+exports.findByViral = function(page,callback){
+    var params ={page:page};
+    apiClientBase.post('/api/seem/by/viral',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+

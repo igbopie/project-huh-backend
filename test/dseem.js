@@ -501,6 +501,45 @@ describe('Seem', function(){
 
         });
     })
+    describe("#hotness()",function(){
+        it('should list seems by hotness (incomplete)',function (done) {
+
+            this.timeout(20000);
+            var nSeems = 10;
+            var nItems = 100;
+            TestUtils.createSeemsAndItems(nSeems,nItems,users,function(err,seemsArray,itemsArray){
+                if (err) return done(err);
+                M1Seem.findByHotness(0,function(err,seems){
+                    if (err) return done(err);
+
+                    seems.length.should.be.above(0);
+
+                    done();
+                });
+            });
+        });
+    })
+
+    describe("#viral()",function(){
+        it('should list seems by viral (incomplete)',function (done) {
+
+            this.timeout(20000);
+            var nSeems = 10;
+            var nItems = 100;
+            TestUtils.createSeemsAndItems(nSeems,nItems,users,function(err,seemsArray,itemsArray){
+                if (err) return done(err);
+                M1Seem.findByViral(0,function(err,seems){
+                    if (err) return done(err);
+
+                    seems.length.should.be.above(0);
+
+                    done();
+                });
+            });
+        });
+    })
+
+
 
     describe("#hashtags1()",function(){
         it("should extract hashtags",function(done){
