@@ -87,13 +87,15 @@ var topicSchema = new Schema({
 
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
-seemSchema.index({ itemId: 1 });
-seemSchema.index({ topicId: 1 });
 
 seemSchema.plugin(textSearch);
 seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
+
+seemSchema.index({ itemId: 1 });
+seemSchema.index({ topicId: 1 });
 seemSchema.index({hotScore:-1,created:-1});
 seemSchema.index({viralScore:-1,created:-1});
+seemSchema.index({created:-1});
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
@@ -619,6 +621,12 @@ service.findByHotness = function(page, callback){
 }
 service.findByViral = function(page, callback){
     Seem.find({}).sort({viralScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+
+service.findByCreated = function(page, callback){
+    Seem.find({}).sort({created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }

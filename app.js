@@ -111,7 +111,6 @@ app.post('/api/media/get/:format/:id', media.get);
 app.get('/api/media/get/:format/:id', media.get);
 
 //SEEM
-app.post('/api/seem', seem.list);
 app.post('/api/seem/create', seem.create);
 app.post('/api/seem/item/get', seem.getItem);
 app.post('/api/seem/item/replies', seem.getItemReplies);
@@ -126,6 +125,9 @@ app.post('/api/search', seem.search);
 app.post('/api/seem/by/topic', seem.findByTopic);
 app.post('/api/seem/by/hotness', seem.findByHotness);
 app.post('/api/seem/by/viral', seem.findByViral);
+app.post('/api/seem/by/created', seem.findByCreated);
+// DEPRECATED!!
+app.post('/api/seem', seem.list);
 
 //FEED
 app.post('/api/feed',feed.findByMyFeed);
