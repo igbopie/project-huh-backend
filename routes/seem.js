@@ -427,3 +427,18 @@ exports.findByHotness = function (req,res){
         }
     });
 }
+
+exports.findByViral = function (req,res){
+
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findByViral(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+}

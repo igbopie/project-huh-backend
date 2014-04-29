@@ -8,7 +8,9 @@ var mongoose = require('mongoose')
     , THUMB_SCORE_DOWN = -1
     , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search')
-    , CronJob = require('cron').CronJob;
+    , CronJob = require('cron').CronJob
+    , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
+    ;
 
 
 var itemSchema = new Schema({
@@ -56,7 +58,8 @@ var seemSchema = new Schema({
     username        :   {	type: String, required: false},
     topicId         :   {	type: Schema.Types.ObjectId, required: false},
     tags: [String],
-    hotScore        :   {	type: Number, required: false}
+    hotScore        :   {	type: Number, required: false},
+    viralScore        :   {	type: Number, required: false}
 });
 
 var favouriteSchema = new Schema({
@@ -90,6 +93,7 @@ seemSchema.index({ topicId: 1 });
 seemSchema.plugin(textSearch);
 seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
 seemSchema.index({hotScore:-1,created:-1});
+seemSchema.index({viralScore:-1,created:-1});
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
@@ -156,7 +160,15 @@ var job = new CronJob({
 
         stream.on('data', function (doc) {
             // do something with the mongoose document
-            hotness(doc);
+            hotness(doc,function(seem){
+                viral(seem,function(seem) {
+                    seem.save(function (err) {
+                        if (err) {
+                            console.error(err);
+                        }
+                    })
+                });
+            });
         }).on('error', function (err) {
             // handle the error
         }).on('close', function () {
@@ -169,7 +181,22 @@ var job = new CronJob({
 job.start();
 
 
-function hotness(seem){
+function viral(seem,callback){
+    var s = seem.itemCount;
+
+    var seconds = (seem.created.getTime()/1000) - CONSTANT_DATE;
+
+    var z = Math.abs(s);
+    if(z < 1){
+        z = 1;
+    }
+
+    seem.viralScore = log10(z) + (seconds / 45000);
+
+    callback(seem);
+}
+
+function hotness(seem,callback){
     //load main Item
     Item.findOne({_id:seem.itemId},function(err,item){
         var s = item.thumbScoreCount;
@@ -183,7 +210,7 @@ function hotness(seem){
             y = 0;
         }
         // 1377966600 is a constant and a very special date :)
-        var seconds = (seem.created.getTime() /1000) - 1377966600;
+        var seconds = (seem.created.getTime() /1000) - CONSTANT_DATE;
 
         var z = Math.abs(s);
         if(z >= 1){
@@ -196,11 +223,8 @@ function hotness(seem){
         //console.log(hotnessValue+" "+s);
 
         seem.hotScore = hotnessValue;
-        seem.save(function(err){
-            if(err){
-                console.error(err);
-            }
-        })
+
+        callback(seem);
 
     })
 }
@@ -593,7 +617,11 @@ service.findByHotness = function(page, callback){
         callback(err,docs);
     });
 }
-
+service.findByViral = function(page, callback){
+    Seem.find({}).sort({viralScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
 
 
 module.exports = {
