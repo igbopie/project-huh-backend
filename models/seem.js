@@ -66,7 +66,9 @@ var favouriteSchema = new Schema({
     created		    :   {   type: Date	, required: true, default: Date.now },
     userId          :   {	type: Schema.Types.ObjectId, required: true},
     username        :   {	type: String, required: true},
-    itemId          :   {	type: Schema.Types.ObjectId, required: true}
+    itemId          :   {	type: Schema.Types.ObjectId, required: true},
+
+    item: { type: Schema.Types.Mixed , required: false }//TRANSIENT!!! DO NOT PERSIST
 });
 
 var thumbSchema = new Schema({
@@ -84,7 +86,7 @@ var topicSchema = new Schema({
     code            : {	type: String, required: true,index: { unique: true }}
 });
 
-
+favouriteSchema.index({ userId:1 });
 favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
 thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
 
@@ -629,6 +631,32 @@ service.findByCreated = function(page, callback){
     Seem.find({}).sort({created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
+}
+
+service.findFavouritedByUser = function(user,page, callback){
+    Favourite.find({userId:user._id}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        if(err) return callback(err);
+        //Mongo Join! LOL
+        // if slow replicate item data in favourite collection.
+
+        for(var i = 0,callbacked = 0; i < docs.length; i++){
+            var fav = docs[i];
+            Item.findOne({_id:fav.itemId},function(err,reply){
+                if(err) return callback(err);
+
+                fav.item = reply;
+
+                callbacked++;
+
+                if(callbacked == docs.length){
+                    callback(null,docs);
+                }
+            })
+        }
+
+    });
+
+
 }
 
 

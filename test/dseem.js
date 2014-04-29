@@ -260,6 +260,29 @@ describe('Seem', function(){
         });
     });
 
+    describe('#favouriteAndGetFavourited()', function(){
+        it('should favourite',function (done) {
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err,reply){
+                if (err) return done(err);
+                M1Seem.reply(reply._id,"This is another reply",media,users[0].token,function(err,reply2) {
+                    if (err) return done(err);
+                    M1Seem.favourite(reply._id,users[0].token,function(err){
+                        if (err) return done(err);
+                        M1Seem.findItemsByFavourited(users[0].username,0,function(err,favourited){
+                            if(err) return done(err);
+
+                            favourited.length.should.be.equal(1);
+                            favourited[0].item._id.should.be.equal(reply._id);
+
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+
     describe('#thumbUp()', function(){
         it('should thumb up',function (done) {
             M1Seem.thumbUp(seem.itemId,users[0].token,function(err){
