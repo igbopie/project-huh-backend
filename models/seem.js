@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , Feed = require("../models/feed").Feed
+    , Media = require("../models/media").Media
     , FeedService = require("../models/feed").Service
     , MAX_RESULTS_ITEMS = 100
     , MAX_LASTEST_ITEMS_SEEM = 5
@@ -27,6 +28,7 @@ var itemSchema = new Schema({
     thumbUpCount:{type: Number, required:true, default:0},
     thumbDownCount:{type: Number, required:true, default:0},
     thumbScoreCount:{type: Number, required:true, default:0},
+    exifLocation: { type: [Number], required:false,index: '2dsphere'},
     tags: [String],
     favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
@@ -51,6 +53,7 @@ var seemSchema = new Schema({
     itemId          :   {	type: Schema.Types.ObjectId, required: true},
     itemMediaId     :   {	type: Schema.Types.ObjectId, required: false},
     itemCaption     :   {	type: String, required: false},
+    exifLocation: { type: [Number], required:false,index: '2dsphere'},
     latestItems     :       [reducedItemSchema],
     title           :   {	type: String, required: false},
     itemCount       :   {   type: Number, required:true, default:1},
@@ -241,24 +244,33 @@ function log10(val) {
 var service = {};
 
 service.create = function(title,caption,mediaId,topicId,user,callback){
-    if(topicId) {
-        Topic.findOne({"_id": topicId}, function (err, topic) {
-            //ignore errors here just log it
-            if (err) {
-                console.error(err);
-            }
-            createSeemAux(title, caption, mediaId, topic, user, callback);
-        })
-    }else{
-        createSeemAux(title, caption, mediaId, null, user, callback);
-    }
+    Media.findOne({_id:mediaId},function(err,media){
+        if(err) return callback(err);
+        if(!media) return callback("media not found");
+        if(topicId) {
+            Topic.findOne({"_id": topicId}, function (err, topic) {
+                //ignore errors here just log it
+                if (err) {
+                    console.error(err);
+                }
+                createSeemAux(title, caption, media, topic, user, callback);
+            })
+        }else{
+            createSeemAux(title, caption, media, null, user, callback);
+        }
+    });
+
 
 
 }
 
-function createSeemAux(title,caption,mediaId,topic,user,callback){
+function createSeemAux(title,caption,media,topic,user,callback){
     var mainItem = new Item();
-    mainItem.mediaId = mediaId;
+
+    mainItem.mediaId = media._id;
+    if(media.exifLocation){
+        mainItem.exifLocation = media.exifLocation;
+    }
     mainItem.caption = caption;
     mainItem.userId = user._id;
     mainItem.username = user.username;
@@ -276,6 +288,9 @@ function createSeemAux(title,caption,mediaId,topic,user,callback){
         }
         seem.itemMediaId = mainItem.mediaId;
         seem.itemCaption = mainItem.caption;
+        if(media.exifLocation){
+            seem.exifLocation = media.exifLocation;
+        }
 
         if(topic){
             seem.topicId = topic._id
@@ -480,10 +495,17 @@ service.getItemReplies = function(id,page,callback){
 }
 
 service.reply = function(replyId,caption,mediaId,user,callback){
-    service.replyAux(replyId,caption,mediaId,replyId,1,user,null,callback);
-
+    Media.findOne({_id:mediaId},function(err,media) {
+        if(err){
+            callback(err);
+        }else if(!media){
+            callback("Media not found");
+        }else {
+            service.replyAux(replyId, caption, media, replyId, 1, user, null, callback);
+        }
+    });
 }
-service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyToObj,callback){
+service.replyAux = function(replyId,caption,media,nextParent,depth,user,replyToObj,callback){
     Item.findOne({_id:nextParent},function(err,parentItem){
         if(err) return callback(err);
         if(!parentItem) return callback("parent reply not found");
@@ -493,7 +515,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
         }
 
         if(parentItem.replyTo){
-            service.replyAux(replyId,caption,mediaId,parentItem.replyTo,depth+1,user,replyToObj,callback);
+            service.replyAux(replyId,caption,media,parentItem.replyTo,depth+1,user,replyToObj,callback);
         }else {
             //console.log("ParentItem "+parentItem._id+" Depth:"+depth);
             Seem.findOne({itemId:parentItem._id},function(err,seem){
@@ -501,7 +523,7 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                 if (err) return callback(err)
 
                 var item = new Item();
-                item.mediaId = mediaId;
+
                 item.caption = caption;
                 item.replyTo = replyId;
                 item.depth = depth;
@@ -509,6 +531,11 @@ service.replyAux = function(replyId,caption,mediaId,nextParent,depth,user,replyT
                 if(user) {
                     item.userId = user._id;
                     item.username = user.username;
+                }
+
+                item.mediaId = media._id;
+                if(media.exifLocation){
+                    item.exifLocation = media.exifLocation;
                 }
                 //----------------
                 //Save Item

@@ -21,10 +21,14 @@ describe('Seem', function(){
                 TestUtils.loginUsers(users,function(err){
                     if(err) return done(err);
 
-                    M1Seem.create("A title for a seam", "A caption for the photo", media, users[0].token, function (err, data) {
+                    TestUtils.createFakeMedia(media,function(err){
                         if (err) return done(err);
-                        seem = data;
-                        done();
+
+                        M1Seem.create("A title for a seam", "A caption for the photo", media, users[0].token, function (err, data) {
+                            if (err) return done(err);
+                            seem = data;
+                            done();
+                        });
                     });
                 });
             });
@@ -38,6 +42,19 @@ describe('Seem', function(){
                 done();
             });
 	    });
+    });
+
+    describe('#createWithExif', function(){
+        it('should get a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/exifimage.jpg",function(err,mediaId){
+                M1Seem.create("A title for a seam","A caption for the photo",mediaId,users[0].token,function(err,data){
+                    if (err) return done(err);
+                    data.should.have.properties('exifLocation');
+                    done();
+                });
+            });
+        });
     });
 
     describe('#list()', function(){
@@ -69,6 +86,19 @@ describe('Seem', function(){
                 should(reply.depth).be.equal(1);
 
                 done();
+            });
+        });
+    });
+
+    describe('#replyWithExif', function(){
+        it('should reply',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/exifimage.jpg",function(err,mediaId){
+                M1Seem.reply(seem.itemId,"This is a reply",mediaId,users[0].token,function(err,reply){
+                    if (err) return done(err);
+                    reply.should.have.properties('exifLocation');
+                    done();
+                });
             });
         });
     });

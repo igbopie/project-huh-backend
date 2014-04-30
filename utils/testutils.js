@@ -65,6 +65,27 @@ exports.cleanDatabase = function(callback){
     });
 }
 
+exports.createFakeMedia = function(id,callback){
+    var db = mongoose.createConnection();
+    //Resest DB
+    db.open('mongodb://localhost/seem',function(err) {
+        if (err) {
+            console.log(err);
+            callback(err);
+            return;
+        }
+        var media = {"_id":new mongoose.Types.ObjectId(id),test:1};
+        db.collection('media').save(media,function(err){
+            if (err) {
+                callback(err);
+            }
+            //console.log(media);
+            db.close(function(err){
+                callback(err);
+            });
+        });
+    });
+}
 exports.findDBUser = function(username,callback){
     var db = mongoose.createConnection();
     //Resest DB

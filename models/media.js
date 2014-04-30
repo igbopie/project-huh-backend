@@ -19,8 +19,9 @@ var mediaSchema = new Schema({
     ownerId: {    type: Schema.Types.ObjectId, required: false},
     created: { type: Date, required: true, default: Date.now },
     name: { type: String, required: true},
-    location: { type: String, required: false },
-    contentType: { type: String, required: true }
+    contentType: { type: String, required: true },
+    exifLocation: { type: [Number], required:false,index: '2dsphere'}
+
 
 });
 
@@ -101,34 +102,85 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
     //media.ownerId = ownerId;
     media.contentType = contentType;
     media.name = name;
-    //TODO
-    media.location = "NOT IMPLEMENTED";
 
-    media.save(function (err) {
-        if (err) {
-            callback(err);
-        } else {
-            service.createAux(originalPath, media, FORMAT_THUMB, function (err) {
+    imageMagick(originalPath).identify(function(err,data){
+        if (!err){
+            //console.log(data)
+            if(data &&
+                data.Properties &&
+                data.Properties['exif:GPSLatitude'] &&
+                data.Properties['exif:GPSLongitude']) {
+
+                var latitude = toDecimal(data.Properties['exif:GPSLatitude']);
+
+                if(data.Properties['exif:GPSLatitudeRef'] != "N"){
+                    latitude = latitude * -1;
+                }
+
+                var longitude = toDecimal(data.Properties['exif:GPSLongitude']);
+                if(data.Properties['exif:GPSLongitudeRef'] != "E"){
+                    longitude = longitude * -1;
+                }
+                media.exifLocation = [latitude,longitude];
+                console.log(""+latitude + " "+longitude);
+            } else {
+                console.log("No GPS exif data");
+            }
+
+            media.save(function (err) {
                 if (err) {
                     callback(err);
                 } else {
-                    service.createAux(originalPath, media, FORMAT_LARGE, function (err) {
+                    service.createAux(originalPath, media, FORMAT_THUMB, function (err) {
                         if (err) {
                             callback(err);
                         } else {
-                            callback(null, media._id);
+                            service.createAux(originalPath, media, FORMAT_LARGE, function (err) {
+                                if (err) {
+                                    callback(err);
+                                } else {
+                                    callback(null, media._id);
+                                }
+                            });
                         }
-                    });
+                    })
                 }
-            })
+            });
         }
     });
+
+
 }
+
+function toDecimal(coor){
+    //coor is an array like this 40/1, 39/1, 5429/100
+    var coorArray = coor.split(",");
+    var hoursStr = coorArray[0];
+    var minutesStr = coorArray[1];
+    var secondsStr = coorArray [2];
+
+    var number = toDecimalPart(hoursStr);
+    number = number + (toDecimalPart(minutesStr) /60);
+    number = number + (toDecimalPart(secondsStr) / (60*60));
+    //console.log(number);
+    return number;
+
+}
+
+function toDecimalPart(subCoor){
+    //String like this 5429/100
+    var number = Number(subCoor.substring(0, subCoor.indexOf("/")));
+    var decimals = Number(subCoor.substring(subCoor.indexOf("/")+1,subCoor.length));
+    return number / decimals;
+
+}
+
 /**
  * Store format image in S3
  */
 service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
+
     imageMagick(originalPath).size(function(err, size){
 
         var landscape = true;
@@ -146,6 +198,7 @@ service.createAux = function (originalPath, media, format, callback) {
 
         imageMagick(originalPath)
             .resize(widthConstrain, heightConstrain+ ">")
+            .autoOrient()
             .write(tempPath, function (err) {
                 if (err) {
                     callback(err);
