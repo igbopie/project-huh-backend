@@ -670,26 +670,28 @@ service.findFavouritedByUser = function(user,page, callback){
         if(err) return callback(err);
         //Mongo Join! LOL
         // if slow replicate item data in favourite collection.
+        if(docs.length == 0){
+            callback(null, []);
+        }else {
+            var retArray = [];
+            var callbacked = 0;
+            docs.forEach(function (fav) {
+                Item.findOne({_id: fav.itemId}, function (err, reply) {
+                    if (err) return callback(err);
 
-        var retArray = [];
-        var callbacked = 0;
-
-        docs.forEach(function(fav){
-            Item.findOne({_id:fav.itemId},function(err,reply){
-                if(err) return callback(err);
-
-                //fav.item = reply;
-                reply.favouritedDate = fav.created;
-                retArray.push(reply);
+                    //fav.item = reply;
+                    reply.favouritedDate = fav.created;
+                    retArray.push(reply);
 
 
-                callbacked++;
+                    callbacked++;
 
-                if(callbacked == docs.length){
-                    callback(null,retArray);
-                }
-            })
-        });
+                    if (callbacked == docs.length) {
+                        callback(null, retArray);
+                    }
+                })
+            });
+        }
 
 
 
