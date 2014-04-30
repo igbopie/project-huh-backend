@@ -92,7 +92,7 @@ service.onSeemCreated =  function (seem,mainItem,user){
             return;// ignore errors here
         }
         //TODO do this on a background job
-        processSendMessageToFollowers(0,user,"@"+user.username+" has created a seem",feed.seemId,feed.itemId)
+        processSendMessageToFollowers(0,user,"@"+user.username+" has created a seem",feed.action,feed.seemId,feed.itemId)
 
     });
 }
@@ -129,7 +129,7 @@ service.onReply =  function (seem,item,replyToObj,user){
         if(replyToObj.username == undefined || replyToObj.username == feed.username){
             message= "@"+user.username+" has added to '"+seem.title+"'";
         }
-        processSendMessageToFollowers(0,user,message,feed.seemId,feed.itemId)
+        processSendMessageToFollowers(0,user,message,feed.action,feed.seemId,feed.itemId)
 
     });
 }
@@ -151,7 +151,7 @@ service.onFavourited =function (seem,item,user){
             return;// ignore errors here
         }
         //TODO do this on a background job
-        processSendMessageToFollowers(0,user,"@"+user.username+" has favourited a photo",feed.seemId,feed.itemId)
+        processSendMessageToFollowers(0,user,"@"+user.username+" has favourited a photo",feed.action,feed.seemId,feed.itemId)
     });
 
 }
@@ -172,7 +172,7 @@ module.exports = {
     Service:service
 };
 
-function processSendMessageToFollowers(page,user,message,seemId,itemId){
+function processSendMessageToFollowers(page,user,message,type,seemId,itemId){
 
     FollowService.findFollowers(user._id,page,function(err,followers){
         if(err){
@@ -184,10 +184,10 @@ function processSendMessageToFollowers(page,user,message,seemId,itemId){
             var follow = followers[i];
             UserService.findUserById(follow.followerId,function(err,followerInfo){
                 if(followerInfo.apnToken){
-                    Apn.send(followerInfo.apnToken,message,{seemId:seemId,itemId:itemId});
+                    Apn.send(followerInfo.apnToken,message,{type:type,seemId:seemId,itemId:itemId});
                 }
                 if(followerInfo.gcmToken){
-                    Gcm.send(followerInfo.gcmToken,message,{seemId:seemId,itemId:itemId});
+                    Gcm.send(followerInfo.gcmToken,message,{type:type,seemId:seemId,itemId:itemId});
                 }
             });
         }
