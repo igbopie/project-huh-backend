@@ -126,10 +126,8 @@ service.onReply =  function (seem,item,replyToObj,user){
         }
         //TODO do this on a background job
         var message = "@"+user.username+" has replied to @"+replyToObj.username;
-        if(replyToObj.username == undefined){
-            message= "@"+user.username+" has replied to someone";
-        } else if(replyToObj.username == feed.username){
-            message= "@"+user.username+" has replied to him/herself";
+        if(replyToObj.username == undefined || replyToObj.username == feed.username){
+            message= "@"+user.username+" has added to '"+seem.title+"'";
         }
         processSendMessageToFollowers(0,user,message,feed.seemId,feed.itemId)
 
