@@ -31,6 +31,7 @@ var itemSchema = new Schema({
     exifLocation: { type: [Number], required:false,index: '2dsphere'},
     tags: [String],
     favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
+    favouritedDate: { type: Date , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
 });
@@ -70,8 +71,6 @@ var favouriteSchema = new Schema({
     userId          :   {	type: Schema.Types.ObjectId, required: true},
     username        :   {	type: String, required: true},
     itemId          :   {	type: Schema.Types.ObjectId, required: true},
-
-    item: { type: Schema.Types.Mixed , required: false }//TRANSIENT!!! DO NOT PERSIST
 });
 
 var thumbSchema = new Schema({
@@ -672,20 +671,27 @@ service.findFavouritedByUser = function(user,page, callback){
         //Mongo Join! LOL
         // if slow replicate item data in favourite collection.
 
-        for(var i = 0,callbacked = 0; i < docs.length; i++){
-            var fav = docs[i];
+        var retArray = [];
+        var callbacked = 0;
+
+        docs.forEach(function(fav){
             Item.findOne({_id:fav.itemId},function(err,reply){
                 if(err) return callback(err);
 
-                fav.item = reply;
+                //fav.item = reply;
+                reply.favouritedDate = fav.created;
+                retArray.push(reply);
+
 
                 callbacked++;
 
                 if(callbacked == docs.length){
-                    callback(null,docs);
+                    callback(null,retArray);
                 }
             })
-        }
+        });
+
+
 
     });
 
