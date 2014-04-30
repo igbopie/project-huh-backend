@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
     , S3_BUCKET = process.env.AWS_S3_BUCKET
     , FORMAT_THUMB = {name: "thumb", height: 480, width: 480}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
     , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
+    , QUALITY = 50
     ;
 
 
@@ -199,6 +200,7 @@ service.createAux = function (originalPath, media, format, callback) {
         imageMagick(originalPath)
             .resize(widthConstrain, heightConstrain+ ">")
             .autoOrient()
+            .quality(QUALITY)
             .write(tempPath, function (err) {
                 if (err) {
                     callback(err);
