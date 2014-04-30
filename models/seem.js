@@ -95,9 +95,10 @@ seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
 
 seemSchema.index({ itemId: 1 });
 seemSchema.index({ topicId: 1 });
-seemSchema.index({hotScore:-1,created:-1});
-seemSchema.index({viralScore:-1,created:-1});
+seemSchema.index({hotScore:-1,updated:-1});
+seemSchema.index({viralScore:-1,updated:-1});
 seemSchema.index({created:-1});
+seemSchema.index({updated:-1});
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
@@ -611,24 +612,29 @@ service.searchItems = function(text,callback){
 }
 
 service.findByTopic = function(topicId,page,callback){
-    Seem.find({topicId:topicId}).sort({hotScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({topicId:topicId}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findByHotness = function(page, callback){
-    Seem.find({}).sort({hotScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }
 service.findByViral = function(page, callback){
-    Seem.find({}).sort({viralScore:-1,created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({}).sort({viralScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findByCreated = function(page, callback){
     Seem.find({}).sort({created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+service.findByUpdated = function(page, callback){
+    Seem.find({}).sort({updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }

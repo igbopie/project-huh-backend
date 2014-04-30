@@ -458,6 +458,20 @@ exports.findByCreated = function (req,res){
     });
 }
 
+exports.findByUpdated = function (req,res){
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findByUpdated(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+}
+
 exports.findFavouritedByUser = function(req,res) {
     var username = req.body.username;
     var page = req.body.page;
