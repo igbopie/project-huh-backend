@@ -122,7 +122,7 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
                 if(data.Properties['exif:GPSLongitudeRef'] != "E"){
                     longitude = longitude * -1;
                 }
-                media.exifLocation = [latitude,longitude];
+                media.exifLocation = [longitude,latitude];
                 console.log(""+latitude + " "+longitude);
             } else {
                 console.log("No GPS exif data");
