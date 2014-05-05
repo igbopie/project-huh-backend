@@ -495,3 +495,34 @@ exports.findFavouritedByUser = function(req,res) {
         }
     });
 }
+
+
+exports.findItemsByHotness = function (req,res){
+
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findItemsByHotness(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+}
+
+exports.findItemsByViral = function (req,res){
+
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findItemsByViral(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+}

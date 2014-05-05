@@ -128,6 +128,8 @@ app.post('/api/seem/by/hotness', seem.findByHotness);
 app.post('/api/seem/by/viral', seem.findByViral);
 app.post('/api/seem/by/created', seem.findByCreated);
 app.post('/api/seem/by/updated', seem.findByUpdated);
+app.post('/api/seem/item/by/hotness', seem.findItemsByHotness);
+app.post('/api/seem/item/by/viral', seem.findItemsByViral);
 // DEPRECATED!!
 app.post('/api/seem', seem.list);
 

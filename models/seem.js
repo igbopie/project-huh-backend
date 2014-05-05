@@ -30,6 +30,8 @@ var itemSchema = new Schema({
     thumbScoreCount:{type: Number, required:true, default:0},
     exifLocation: { type: [Number], required:false,index: '2dsphere'},
     tags: [String],
+    hotScore        :   {	type: Number, required: false},
+    viralScore        :   {	type: Number, required: false},
     favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
     favouritedDate: { type: Date , required: false },//TRANSIENT!!! DO NOT PERSIST
     thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
@@ -104,10 +106,14 @@ seemSchema.index({updated:-1});
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
+itemSchema.index({seemId:1});
+itemSchema.index({hotScore:-1,updated:-1});
+itemSchema.index({viralScore:-1,updated:-1});
 
 
 
-    var Seem = mongoose.model('seem', seemSchema);
+
+var Seem = mongoose.model('seem', seemSchema);
 var Item = mongoose.model('item', itemSchema);
 var Favourite = mongoose.model('favourite', favouriteSchema);
 var Thumb = mongoose.model('thumb', thumbSchema);
@@ -166,6 +172,8 @@ var job = new CronJob({
         var stream = Seem.find().stream();
 
         stream.on('data', function (doc) {
+            this.pause();
+            var self = this;
             // do something with the mongoose document
             hotness(doc,function(seem){
                 viral(seem,function(seem) {
@@ -173,6 +181,8 @@ var job = new CronJob({
                         if (err) {
                             console.error(err);
                         }
+
+                        self.resume();
                     })
                 });
             });
@@ -205,35 +215,83 @@ function viral(seem,callback){
 
 function hotness(seem,callback){
     //load main Item
-    Item.findOne({_id:seem.itemId},function(err,item){
-        var s = item.thumbScoreCount;
+    var stream = Item.find({seemId:seem._id}).stream();
 
-        var y;
-        if(s > 0){
-            y = 1;
-        } else if(s < 0){
-            y = -1;
-        } else {
-            y = 0;
-        }
-        // 1377966600 is a constant and a very special date :)
-        var seconds = (seem.created.getTime() /1000) - CONSTANT_DATE;
+    var score = 0;
 
-        var z = Math.abs(s);
-        if(z >= 1){
-            z = z;
-        } else {
-            z = 1;
-        }
+    stream.on('data', function (doc) {
+        this.pause();
+        var self = this;
+        hotnessItem(doc,function(item) {
+            viralItem(item, function (item) {
+                item.save(function (err) {
+                    if (err) {
+                        console.log("Error calculating hotscore: " + err);
+                    } else {
+                        score += item.hotScore;
+                    }
+                    console.log("finish stream items hotness item");
 
-        var hotnessValue = log10(z) + (y * seconds / 45000);
-        //console.log(hotnessValue+" "+s);
+                    self.resume();
+                });
+            });
+        });
 
-        seem.hotScore = hotnessValue;
+    }).on('error', function (err) {
+        // handle the error
+        console.log("Error calculating hotscore: "+err);
+    }).on('close', function () {
+        // the stream is closed
+        console.log("finish stream items");
+        seem.hotScore = score;
 
         callback(seem);
+    });
 
-    })
+
+}
+
+function hotnessItem(item,callback){
+    //load main Item
+    var s = item.thumbScoreCount;
+
+    var y;
+    if(s > 0){
+        y = 1;
+    } else if(s < 0){
+        y = -1;
+    } else {
+        y = 0;
+    }
+    // 1377966600 is a constant and a very special date :)
+    var seconds = (item.created.getTime() /1000) - CONSTANT_DATE;
+
+    var z = Math.abs(s);
+    if(z >= 1){
+        z = z;
+    } else {
+        z = 1;
+    }
+
+    item.hotScore = log10(z) + (y * seconds / 45000);
+
+    callback(item);
+
+}
+
+function viralItem(item,callback){
+    var s = item.replyCount;
+
+    var seconds = (item.created.getTime()/1000) - CONSTANT_DATE;
+
+    var z = Math.abs(s);
+    if(z < 1){
+        z = 1;
+    }
+
+    item.viralScore = log10(z) + (seconds / 45000);
+
+    callback(item);
 }
 function log10(val) {
     return Math.log(val) / Math.log(10);
@@ -659,8 +717,20 @@ service.findByCreated = function(page, callback){
         callback(err,docs);
     });
 }
+
 service.findByUpdated = function(page, callback){
     Seem.find({}).sort({updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+
+service.findItemsByHotness = function(page, callback){
+    Item.find({}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        callback(err,docs);
+    });
+}
+service.findItemsByViral = function(page, callback){
+    Item.find({}).sort({viralScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }

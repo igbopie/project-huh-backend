@@ -207,3 +207,26 @@ exports.findItemsByFavourited = function(username,page,callback){
         }
     });
 }
+
+
+exports.findItemsByHotness = function(page,callback){
+    var params ={page:page};
+    apiClientBase.post('/api/seem/item/by/hotness',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
+exports.findItemsByViral = function(page,callback){
+    var params ={page:page};
+    apiClientBase.post('/api/seem/item/by/viral',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

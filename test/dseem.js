@@ -573,7 +573,15 @@ describe('Seem', function(){
 
                     seems.length.should.be.above(0);
 
-                    done();
+                    M1Seem.findItemsByHotness(0,function(err,items) {
+                        if (err) return done(err);
+
+                        items.length.should.be.above(0);
+
+                        done();
+
+                    });
+
                 });
             });
         });
@@ -592,7 +600,14 @@ describe('Seem', function(){
 
                     seems.length.should.be.above(0);
 
-                    done();
+                    M1Seem.findItemsByViral(0,function(err,items) {
+                        if (err) return done(err);
+
+                        items.length.should.be.above(0);
+
+                        done();
+
+                    });
                 });
             });
         });
