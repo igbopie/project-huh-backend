@@ -745,13 +745,13 @@ service.findFavouritedByUser = function(user,page, callback){
         }else {
             var retArray = [];
             var callbacked = 0;
-            docs.forEach(function (fav) {
+            docs.forEach(function (fav,index) {
                 Item.findOne({_id: fav.itemId}, function (err, reply) {
                     if (err) return callback(err);
 
                     //fav.item = reply;
                     reply.favouritedDate = fav.created;
-                    retArray.push(reply);
+                    retArray[index]=reply;
 
 
                     callbacked++;
