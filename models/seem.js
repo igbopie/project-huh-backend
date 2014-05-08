@@ -72,7 +72,7 @@ var favouriteSchema = new Schema({
     created		    :   {   type: Date	, required: true, default: Date.now },
     userId          :   {	type: Schema.Types.ObjectId, required: true},
     username        :   {	type: String, required: true},
-    itemId          :   {	type: Schema.Types.ObjectId, required: true},
+    itemId          :   {	type: Schema.Types.ObjectId, required: true}
 });
 
 var thumbSchema = new Schema({
@@ -548,6 +548,38 @@ service.getItem = function(id,callback){
 service.getItemReplies = function(id,page,callback){
     Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
+    });
+}
+
+service.getItemRepliesWithFavourited = function(id,page,user,callback){
+    Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+        if(err){
+            callback(err,null);
+        }else {
+
+            var callbacked = 0;
+            docs.forEach(function(doc,index){
+                Favourite.findOne({itemId:doc._id,userId:user._id},function(err,favDoc){
+                    if(err){
+                        callback(err,null);
+                    }else {
+                        if(favDoc){
+                            doc.favourited = true;
+                            doc.favouritedDate = favDoc.created;
+                        }else{
+                            doc.favourited = false;
+                        }
+
+                        callbacked++;
+
+                        if (callbacked == docs.length) {
+                            callback(null, docs);
+                        }
+                    }
+
+                });
+            });
+        }
     });
 }
 

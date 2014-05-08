@@ -106,17 +106,37 @@ exports.getItem = function(req, res) {
 exports.getItemReplies = function(req, res) {
     var itemId = req.body.itemId;
     var page = req.body.page;
+    var token = req.body.token;
     if(!page){
         page = 0;
     }
-    SeemService.getItemReplies(itemId,page,function(err,item){
-        if(err){
-            console.error(err);
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else {
-            ApiUtils.api(req,res,ApiUtils.OK,null,item);
-        }
-    });
+    if(!token) {
+        SeemService.getItemReplies(itemId, page, function (err, item) {
+            if (err) {
+                console.error(err);
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else {
+                ApiUtils.api(req, res, ApiUtils.OK, null, item);
+            }
+        });
+    } else {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.getItemRepliesWithFavourited(itemId,page,user,function(err,docs){
+                    if (err) {
+                        console.error(err);
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else {
+                        ApiUtils.api(req, res, ApiUtils.OK, null, docs);
+                    }
+                });
+            }
+        });
+    }
 };
 
 exports.reply = function(req, res) {

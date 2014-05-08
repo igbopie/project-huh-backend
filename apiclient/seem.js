@@ -50,6 +50,18 @@ exports.getItemReplies = function(itemId,page,callback){
     });
 }
 
+exports.getItemRepliesWithFavourited = function(itemId,page,token,callback){
+    var params ={itemId:itemId,page:page,token:token};
+    apiClientBase.post('/api/seem/item/replies',params,function(code,headers,data){
+        //console.log("Data:"+data);
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 exports.list = function(callback){
     var params ={};
     apiClientBase.post('/api/seem',params,function(code,headers,data){
