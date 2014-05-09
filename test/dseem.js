@@ -339,6 +339,27 @@ describe('Seem', function(){
         });
     });
 
+    describe('#favouriteAndGetEmptyReplies()', function(){
+        it('should favourite',function (done) {
+            M1Seem.reply(seem.itemId,"This is a reply",media,users[0].token,function(err,reply){
+                if (err) return done(err);
+                M1Seem.reply(reply._id,"This is another reply",media,users[0].token,function(err,reply2) {
+                    if (err) return done(err);
+                    M1Seem.favourite(reply2._id,users[0].token,function(err){
+                        if (err) return done(err);
+                        M1Seem.getItemRepliesWithFavourited(reply2._id,0,users[0].token,function(err,docs){
+                            if(err) return done(err);
+
+                            docs.length.should.be.equal(0);
+
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('#thumbUp()', function(){
         it('should thumb up',function (done) {
             M1Seem.thumbUp(seem.itemId,users[0].token,function(err){

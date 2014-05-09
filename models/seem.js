@@ -555,8 +555,9 @@ service.getItemRepliesWithFavourited = function(id,page,user,callback){
     Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         if(err){
             callback(err,null);
-        }else {
-
+        }else if(!docs || docs.length == 0){
+                callback(null,docs);
+        }else{
             var callbacked = 0;
             docs.forEach(function(doc,index){
                 Favourite.findOne({itemId:doc._id,userId:user._id},function(err,favDoc){
