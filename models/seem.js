@@ -855,9 +855,8 @@ service.findFavouritedByUser = function(user,page, callback){
         .populate('itemId')
         .exec(function(err,docs){
         if(err) return callback(err);
-        //Mongo Join! LOL
-        // if slow replicate item data in favourite collection.
-        if(docs.length == 0){
+
+            if(docs.length == 0){
             callback(null, []);
         }else {
             var retArray = [];
@@ -868,12 +867,16 @@ service.findFavouritedByUser = function(user,page, callback){
                 reply.favouritedDate = action.favouritedDate;
                 retArray[index]=reply;
 
+                //Mongo Join! LOL
+                // if slow replicate item data in favourite collection.
+                retArray[index].populate("user",PUBLIC_USER_FIELDS,function(err){
+                    callbacked++;
 
-                callbacked++;
+                    if (callbacked == docs.length) {
+                        callback(null, retArray);
+                    }
+                });
 
-                if (callbacked == docs.length) {
-                    callback(null, retArray);
-                }
             });
         }
 

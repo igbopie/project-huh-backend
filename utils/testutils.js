@@ -47,14 +47,20 @@ exports.cleanDatabase = function(callback){
                                     console.log(err);
                                     callback(err);
                                     return;
-                                }
-                                db.close(function(err){
-                                    if(err) {
+                                }db.collection('actions').remove(	function(err) {
+                                    if (err) {
                                         console.log(err);
                                         callback(err);
                                         return;
                                     }
-                                    callback();
+                                    db.close(function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                            callback(err);
+                                            return;
+                                        }
+                                        callback();
+                                    });
                                 });
                             });
                         });
