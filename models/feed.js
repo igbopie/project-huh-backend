@@ -9,7 +9,9 @@ var mongoose = require('mongoose')
     , Apn = require("../utils/apn")
     , Gcm = require("../utils/gcm")
     , FollowService = require("../models/follow").Service
-    , UserService = require("../models/user").Service;
+    , UserService = require("../models/user").Service
+    , Utils = require('../utils/utils')
+    , PUBLIC_USER_FIELDS ="username mediaId";
 
 
 var feedSchema = new Schema({
@@ -20,18 +22,19 @@ var feedSchema = new Schema({
     replyToId       :   {	type: Schema.Types.ObjectId, required: false},
     replyToMediaId  :   {	type: Schema.Types.ObjectId, required: false},
     replyToCaption  :   {	type: String, required: false},
-    replyToUsername :   {	type: String, required: false},
-    replyToUserId   :   {	type: Schema.Types.ObjectId, required: false},
+    replyToUser   :   {	type: Schema.Types.ObjectId, required: false,ref:"User"},
     seemId          :   {	type: Schema.Types.ObjectId, required: false},
     seemTitle       :   {	type: String, required: false},
     action          :   {	type: String, required: false}, //REPLY_TO, CREATE_SEEM
-    userId          :   {	type: Schema.Types.ObjectId, required: true},
-    username        :   {	type: String, required: true}
+    user          :   {	type: Schema.Types.ObjectId, required: true,ref:"User"}
 
 })
 
-feedSchema.index({ userId:1 })
-var Feed = mongoose.model('feed', feedSchema);
+feedSchema.index({ user:1 })
+Utils.joinToUser(feedSchema);
+Utils.joinToUser(feedSchema,"replyToUser","replyToUserId","replyToUsername");
+
+var Feed = mongoose.model('Feed', feedSchema);
 
 
 //Service?
@@ -46,10 +49,12 @@ service.findByMyFeed = function (user,page,callback){
                  followArray.push(fItem.followedId);
              }
              followArray.push(user._id);
-             Feed.find({"userId":{"$in":followArray}})
+             Feed.find({"user":{"$in":followArray}})
                  .sort({ created: -1})
                  .limit(PAGE_LIMIT)
                  .skip(PAGE_LIMIT*page)
+                 .populate("user",PUBLIC_USER_FIELDS)
+                 .populate("replyToUser",PUBLIC_USER_FIELDS)
                  .exec(function(err, myfeed) {
                      if(err) {
                          callback(err);
@@ -60,10 +65,12 @@ service.findByMyFeed = function (user,page,callback){
         });
 }
 service.findByUser =  function (user,page,callback) {
-    Feed.find({"userId":user._id})
+    Feed.find({"user":user._id})
         .sort({ created: -1})
         .limit(PAGE_LIMIT)
         .skip(PAGE_LIMIT*page)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .populate("replyToUser",PUBLIC_USER_FIELDS)
         .exec(function(err, myfeed) {
             if(err) {
                 callback(err);
@@ -83,8 +90,7 @@ service.onSeemCreated =  function (seem,mainItem,user){
     feed.seemId = seem._id;
     feed.seemTitle = seem.title;
     feed.action = FEED_ACTION_CREATE_SEEM;
-    feed.userId = user._id;
-    feed.username = user.username;
+    feed.user = user._id;
 
     feed.save(function(err){
         if(err){
@@ -110,14 +116,12 @@ service.onReply =  function (seem,item,replyToObj,user){
     if(replyToObj) {
         feed.replyToMediaId = replyToObj.mediaId;
         feed.replyToCaption = replyToObj.caption;
-        feed.replyToUserId = replyToObj.userId;
-        feed.replyToUsername = replyToObj.username;
+        feed.replyToUser = replyToObj.user;
     }
     feed.seemId = seem._id;
     feed.seemTitle = seem.title;
     feed.action = FEED_ACTION_REPLY_TO;
-    feed.userId = user._id;
-    feed.username = user.username;
+    feed.user = user._id;
 
     feed.save(function(err){
         if(err){
@@ -125,11 +129,18 @@ service.onReply =  function (seem,item,replyToObj,user){
             return;// ignore errors here
         }
         //TODO do this on a background job
-        var message = "@"+user.username+" has replied to @"+replyToObj.username;
-        if(replyToObj.username == undefined || replyToObj.username == feed.username){
-            message= "@"+user.username+" has added to '"+seem.title+"'";
-        }
-        processSendMessageToFollowers(0,user,message,feed.action,feed.seemId,feed.itemId)
+        UserService.findUserById(replyToObj.user,function(err,replyToObjUser){
+            if(err){
+                console.log(err);
+            }else {
+                var message = "@" + user.username + " has replied to @" + replyToObjUser.username;
+                if (!replyToObjUser|| replyToObjUser.username == user.username) {
+                    message = "@" + user.username + " has added to '" + seem.title + "'";
+                }
+                processSendMessageToFollowers(0, user, message, feed.action, feed.seemId, feed.itemId);
+            }
+        })
+
 
     });
 }
@@ -142,8 +153,7 @@ service.onFavourited =function (seem,item,user){
     feed.seemId = seem._id;
     feed.seemTitle = seem.title;
     feed.action = FEED_ACTION_FAVOURITE;
-    feed.userId = user._id;
-    feed.username = user.username;
+    feed.user = user._id;
 
     feed.save(function(err){
         if(err){

@@ -242,7 +242,7 @@ userSchema.methods.verifyPhone = function(phone,verificationCode,cb) {
 	        
 }
 
-var user = mongoose.model('user', userSchema);
+var user = mongoose.model('User', userSchema);
 
 //Service?
 var service = {};

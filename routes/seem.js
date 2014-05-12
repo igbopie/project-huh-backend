@@ -1,6 +1,5 @@
 var Seem = require('../models/seem').Seem;
-var Favourite = require('../models/seem').Favourite;
-var Thumb = require('../models/seem').Thumb;
+var Action = require('../models/seem').Action;
 var SeemService = require('../models/seem').Service;
 var UserService = require('../models/user').Service;
 var ApiUtils = require('../utils/apiutils');
@@ -49,37 +48,11 @@ exports.getItem = function(req, res) {
                     } else if (!item) {
                         ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
                     } else {
-                        var favourited = false;
-                        var thumbedUp = false;
-                        var thumbedDown = false;
-                        //Check if favourited
-                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
-                            if (err) {
-                                console.error(err);
-                                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                            } else {
-                                if(favourite){
-                                    favourited = true;
-                                }
-                                Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb) {
-                                    if (err) {
-                                        console.error(err);
-                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                                    }
-
-                                    if (thumb && thumb.score == 1) {
-                                        thumbedUp = true;
-                                    } else if (thumb && thumb.score == -1) {
-                                        thumbedDown = true;
-                                    }
-
-                                    item.favourited = favourited;
-                                    item.thumbedDown = thumbedDown;
-                                    item.thumbedUp = thumbedUp;
-                                    ApiUtils.api(req, res, ApiUtils.OK, null, item);
-                                });
-                            }
+                        SeemService.fillActionInfo(item,user,function(err,item){
+                            if(err) return callback(err,null);
+                            ApiUtils.api(req, res, ApiUtils.OK, null, item);
                         });
+
                     }
                 });
             }
@@ -194,20 +167,11 @@ exports.favourite = function(req,res){
                     } else if (item == null) {
                         ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
                     } else {
-
-                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
-                            if(err){
+                        SeemService.favourite(item, user, function (err) {
+                            if (err) {
                                 ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                            } else if(favourite){
-                                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS, err, null);
                             } else {
-                                SeemService.favourite(item, user, function (err) {
-                                    if (err) {
-                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                                    } else {
-                                        ApiUtils.api(req, res, ApiUtils.OK, null, null);
-                                    }
-                                });
+                                ApiUtils.api(req, res, ApiUtils.OK, null, null);
                             }
                         });
                     }
@@ -235,19 +199,11 @@ exports.unfavourite = function(req,res){
                     } else if (item == null) {
                         ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
                     } else {
-                        Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite) {
-                            if(err){
+                        SeemService.unfavourite(item, user, function (err) {
+                            if (err) {
                                 ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                            } else if(!favourite){
-                                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, err, null);
                             } else {
-                                SeemService.unfavourite(item, user, function (err) {
-                                    if (err) {
-                                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                                    } else {
-                                        ApiUtils.api(req, res, ApiUtils.OK, null, null);
-                                    }
-                                });
+                                ApiUtils.api(req, res, ApiUtils.OK, null, null);
                             }
                         });
                     }

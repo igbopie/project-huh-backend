@@ -1,4 +1,5 @@
 var utils = {};
+var mongoose = require('mongoose');
 
 utils.randomString = function(length)
 {
@@ -39,6 +40,48 @@ utils.extractTags = function(sentence){
 
     }
     return tags;
+}
+
+
+utils.joinToUser = function(schema,userProp,userIdPropName,usernamePropName){
+    if(userProp === undefined){
+        userProp = "user";
+    }
+    if(userIdPropName === undefined){
+        userIdPropName = "userId";
+    }
+    if(usernamePropName === undefined){
+        usernamePropName = "username";
+    }
+    schema.virtual(userIdPropName).get(function () {
+        if(this[userProp] instanceof mongoose.Types.ObjectId) {
+            return this[userProp];
+        } else if(this[userProp] != undefined){
+            return this[userProp]._id;
+        }
+        return undefined;
+    });
+    schema.virtual(usernamePropName).get(function () {
+        if(this[userProp] instanceof mongoose.Types.ObjectId) {
+            return undefined;
+        } else if(this[userProp] != undefined){
+            return this[userProp].username;
+        }
+
+        return undefined;
+    });
+    schema.set('toJSON', { getters: true, virtuals: true });
+    schema.set('toObject', { getters: true, virtuals: true });
+    schema.method('toJSON', function() {
+        var me = this.toObject();
+        if(this[userProp] instanceof mongoose.Types.ObjectId) {
+            delete me[userProp];
+        } /*else {
+            delete me[userProp].id;
+        }*/
+
+        return me;
+    });
 }
 
 // export the class

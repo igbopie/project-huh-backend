@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
     , textSearch = require('mongoose-text-search')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
+    , PUBLIC_USER_FIELDS ="username mediaId"
     ;
 
 
@@ -22,8 +23,7 @@ var itemSchema = new Schema({
     replyCount: {type: Number, required:true, default:0},
     seemId: {	type: Schema.Types.ObjectId, required: false},
     depth : {type: Number, required:true, default:0},
-    userId:   {	type: Schema.Types.ObjectId, required: false},
-    username:{	type: String, required: false},
+    user:   {	type: Schema.Types.ObjectId, required: false, ref:"User"},
     favouriteCount:{type: Number, required:true, default:0},
     thumbUpCount:{type: Number, required:true, default:0},
     thumbDownCount:{type: Number, required:true, default:0},
@@ -32,10 +32,10 @@ var itemSchema = new Schema({
     tags: [String],
     hotScore        :   {	type: Number, required: false},
     viralScore        :   {	type: Number, required: false},
-    favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
-    favouritedDate: { type: Date , required: false },//TRANSIENT!!! DO NOT PERSIST
-    thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST
-    thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
+    favourited: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST TODO USE VIRTUALS
+    favouritedDate: { type: Date , required: false },//TRANSIENT!!! DO NOT PERSIST TODO USE VIRTUALS
+    thumbedUp: { type: Boolean , required: false },//TRANSIENT!!! DO NOT PERSIST TODO USE VIRTUALS
+    thumbedDown: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST TODO USE VIRTUALS
 });
 
 
@@ -45,8 +45,7 @@ var reducedItemSchema = new Schema({
     caption : {	type: String, required: false},
     replyTo:  {	type: Schema.Types.ObjectId, required: false},
     depth : {type: Number, required:true, default:0},
-    userId:   {	type: Schema.Types.ObjectId, required: false},
-    username:{	type: String, required: false}
+    user:   {	type: Schema.Types.ObjectId, required: false, ref: "User"}
 });
 
 
@@ -60,27 +59,20 @@ var seemSchema = new Schema({
     latestItems     :       [reducedItemSchema],
     title           :   {	type: String, required: false},
     itemCount       :   {   type: Number, required:true, default:1},
-    userId          :   {	type: Schema.Types.ObjectId, required: false},
-    username        :   {	type: String, required: false},
+    user          :   {	type: Schema.Types.ObjectId, required: false, ref: "User"},
     topicId         :   {	type: Schema.Types.ObjectId, required: false},
     tags: [String],
     hotScore        :   {	type: Number, required: false},
     viralScore        :   {	type: Number, required: false}
 });
 
-var favouriteSchema = new Schema({
-    created		    :   {   type: Date	, required: true, default: Date.now },
-    userId          :   {	type: Schema.Types.ObjectId, required: true},
-    username        :   {	type: String, required: true},
-    itemId          :   {	type: Schema.Types.ObjectId, required: true}
-});
-
-var thumbSchema = new Schema({
-    created		    :   {   type: Date	, required: true, default: Date.now },
-    userId          :   {	type: Schema.Types.ObjectId, required: true},
-    username        :   {	type: String, required: true},
-    itemId          :   {	type: Schema.Types.ObjectId, required: true},
-    score           :   {   type: Number, required:true, default:1} //1 UP, -1 DOWN
+var actionSchema = new Schema({
+    thumbedDate		    :   {   type: Date	, required: false},
+    favouritedDate		    :   {   type: Date	, required: false },
+    user          :   {	type: Schema.Types.ObjectId, required: true},
+    itemId          :   {	type: Schema.Types.ObjectId, required: true, ref: 'Item'},
+    thumbScore      :   {   type: Number, required:false, default:0}, //1 UP, -1 DOWN,0 means none
+    favourited      :   { type: Boolean , required: false }
 });
 
 
@@ -90,9 +82,13 @@ var topicSchema = new Schema({
     code            : {	type: String, required: true,index: { unique: true }}
 });
 
-favouriteSchema.index({ userId:1 });
-favouriteSchema.index({ itemId: 1,userId:1 }, { unique: true });
-thumbSchema.index({ itemId: 1,userId:1 }, { unique: true });
+
+
+
+actionSchema.index({ user:1 });
+actionSchema.index({ itemId: 1,user:1 }, { unique: true });
+//Favouritedquery
+actionSchema.index({user:1,favourited:1,favouritedDate:-1 });
 
 seemSchema.plugin(textSearch);
 seemSchema.index({ title: 'text' ,itemCaption:'text',tags:'text'});
@@ -103,21 +99,23 @@ seemSchema.index({hotScore:-1,updated:-1});
 seemSchema.index({viralScore:-1,updated:-1});
 seemSchema.index({created:-1});
 seemSchema.index({updated:-1});
+Utils.joinToUser(seemSchema);
+Utils.joinToUser(reducedItemSchema);
 
 itemSchema.plugin(textSearch);
 itemSchema.index({caption: 'text',tags:'text'});
 itemSchema.index({seemId:1});
 itemSchema.index({hotScore:-1,updated:-1});
 itemSchema.index({viralScore:-1,updated:-1});
+Utils.joinToUser(itemSchema);
 
 
 
 
-var Seem = mongoose.model('seem', seemSchema);
-var Item = mongoose.model('item', itemSchema);
-var Favourite = mongoose.model('favourite', favouriteSchema);
-var Thumb = mongoose.model('thumb', thumbSchema);
-var Topic = mongoose.model('topic', topicSchema);
+var Seem = mongoose.model('Seem', seemSchema);
+var Item = mongoose.model('Item', itemSchema);
+var Action = mongoose.model('Action', actionSchema);
+var Topic = mongoose.model('Topic', topicSchema);
 
 function onStartCheck(){
     var topics = [
@@ -329,8 +327,7 @@ function createSeemAux(title,caption,media,topic,user,callback){
         mainItem.exifLocation = media.exifLocation;
     }
     mainItem.caption = caption;
-    mainItem.userId = user._id;
-    mainItem.username = user.username;
+    mainItem.user = user._id;
     mainItem.tags = Utils.extractTags(mainItem.caption);
 
     mainItem.save(function(err){
@@ -340,8 +337,7 @@ function createSeemAux(title,caption,media,topic,user,callback){
         seem.title = title;
         seem.itemId = mainItem._id;
         if(user) {
-            seem.userId = user._id;
-            seem.username = user.username;
+            seem.user = user._id;
         }
         seem.itemMediaId = mainItem.mediaId;
         seem.itemCaption = mainItem.caption;
@@ -378,28 +374,30 @@ function createSeemAux(title,caption,media,topic,user,callback){
 }
 service.thumbUp = function(item,user,callback){
     //
-    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action){
         if(err) return callback(err);
 
         //Standard update
         var incUpdate = {$inc: {"thumbUpCount": 1,"thumbDownCount": 0,"thumbScoreCount": 1}};
-        if(thumb){
-            if (thumb.score == THUMB_SCORE_UP) {
+        if(action){
+            if(!action.thumbScore || action.thumbScore == 0 ) {
+                //Standard update
+            } else if (action.thumbScore == THUMB_SCORE_UP) {
                 //DO NOTHING
                 return callback();
             } else {
                 incUpdate = {$inc: {"thumbUpCount": 1,"thumbDownCount": -1,"thumbScoreCount": 2}};
             }
+
         } else {
-            var thumb = new Thumb();
-            thumb.userId = user._id;
-            thumb.username = user.username;
-            thumb.itemId = item._id;
+            var action = new Action();
+            action.user = user._id;
+            action.itemId = item._id;
         }
 
-        thumb.score = THUMB_SCORE_UP;
-
-        thumb.save(function(err){
+        action.thumbScore = THUMB_SCORE_UP;
+        action.thumbedDate = new Date();
+        action.save(function(err){
             if(err) return callback(err);
 
             Item.update({"_id": item._id},incUpdate
@@ -421,28 +419,29 @@ service.thumbUp = function(item,user,callback){
 
 service.thumbDown = function(item,user,callback){
     //
-    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action){
         if(err) return callback(err);
 
         //Standard update
         var incUpdate = {$inc: {"thumbUpCount": 0,"thumbDownCount": 1,"thumbScoreCount": -1}};
-        if(thumb){
-            if (thumb.score == THUMB_SCORE_DOWN) {
+        if(action){
+            if(!action.thumbScore || action.thumbScore == 0 ) {
+                //Standard update
+            } else if (action.thumbScore == THUMB_SCORE_DOWN) {
                 //DO NOTHING
                 return callback();
             } else {
                 incUpdate = {$inc: {"thumbUpCount": -1,"thumbDownCount": 1,"thumbScoreCount": -2}};
             }
         } else {
-            var thumb = new Thumb();
-            thumb.userId = user._id;
-            thumb.username = user.username;
-            thumb.itemId = item._id;
+            var action = new Action();
+            action.user = user._id;
+            action.itemId = item._id;
         }
 
-        thumb.score = THUMB_SCORE_DOWN;
-
-        thumb.save(function(err){
+        action.thumbScore = THUMB_SCORE_DOWN;
+        action.thumbedDate = new Date();
+        action.save(function(err){
             if(err) return callback(err);
 
             Item.update({"_id": item._id},incUpdate
@@ -464,19 +463,21 @@ service.thumbDown = function(item,user,callback){
 
 service.thumbClear = function(item,user,callback){
     //
-    Thumb.findOne({"itemId":item._id,"userId":user._id},function(err,thumb){
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action){
         if(err) return callback(err);
-        if(!thumb) return callback();
+        if(!action || action.thumbScore == 0 ) return callback();
+
 
         //Standard update
         var incUpdate;
-        if (thumb.score == THUMB_SCORE_UP) {
+        if (action.thumbScore == THUMB_SCORE_UP) {
             incUpdate = {$inc: {"thumbUpCount": -1,"thumbDownCount": 0,"thumbScoreCount": -1}};
-        } else {
+        } else if (action.thumbScore == THUMB_SCORE_DOWN) {
             incUpdate = {$inc: {"thumbUpCount": 0,"thumbDownCount": -1,"thumbScoreCount": 1}};
         }
-
-        thumb.remove(function(err){
+        action.thumbScore = 0;
+        action.thumbedDate = new Date();
+        action.save(function(err){
             if(err) return callback(err);
 
             Item.update({"_id": item._id},incUpdate
@@ -485,44 +486,59 @@ service.thumbClear = function(item,user,callback){
 
                     callback();
                 });
-        })
+        });
     });
 }
 
 service.favourite = function(item,user,callback){
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action) {
+        if (!action) {
+            action = new Action();
+            action.user = user._id;
+            action.itemId = item._id;
+        } else if (action.favourited) {
+            //Already favourited
+            return callback();
+        }
 
-    var favourite = new Favourite();
-    favourite.userId = user._id;
-    favourite.username = user.username;
-    favourite.itemId = item._id;
-    favourite.save(function(err){
-        if(err) return callback(err);
+        action.favouritedDate = new Date();
+        action.favourited = true;
+        action.save(function (err) {
+            if (err) return callback(err);
 
-        Item.update({"_id": item._id},
-            {$inc: {"favouriteCount": 1}},function(err){
-                if(err) return callback(err);
+            Item.update({"_id": item._id},
+                {$inc: {"favouriteCount": 1}}, function (err) {
 
-                Seem.findOne({"_id":item.seemId},function(err,seem){
-                    if(err) return callback(err);
+                    if (err) return callback(err);
 
-                    callback();
+                    Seem.findOne({"_id": item.seemId}, function (err, seem) {
+                        if (err) return callback(err);
 
-                    FeedService.onFavourited(seem,item,user);
+                        callback();
 
+                        FeedService.onFavourited(seem, item, user);
+
+                    });
                 });
-            });
 
-    })
-
-
+        });
+    });
 }
 
 service.unfavourite = function(item,user,callback){
 
-    Favourite.findOne({"itemId":item._id,"userId":user._id},function(err,favourite){
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action){
         if(err) return callback(err);
+        if(!action) return callback();
 
-        favourite.remove(function(err){
+        if(!action.favourited){
+            return callback();
+        }
+
+        action.favouritedDate = new Date();
+        action.favourited = false;
+
+        action.save(function(err){
             if(err) return callback(err);
             Item.update({"_id": item._id},
                 {$inc: {"favouriteCount": -1}},function(err){
@@ -540,14 +556,48 @@ service.list = function(callback){
 }
 
 service.getItem = function(id,callback){
-    Item.findOne({_id:id},function(err,seemObj){
+    Item.findOne({_id:id})
+        .populate('user',PUBLIC_USER_FIELDS)
+        .exec(function(err,seemObj){
         callback(err,seemObj);
     });
 }
 
 service.getItemReplies = function(id,page,callback){
-    Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Item.find({replyTo:id})
+        .sort({created: -1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate('user',PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
+    });
+}
+
+service.fillActionInfo = function(item,user,callback){
+    //Check if favourited
+    Action.findOne({"itemId":item._id,"user":user._id},function(err,action) {
+        if (err) {
+            callback(err,null);
+        } else {
+            if(action.favourited == true){
+                item.favourited = true;
+                item.favouritedDate = action.favouritedDate;
+            }else{
+                item.favourited = false;
+            }
+
+            item.thumbedDown = false;
+            item.thumbedUp = false;
+            if (action && action.thumbScore == 1) {
+                item.thumbedUp = true;
+            } else if (action && action.thumbScore == -1) {
+                item.thumbedDown = true;
+            }
+
+            callback(null,item);
+        }
+
     });
 }
 
@@ -560,24 +610,15 @@ service.getItemRepliesWithFavourited = function(id,page,user,callback){
         }else{
             var callbacked = 0;
             docs.forEach(function(doc,index){
-                Favourite.findOne({itemId:doc._id,userId:user._id},function(err,favDoc){
-                    if(err){
-                        callback(err,null);
-                    }else {
-                        if(favDoc){
-                            doc.favourited = true;
-                            doc.favouritedDate = favDoc.created;
-                        }else{
-                            doc.favourited = false;
-                        }
 
-                        callbacked++;
+                service.fillActionInfo(doc,user,function(err){
+                    if(err) return callback(err,null);
 
-                        if (callbacked == docs.length) {
-                            callback(null, docs);
-                        }
+                    callbacked++;
+
+                    if (callbacked == docs.length) {
+                        callback(null, docs);
                     }
-
                 });
             });
         }
@@ -619,8 +660,7 @@ service.replyAux = function(replyId,caption,media,nextParent,depth,user,replyToO
                 item.depth = depth;
                 item.seemId = seem._id;
                 if(user) {
-                    item.userId = user._id;
-                    item.username = user.username;
+                    item.user = user._id;
                 }
 
                 item.mediaId = media._id;
@@ -645,8 +685,7 @@ service.replyAux = function(replyId,caption,media,nextParent,depth,user,replyToO
                         itemReduced.depth = item.depth;
                         itemReduced.replyTo =  item.replyTo;
                         itemReduced.caption = item.caption;
-                        itemReduced.userId = item.userId;
-                        itemReduced.username = item.username;
+                        itemReduced.user = item.user;
                         itemReduced.created = item.created;
 
                         //----------------
@@ -729,47 +768,86 @@ service.searchItems = function(text,callback){
 }
 
 service.findByTopic = function(topicId,page,callback){
-    Seem.find({topicId:topicId}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({topicId:topicId})
+        .sort({hotScore:-1,updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findByHotness = function(page, callback){
-    Seem.find({}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({})
+        .sort({hotScore:-1,updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 service.findByViral = function(page, callback){
-    Seem.find({}).sort({viralScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({})
+        .sort({viralScore:-1,updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findByCreated = function(page, callback){
-    Seem.find({}).sort({created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({})
+        .sort({created:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findByUpdated = function(page, callback){
-    Seem.find({}).sort({updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Seem.find({})
+        .sort({updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findItemsByHotness = function(page, callback){
-    Item.find({}).sort({hotScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Item.find({})
+        .sort({hotScore:-1,updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 service.findItemsByViral = function(page, callback){
-    Item.find({}).sort({viralScore:-1,updated:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Item.find({})
+        .sort({viralScore:-1,updated:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
         callback(err,docs);
     });
 }
 
 service.findFavouritedByUser = function(user,page, callback){
-    Favourite.find({userId:user._id}).sort({created:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
+    Action.find({user:user._id,favourited:true}).sort({favouritedDate:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).populate('itemId').exec(function(err,docs){
         if(err) return callback(err);
         //Mongo Join! LOL
         // if slow replicate item data in favourite collection.
@@ -778,21 +856,18 @@ service.findFavouritedByUser = function(user,page, callback){
         }else {
             var retArray = [];
             var callbacked = 0;
-            docs.forEach(function (fav,index) {
-                Item.findOne({_id: fav.itemId}, function (err, reply) {
-                    if (err) return callback(err);
-
-                    //fav.item = reply;
-                    reply.favouritedDate = fav.created;
-                    retArray[index]=reply;
+            docs.forEach(function (action,index) {
+                var reply = action.itemId;
+                //fav.item = reply;
+                reply.favouritedDate = action.favouritedDate;
+                retArray[index]=reply;
 
 
-                    callbacked++;
+                callbacked++;
 
-                    if (callbacked == docs.length) {
-                        callback(null, retArray);
-                    }
-                })
+                if (callbacked == docs.length) {
+                    callback(null, retArray);
+                }
             });
         }
 
@@ -805,8 +880,7 @@ service.findFavouritedByUser = function(user,page, callback){
 
 
 module.exports = {
-    Thumb: Thumb,
-    Favourite: Favourite,
+    Action: Action,
     Seem: Seem,
     Item: Item,
     Service:service

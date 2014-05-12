@@ -85,13 +85,9 @@ exports.follow = function(req, res){
 							ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_ALREADY_EXISTS,"Already following",null);
 						} else {
 							var follow = new Follow();
-					
-							follow.followerId = user._id;
-							follow.followerUsername = user.username;
-							
-							follow.followedId = userToBeFollowed._id;
-							follow.followedUsername = userToBeFollowed.username;
-							
+							follow.follower = user._id;
+							follow.followed = userToBeFollowed._id;
+
 							follow.save(function(err){
 									if(err){
 										ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
