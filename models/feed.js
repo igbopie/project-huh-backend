@@ -43,10 +43,14 @@ var service = {};
 service.findByMyFeed = function (user,page,callback){
      Follow.find({"follower":user.id},{"followed":1,"_id":0}).exec(
          function(err,follows){
+             if(err){
+                 console.error(err);
+                 return callback(err);
+             }
              var followArray = new Array();
              for(var i = 0; i < follows.length;i++) {
                  var fItem = follows[i];
-                 followArray.push(fItem.followedId);
+                 followArray.push(fItem.followed);
              }
              followArray.push(user._id);
              Feed.find({"user":{"$in":followArray}})
