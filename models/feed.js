@@ -41,7 +41,7 @@ var Feed = mongoose.model('Feed', feedSchema);
 var service = {};
 
 service.findByMyFeed = function (user,page,callback){
-     Follow.find({"followerId":user.id},{"followedId":1,"_id":0}).exec(
+     Follow.find({"follower":user.id},{"followed":1,"_id":0}).exec(
          function(err,follows){
              var followArray = new Array();
              for(var i = 0; i < follows.length;i++) {
