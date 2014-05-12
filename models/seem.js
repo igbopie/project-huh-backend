@@ -847,7 +847,13 @@ service.findItemsByViral = function(page, callback){
 }
 
 service.findFavouritedByUser = function(user,page, callback){
-    Action.find({user:user._id,favourited:true}).sort({favouritedDate:-1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).populate('itemId').exec(function(err,docs){
+    Action
+        .find({user:user._id,favourited:true})
+        .sort({favouritedDate:-1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate('itemId')
+        .exec(function(err,docs){
         if(err) return callback(err);
         //Mongo Join! LOL
         // if slow replicate item data in favourite collection.
