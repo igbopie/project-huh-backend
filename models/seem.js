@@ -580,15 +580,15 @@ service.fillActionInfo = function(item,user,callback){
         if (err) {
             callback(err,null);
         } else {
-            if(action.favourited == true){
-                item.favourited = true;
-                item.favouritedDate = action.favouritedDate;
-            }else{
-                item.favourited = false;
-            }
-
+            item.favourited = false;
             item.thumbedDown = false;
             item.thumbedUp = false;
+
+            if(action && action.favourited == true){
+                item.favourited = true;
+                item.favouritedDate = action.favouritedDate;
+            }
+
             if (action && action.thumbScore == 1) {
                 item.thumbedUp = true;
             } else if (action && action.thumbScore == -1) {

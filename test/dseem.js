@@ -359,6 +359,15 @@ describe('Seem', function(){
             });
         });
     });
+    describe('#getItemWithTokenNoActions()', function(){
+        it('should thumb up',function (done) {
+           M1Seem.getItem(seem.itemId,users[0].token,function(err,item){
+                    if(err) return done(err);
+
+                    done();
+                });
+            });
+    });
 
     describe('#thumbUp()', function(){
         it('should thumb up',function (done) {
