@@ -773,7 +773,7 @@ service.findByTopic = function(topicId,page,callback){
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
-        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
         callback(err,docs);
     });
@@ -785,7 +785,7 @@ service.findByHotness = function(page, callback){
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
-        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
         callback(err,docs);
     });
@@ -796,7 +796,7 @@ service.findByViral = function(page, callback){
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
-        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
         callback(err,docs);
     });
@@ -808,7 +808,7 @@ service.findByCreated = function(page, callback){
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
-        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
         callback(err,docs);
     });
@@ -819,7 +819,7 @@ service.findByUpdated = function(page, callback){
         .sort({updated:-1})
         .skip(page * MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
-        //.populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
         callback(err,docs);
     });
