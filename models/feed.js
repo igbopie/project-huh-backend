@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
     , FollowService = require("../models/follow").Service
     , UserService = require("../models/user").Service
     , Utils = require('../utils/utils')
-    , PUBLIC_USER_FIELDS ="username profileImageId bio name";
+    , PUBLIC_USER_FIELDS ="username mediaId bio name";
 
 
 var feedSchema = new Schema({
@@ -137,9 +137,9 @@ service.onReply =  function (seem,item,replyToObj,user){
             if(err){
                 console.log(err);
             }else {
-                var message = "@" + user.username + " has replied to @" + replyToObjUser.username;
-                if (!replyToObjUser|| replyToObjUser.username == user.username) {
-                    message = "@" + user.username + " has added to '" + seem.title + "'";
+                var message = "@" + user.username + " has added to '" + seem.title + "'";
+                if (replyToObjUser && replyToObjUser.username != user.username) {
+                    message = "@" + user.username + " has replied to @" + replyToObjUser.username;
                 }
                 processSendMessageToFollowers(0, user, message, feed.action, feed.seemId, feed.itemId);
             }

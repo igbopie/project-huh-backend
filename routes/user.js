@@ -90,7 +90,7 @@ exports.extendToken =  function(req, res) {
 exports.profile = function(req, res) {
     var fields = {
         username        :1,
-        profileImageId  :1,
+        mediaId  :1,
         name            :1,
         bio             :1,
         following       :1,
@@ -170,7 +170,7 @@ exports.profile = function(req, res) {
 exports.update = function(req, res) {
     var token = req.body.token;
     var email = req.body.email;
-    var profileImageId = req.body.profileImageId;
+    var mediaId = req.body.mediaId;
     var facebookId = req.body.facebookId;
     var name = req.body.name;
     var bio = req.body.bio;
@@ -183,8 +183,8 @@ exports.update = function(req, res) {
             if(email){
                 user.email = email;
             }
-            if(profileImageId){
-                user.profileImageId = profileImageId;
+            if(mediaId){
+                user.mediaId = mediaId;
             }
             if(facebookId){
                 user.facebookId = facebookId;

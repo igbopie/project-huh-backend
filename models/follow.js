@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
   ,	dateUtils = require('date-utils')
   , Utils = require('../utils/utils')
   , PAGE_LIMIT = 20
-  , PUBLIC_USER_FIELDS ="username profileImageId bio name";
+  , PUBLIC_USER_FIELDS ="username mediaId bio name";
 
 
 

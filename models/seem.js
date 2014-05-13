@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
     , textSearch = require('mongoose-text-search')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
-    , PUBLIC_USER_FIELDS ="username profileImageId bio name"
+    , PUBLIC_USER_FIELDS ="username mediaId bio name"
     ;
 
 

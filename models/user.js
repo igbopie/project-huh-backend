@@ -61,7 +61,7 @@ var userSchema = new Schema({
   , phoneDateAdded		: { type: Date	  , required: false }
   , tokens		    : [tokenSchema]
   , notifications   :[notificationSchema]
-  , profileImageId	: {	type: Schema.Types.ObjectId, required: false}
+  , mediaId	: {	type: Schema.Types.ObjectId, required: false}
   , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
   , following : { type: Number	  , required: true, default: 0}
   , followers : { type: Number	  , required: true, default: 0}
