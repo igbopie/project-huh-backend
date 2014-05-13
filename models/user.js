@@ -49,6 +49,8 @@ var userSchema = new Schema({
     username	    : { type: String, required: true, trim: true, index: { unique: true } }
   ,	password	    : { type: String, required: true }
   , email   	    : { type: String, required: true, index: { unique: true }  }
+  , name           : { type: String, required: false}
+  , bio           : { type: String, required: false}
   , created		    : { type: Date	, required: true, default: Date.now }
   , modified	    : { type: Date	, required: true, default: Date.now }
   , phone			: {	type: String  , required: false, index: { unique: true, sparse: true } } // HASHED

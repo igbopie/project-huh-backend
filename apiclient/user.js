@@ -42,8 +42,8 @@ exports.profile = function(username,token,callback){
         }
     });
 }
-exports.update = function(email,facebookId,profileImageId,token,callback){
-    apiClientBase.post('/api/user/update',{email:email,facebookId:facebookId,profileImageId:profileImageId,token:token},function(code,headers,data){
+exports.update = function(email,facebookId,profileImageId,bio,name,token,callback){
+    apiClientBase.post('/api/user/update',{email:email,facebookId:facebookId,profileImageId:profileImageId,bio:bio,name:name,token:token},function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code:"+code+" : "+data);
         } else {

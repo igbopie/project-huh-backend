@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
     , FollowService = require("../models/follow").Service
     , UserService = require("../models/user").Service
     , Utils = require('../utils/utils')
-    , PUBLIC_USER_FIELDS ="username mediaId";
+    , PUBLIC_USER_FIELDS ="username profileImageId bio name";
 
 
 var feedSchema = new Schema({

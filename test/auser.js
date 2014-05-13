@@ -87,7 +87,7 @@ describe('User', function(){
 
 
 
-    describe('#update()', function(){
+    describe('#updateDetails()', function(){
         it('should update user details',function (done) {
             var users = TestUtils.randomUsers(1);
             TestUtils.createUsers(users,function(err){
@@ -96,9 +96,18 @@ describe('User', function(){
                     if (err) return done(err);
                     var newEmail = Utils.randomString(5)+"@"+Utils.randomString(5)+".com";
                     var facebookId = Utils.randomNumber(10);
-                    User.update(newEmail,facebookId,null,users[0].token,function(err){
+                    var bio = Utils.randomString(5);
+                    var name = Utils.randomString(5);
+                    User.update(newEmail,facebookId,null,bio,name,users[0].token,function(err){
                         if (err) return done(err);
-                        done();
+                        User.profile(users[0].username,users[0].token,function(err,data){
+                            if (err) return done(err);
+                            should(data.bio).be.eql(bio);
+                            should(data.name).be.eql(name);
+                            should(data.email).be.eql(newEmail);
+                            should(data.facebookId).be.eql(facebookId);
+                            done();
+                        });
                     });
                 });
             });
@@ -115,7 +124,7 @@ describe('User', function(){
                     if (err) return done(err);
                     Media.create("test/resources/testimage.jpg",function(err,data){
                         if(err) return done(err);
-                        User.update(null,null,data,users[0].token,function(err){
+                        User.update(null,null,data,null,null,users[0].token,function(err){
                             if (err) return done(err);
                             done();
                         });

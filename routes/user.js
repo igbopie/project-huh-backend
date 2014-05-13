@@ -91,6 +91,8 @@ exports.profile = function(req, res) {
     var fields = {
         username        :1,
         profileImageId  :1,
+        name            :1,
+        bio             :1,
         following       :1,
         followers       :1
     };
@@ -170,6 +172,8 @@ exports.update = function(req, res) {
     var email = req.body.email;
     var profileImageId = req.body.profileImageId;
     var facebookId = req.body.facebookId;
+    var name = req.body.name;
+    var bio = req.body.bio;
     UserService.findUserByToken(token,function(err,user){
         if(err){
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
@@ -184,6 +188,12 @@ exports.update = function(req, res) {
             }
             if(facebookId){
                 user.facebookId = facebookId;
+            }
+            if(bio){
+                user.bio = bio;
+            }
+            if(name){
+                user.name = name;
             }
             user.save(function(err){
                 if(err){
