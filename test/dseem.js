@@ -39,7 +39,13 @@ describe('Seem', function(){
         it('should create a seem',function (done) {
             M1Seem.create("A title for a seam","A caption for the photo",media,users[0].token,function(err,data){
                 if (err) return done(err);
-                done();
+                User.profile(users[0].username,users[0].token,function(err,userData){
+                    if (err) return done(err);
+                    //plus 1 in for each
+                    userData.published.should.be.equal(2);
+
+                    done();
+                });
             });
 	    });
     });
@@ -84,8 +90,13 @@ describe('Seem', function(){
                 if (err) return done(err);
 
                 should(reply.depth).be.equal(1);
+                User.profile(users[0].username,users[0].token,function(err,userData){
+                    if (err) return done(err);
+                    // 1 reply 1 seem = seem -- see foreach
+                    userData.published.should.be.equal(2);
 
-                done();
+                    done();
+                });
             });
         });
     });
@@ -185,8 +196,13 @@ describe('Seem', function(){
                             if(err) return done(err);
 
                             reply.favouriteCount.should.be.equal(1);
+                            User.profile(users[0].username,users[0].token,function(err,userData){
+                                if (err) return done(err);
 
-                            done();
+                                userData.favourites.should.be.equal(1);
+
+                                done();
+                            });
                         });
                     });
                 });
@@ -208,8 +224,13 @@ describe('Seem', function(){
                                 if(err) return done(err);
 
                                 reply.favouriteCount.should.be.equal(1);
+                                User.profile(users[0].username,users[0].token,function(err,userData){
+                                    if (err) return done(err);
 
-                                done();
+                                    userData.favourites.should.be.equal(1);
+
+                                    done();
+                                });
                             });
                         });
                     });
@@ -233,7 +254,13 @@ describe('Seem', function(){
 
                                 reply.favouriteCount.should.be.equal(0);
 
-                                done();
+                                User.profile(users[0].username,users[0].token,function(err,userData){
+                                    if (err) return done(err);
+
+                                    userData.favourites.should.be.equal(0);
+
+                                    done();
+                                });
                             });
                         });
                     });
@@ -259,7 +286,13 @@ describe('Seem', function(){
 
                                     reply.favouriteCount.should.be.equal(0);
 
-                                    done();
+                                    User.profile(users[0].username,users[0].token,function(err,userData){
+                                        if (err) return done(err);
+
+                                        userData.favourites.should.be.equal(0);
+
+                                        done();
+                                    });
                                 });
                             });
                         });

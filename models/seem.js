@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
+    , User = require("../models/user").User
     , Feed = require("../models/feed").Feed
     , Media = require("../models/media").Media
     , FeedService = require("../models/feed").Service
@@ -360,12 +361,18 @@ function createSeemAux(title,caption,media,topic,user,callback){
                 mainItem.seemId = seem._id;
                 mainItem.save(function(err){
                     //TODO handle this error
-                    if(err) return callback(err,null);
+                    if (err) return callback(err, null);
+                    var userUpdate = {$inc: {"published": 1}};
+                    User.update({"_id": user._id},userUpdate
+                        ,function(err) {
+                            //TODO handle this error
+                            if (err) return callback(err, null);
 
-                    callback(null,seem);// ignore errors here
+                            callback(null, seem);// ignore errors here
 
-                    //Kind of background?
-                    FeedService.onSeemCreated(seem,mainItem,user);
+                            //Kind of background?
+                            FeedService.onSeemCreated(seem, mainItem, user);
+                        });
 
                 });
             }
@@ -505,19 +512,23 @@ service.favourite = function(item,user,callback){
         action.favourited = true;
         action.save(function (err) {
             if (err) return callback(err);
-
             Item.update({"_id": item._id},
                 {$inc: {"favouriteCount": 1}}, function (err) {
 
                     if (err) return callback(err);
 
-                    Seem.findOne({"_id": item.seemId}, function (err, seem) {
-                        if (err) return callback(err);
+                    var userUpdate = {$inc: {"favourites": 1}};
+                    User.update({"_id": user._id},userUpdate
+                        ,function(err) {
+                            if (err) return callback(err);
+                            Seem.findOne({"_id": item.seemId}, function (err, seem) {
+                                if (err) return callback(err);
 
-                        callback();
+                                callback();
 
-                        FeedService.onFavourited(seem, item, user);
+                                FeedService.onFavourited(seem, item, user);
 
+                            });
                     });
                 });
 
@@ -542,7 +553,12 @@ service.unfavourite = function(item,user,callback){
             if(err) return callback(err);
             Item.update({"_id": item._id},
                 {$inc: {"favouriteCount": -1}},function(err){
-                    callback(err);
+                    var userUpdate = {$inc: {"favourites": -1}};
+                    User.update({"_id": user._id},userUpdate
+                        ,function(err) {
+                            if (err) return callback(err);
+                            callback(err);
+                        });
                 });
 
         });
@@ -704,9 +720,15 @@ service.replyAux = function(replyId,caption,media,nextParent,depth,user,replyToO
                             function (err) {
                                 if (err) return callback(err);
 
-                                callback(null, item);
+                                var userUpdate = {$inc: {"published": 1}};
+                                User.update({"_id": user._id},userUpdate
+                                    ,function(err) {
+                                        if (err) return callback(err);
 
-                                FeedService.onReply(seem,item,replyToObj,user);
+                                        callback(null, item);
+
+                                        FeedService.onReply(seem, item, replyToObj, user);
+                                    });
                             }
                         );
                     });

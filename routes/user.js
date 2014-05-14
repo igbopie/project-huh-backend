@@ -94,7 +94,9 @@ exports.profile = function(req, res) {
         name            :1,
         bio             :1,
         following       :1,
-        followers       :1
+        followers       :1,
+        published       :1,
+        favourites      :1
     };
     var token = req.body.token;
     var username = req.body.username;
