@@ -195,6 +195,7 @@ exports.update = function(req, res) {
             if(name){
                 user.name = name;
             }
+            user.modified = new Date();
             user.save(function(err){
                 if(err){
                     ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
