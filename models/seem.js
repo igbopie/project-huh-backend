@@ -590,6 +590,35 @@ service.getItemReplies = function(id,page,callback){
     });
 }
 
+service.getItemRepliesWithFavourited = function(id,page,user,callback){
+    Item.find({replyTo:id})
+        .sort({created: -1})
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate('user',PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            if(err){
+                callback(err,null);
+            }else if(!docs || docs.length == 0){
+                callback(null,docs);
+            }else{
+                var callbacked = 0;
+                docs.forEach(function(doc,index){
+
+                    service.fillActionInfo(doc,user,function(err){
+                        if(err) return callback(err,null);
+
+                        callbacked++;
+
+                        if (callbacked == docs.length) {
+                            callback(null, docs);
+                        }
+                    });
+                });
+            }
+        });
+}
+
 service.fillActionInfo = function(item,user,callback){
     //Check if favourited
     Action.findOne({"itemId":item._id,"user":user._id},function(err,action) {
@@ -617,29 +646,7 @@ service.fillActionInfo = function(item,user,callback){
     });
 }
 
-service.getItemRepliesWithFavourited = function(id,page,user,callback){
-    Item.find({replyTo:id}).sort({created: -1}).skip(page * MAX_RESULTS_ITEMS).limit(MAX_RESULTS_ITEMS).exec(function(err,docs){
-        if(err){
-            callback(err,null);
-        }else if(!docs || docs.length == 0){
-                callback(null,docs);
-        }else{
-            var callbacked = 0;
-            docs.forEach(function(doc,index){
 
-                service.fillActionInfo(doc,user,function(err){
-                    if(err) return callback(err,null);
-
-                    callbacked++;
-
-                    if (callbacked == docs.length) {
-                        callback(null, docs);
-                    }
-                });
-            });
-        }
-    });
-}
 
 service.reply = function(replyId,caption,mediaId,user,callback){
     Media.findOne({_id:mediaId},function(err,media) {
