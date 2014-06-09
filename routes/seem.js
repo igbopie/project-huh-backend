@@ -85,7 +85,6 @@ exports.add = function(req, res) {
 };
 
 
-
 exports.findByExpire = function (req,res){
 
     var page = req.body.page;
@@ -93,6 +92,22 @@ exports.findByExpire = function (req,res){
         page = 0;
     }
     SeemService.findByExpire(page,function(err,seems){
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        }else{
+            ApiUtils.api(req, res, ApiUtils.OK, null, seems);
+        }
+    });
+
+}
+
+exports.findByExpired = function (req,res){
+
+    var page = req.body.page;
+    if(!page){
+        page = 0;
+    }
+    SeemService.findByExpired(page,function(err,seems){
         if (err) {
             ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
         }else{

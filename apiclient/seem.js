@@ -45,3 +45,14 @@ exports.findByExpire = function(page,callback){
         }
     });
 }
+
+exports.findByExpired = function(page,callback){
+    var params ={page:page};
+    apiClientBase.post('/api/seem/by/expired',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

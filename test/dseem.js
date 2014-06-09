@@ -75,4 +75,18 @@ describe('Seem', function() {
         });
     });
 
+    describe('#seemsExpired', function () {
+        it('should get seems about to expire', function (done) {
+            var expire = new Date();
+            expire.addDays(-1);
+
+            Seem.create("A title for a seam", expire, users[0].token, function (err, data) {
+                Seem.findByExpired(0, function (err,data) {
+                    data.length.should.be.equal(1);
+                    done();
+                });
+            });
+        });
+    });
+
 });

@@ -114,6 +114,8 @@ app.post('/api/seem/create', seem.create);
 app.post('/api/seem/items', seem.getSeemItems);
 app.post('/api/seem/add', seem.add);
 app.post('/api/seem/by/expire', seem.findByExpire);
+app.post('/api/seem/by/expired', seem.findByExpired);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

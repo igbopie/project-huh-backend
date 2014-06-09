@@ -155,13 +155,27 @@ service.getSeemItems = function(seemId,page,callback){
 service.findByExpire = function(page, callback){
     Seem.find({})
         .sort({expire:-1})
+        .where('expire').gt(Date.now())
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
         .populate("latestItems.user",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
-        callback(err,docs);
-    });
+            callback(err,docs);
+        });
+}
+
+service.findByExpired = function(page, callback){
+    Seem.find({})
+        .sort({expire:-1})
+        .where('expire').lt(Date.now())
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
 }
 
 
