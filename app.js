@@ -54,7 +54,6 @@ var user = require('./routes/user');
 var follow = require('./routes/follow');
 var media = require('./routes/media');
 var seem = require('./routes/seem');
-var feed = require('./routes/feed');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -112,30 +111,9 @@ app.get('/api/media/get/:format/:id', media.get);
 
 //SEEM
 app.post('/api/seem/create', seem.create);
-app.post('/api/seem/item/get', seem.getItem);
-app.post('/api/seem/item/replies', seem.getItemReplies);
-app.post('/api/seem/item/reply', seem.reply);
-app.post('/api/seem/item/favourite', seem.favourite);
-app.post('/api/seem/item/unfavourite', seem.unfavourite);
-app.post('/api/seem/item/thumbup', seem.thumbUp);
-app.post('/api/seem/item/thumbdown', seem.thumbDown);
-app.post('/api/seem/item/thumbclear', seem.thumbClear);
-app.post('/api/seem/item/by/favourited', seem.findFavouritedByUser);
-app.post('/api/seem/topics', seem.listTopics);
-app.post('/api/search', seem.search);
-app.post('/api/seem/by/topic', seem.findByTopic);
-app.post('/api/seem/by/hotness', seem.findByHotness);
-app.post('/api/seem/by/viral', seem.findByViral);
-app.post('/api/seem/by/created', seem.findByCreated);
-app.post('/api/seem/by/updated', seem.findByUpdated);
-app.post('/api/seem/item/by/hotness', seem.findItemsByHotness);
-app.post('/api/seem/item/by/viral', seem.findItemsByViral);
-// DEPRECATED!!
-app.post('/api/seem', seem.list);
-
-//FEED
-app.post('/api/feed',feed.findByMyFeed);
-app.post('/api/feed/user',feed.findByUser);
+app.post('/api/seem/items', seem.getSeemItems);
+app.post('/api/seem/add', seem.add);
+app.post('/api/seem/by/expire', seem.findByExpire);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
