@@ -3,7 +3,7 @@ var apiClientBase = require('./apiclientbase');
  
  
 exports.create = function(title,expire,token,callback){
-	var params ={title:title,expire:expire.getTime(),token:token};
+	var params ={title:title,expire:expire.toISOString(),token:token};
 	apiClientBase.post('/api/seem/create',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);

@@ -31,6 +31,8 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
                 delete seem.itemCaption;
                 delete seem.hotScore;
                 delete seem.viralScore;
+                delete seem.itemMediaId;
+                delete seem.username;
 
                 seem.expire = seem.updated;
 
