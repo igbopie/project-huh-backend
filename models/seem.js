@@ -34,7 +34,7 @@ var seemSchema = new Schema({
     user          :   {	type: Schema.Types.ObjectId, required: false, ref: "User"},
     title           :   {	type: String, required: false},
     //
-    itemCount       :   {   type: Number, required:true, default:1},
+    itemCount       :   {   type: Number, required:true, default:0},
     tags: [String],
     latestItems     :       [itemSchema]
 });
