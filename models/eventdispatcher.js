@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , Follow = require('../models/follow').Follow
+    , User = require('../models/user').User
     , Schema = mongoose.Schema
     , PAGE_LIMIT = 20
     , FEED_ACTION_REPLY_TO = "replyTo"
@@ -40,6 +41,33 @@ service.onSeemCreated =  function (seem){
         processSendMessageToFollowers(0,user,"@"+user.username+" has created a seem",feed.action,feed.seemId,feed.itemId)
 
     });*/
+    var timeLeft = seem.expire.getTime() - new Date().getTime();
+    var timeLeftMessage = "";
+    //Milliseconds
+    timeLeft = timeLeft /1000;
+    if(timeLeft < 60) //1 minute
+    {
+        timeLeftMessage+=Math.round(timeLeft)+" seconds";
+    }else if(timeLeft < (60*60)) //1 hour
+    {
+        timeLeftMessage+=Math.round(timeLeft/(60))+" minutes";
+    }else if(timeLeft < (60*60*24)) //1 day
+    {
+        timeLeftMessage+=Math.round(timeLeft/(60*60))+" hours";
+    }else if(timeLeft < (60*60*24*30)) //1 month
+    {
+        timeLeftMessage+=Math.round(timeLeft/(60*60*24))+" days";
+    }else{
+        timeLeftMessage+=" several days";
+    }
+
+    User.findOne({_id:seem.user},function(err,user){
+        if(!err) {
+            processSendMessageToFollowers(0, user, "@" + user.username + " has created a seem \"" + seem.title + "\". It will expire in " + timeLeftMessage + ". Hurry Up!", FEED_ACTION_CREATE_SEEM, seem._id)
+        }else{
+            console.error(err);
+        }
+    });
 }
 
 service.onItemAdded =  function (item){
@@ -88,7 +116,7 @@ module.exports = {
     Service:service
 };
 
-function processSendMessageToFollowers(page,user,message,type,seemId,itemId){
+function processSendMessageToFollowers(page,user,message,type,seemId){
 
     FollowService.findFollowers(user._id,page,function(err,followers){
         if(err){
@@ -100,16 +128,16 @@ function processSendMessageToFollowers(page,user,message,type,seemId,itemId){
             var follow = followers[i];
             UserService.findUserById(follow.followerId,function(err,followerInfo){
                 if(followerInfo.apnToken){
-                    Apn.send(followerInfo.apnToken,message,{type:type,seemId:seemId,itemId:itemId});
+                    Apn.send(followerInfo.apnToken,message,{type:type,seemId:seemId});
                 }
                 if(followerInfo.gcmToken){
-                    Gcm.send(followerInfo.gcmToken,message,{type:type,seemId:seemId,itemId:itemId});
+                    Gcm.send(followerInfo.gcmToken,message,{type:type,seemId:seemId});
                 }
             });
         }
 
         if(followers.length > 0 ){
-            processSendMessageToFollowers(page+1,user,message,seemId,itemId);
+            processSendMessageToFollowers(page+1,user,message,seemId);
         }
 
     });
