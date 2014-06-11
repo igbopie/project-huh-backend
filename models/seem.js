@@ -89,6 +89,10 @@ service.add = function(seemId,caption,mediaId,user,callback){
             Seem.findOne({_id:seemId},function(err,seem){
                 if (err) return callback(err)
 
+                if(new Date().isAfter(seem.expire)){
+                    return callback(new ExpiredSeemError("Cannot add photos to an already expired seem"))
+                }
+
                 var item = new Item();
                 item.caption = caption;
                 item.seemId = seem._id;
@@ -178,9 +182,16 @@ service.findByExpired = function(page, callback){
         });
 }
 
+function ExpiredSeemError(message) {
+    this.name = 'ExpiredSeem';
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+ExpiredSeemError.prototype = new Error;
 
 module.exports = {
     Seem: Seem,
     Item: Item,
-    Service:service
+    Service:service,
+    ExpiredSeemError:ExpiredSeemError
 };

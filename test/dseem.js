@@ -52,7 +52,27 @@ describe('Seem', function() {
         });
     });
 
+    describe('#addToExpiredSeem', function () {
+        it('shouldnt allow to do it', function (done) {
+            var expire = new Date();
+            expire.addDays(-1);
 
+            Seem.create("Expired seem", expire, users[0].token, function (err, seem) {
+                if (err) return done(err);
+                Seem.addToSeem(seem.id, media, "A caption for the photo", users[0].token, function (err,code) {
+                    if (err && code == 472){
+                        done();
+                    } else if (err){
+                        done(err);
+                    } else{
+                        done("Should return an error");
+                    }
+
+                });
+            });
+
+        });
+    });
     describe('#getSeemItems', function () {
         it('should get seem post', function (done) {
             Seem.addToSeem(seem.id, media, "A caption for the photo", users[0].token, function (err) {

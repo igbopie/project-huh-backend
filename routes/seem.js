@@ -1,6 +1,7 @@
 var Seem = require('../models/seem').Seem;
 var SeemService = require('../models/seem').Service;
 var UserService = require('../models/user').Service;
+var SeemLib = require('../models/seem');
 var ApiUtils = require('../utils/apiutils');
 
 exports.create = function(req, res) {
@@ -71,7 +72,9 @@ exports.add = function(req, res) {
                 ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
             } else {
                 SeemService.add(seemId, caption, mediaId,user, function (err, doc) {
-                    if (err) {
+                    if(err && err instanceof SeemLib.ExpiredSeemError){
+                        ApiUtils.api(req, res, ApiUtils.CLIENT_SEEM_EXPIRED, err, null);
+                    } else if (err) {
                         console.error(err);
                         ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                     } else {
