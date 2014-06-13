@@ -113,8 +113,10 @@ app.get('/api/media/get/:format/:id', media.get);
 app.post('/api/seem/create', seem.create);
 app.post('/api/seem/items', seem.getSeemItems);
 app.post('/api/seem/add', seem.add);
-app.post('/api/seem/by/expire', seem.findByExpire);
-app.post('/api/seem/by/expired', seem.findByExpired);
+app.post('/api/seem/by/updated', seem.findByUpdated);
+app.post('/api/seem/by/abouttostart', seem.findByAboutToStart);
+app.post('/api/seem/by/abouttoend', seem.findByAboutToEnd);
+app.post('/api/seem/by/ended', seem.findByEnded);
 
 
 http.createServer(app).listen(app.get('port'), function(){

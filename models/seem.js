@@ -12,6 +12,12 @@ var mongoose = require('mongoose')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS ="username mediaId bio name"
+    , PUBLISH_PERMISSIONS_EVERYONE="EVERYONE"
+    , PUBLISH_PERMISSIONS_ONLY_ME="ONLY_ME"
+    , PUBLISH_PERMISSIONS = [PUBLISH_PERMISSIONS_ONLY_ME,PUBLISH_PERMISSIONS_EVERYONE]
+    , VIEW_PERMISSIONS_EVERYONE="EVERYONE"
+    , VIEW_PERMISSIONS_EVERYONE_WITH_THE_LINK="EVERYONE_WITH_THE_LINK" //TODO
+    , VIEW_PERMISSIONS = [VIEW_PERMISSIONS_EVERYONE,VIEW_PERMISSIONS_EVERYONE_WITH_THE_LINK]
     ;
 
 
@@ -30,9 +36,13 @@ var itemSchema = new Schema({
 var seemSchema = new Schema({
     created		    :   {   type: Date	, required: true, default: Date.now },
     updated         :   {   type: Date	, required: true, default: Date.now },
-    expire          :   {   type: Date	, required: true},
-    user          :   {	type: Schema.Types.ObjectId, required: false, ref: "User"},
+    startDate       :   {   type: Date	, required: false},
+    endDate         :   {   type: Date	, required: false},
+    user            :   {	type: Schema.Types.ObjectId, required: false, ref: "User"},
     title           :   {	type: String, required: false},
+    coverPhotoMediaId:  {	type: Schema.Types.ObjectId, required: false},
+    publishPermissions         :   { type: String, enum: PUBLISH_PERMISSIONS,required:true, default:PUBLISH_PERMISSIONS_ONLY_ME},
+    viewPermissions          :   { type: String, enum: VIEW_PERMISSIONS,required:true, default:VIEW_PERMISSIONS_EVERYONE},
     //
     itemCount       :   {   type: Number, required:true, default:0},
     tags: [String],
@@ -60,11 +70,22 @@ var Item = mongoose.model('Item', itemSchema);
 //Service?
 var service = {};
 
-service.create = function(title,user,expire,callback){
+service.create = function(title,user,startDate,endDate,coverPhotoMediaId,publishPermissions,callback){
     var seem = new Seem();
     seem.title = title;
     seem.user = user._id;
-    seem.expire = expire;
+    if(startDate) {
+        seem.startDate = startDate;
+    }
+    if(endDate) {
+        seem.endDate = endDate;
+    }
+    if(coverPhotoMediaId){
+        seem.coverPhotoMediaId = coverPhotoMediaId;
+    }
+    if(publishPermissions){
+        seem.publishPermissions = publishPermissions;
+    }
     seem.tags = Utils.extractTags(" "+seem.title);
 
     seem.save(function(err){
@@ -87,10 +108,16 @@ service.add = function(seemId,caption,mediaId,user,callback){
             callback("Media not found");
         }else {
             Seem.findOne({_id:seemId},function(err,seem){
-                if (err) return callback(err)
+                if (err) return callback(err);
 
-                if(new Date().isAfter(seem.expire)){
-                    return callback(new ExpiredSeemError("Cannot add photos to an already expired seem"))
+                if(seem.startDate && new Date().isBefore(seem.startDate)){
+                    return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
+                }
+                if(seem.endDate && new Date().isAfter(seem.endDate)){
+                    return callback(new EndedSeemError("Cannot add photos to an already expired seem"))
+                }
+                if(seem.publishPermissions == PUBLISH_PERMISSIONS_ONLY_ME && seem.user != user._id){
+                    return callback(new InvalidPermissions("You don't have permissions to add to this seem"))
                 }
 
                 var item = new Item();
@@ -155,11 +182,9 @@ service.getSeemItems = function(seemId,page,callback){
 }
 
 
-
-service.findByExpire = function(page, callback){
+service.findByUpdated = function(page, callback){
     Seem.find({})
-        .sort({expire:-1})
-        .where('expire').gt(Date.now())
+        .sort({updated:-1})
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
@@ -169,10 +194,10 @@ service.findByExpire = function(page, callback){
         });
 }
 
-service.findByExpired = function(page, callback){
+service.findByAboutToStart = function(page, callback){
     Seem.find({})
-        .sort({expire:-1})
-        .where('expire').lt(Date.now())
+        .sort({startDate:1})
+        .where('startDate').gt(Date.now())
         .skip(page * MAX_RESULTS_ITEMS)
         .limit(MAX_RESULTS_ITEMS)
         .populate("user",PUBLIC_USER_FIELDS)
@@ -182,16 +207,58 @@ service.findByExpired = function(page, callback){
         });
 }
 
-function ExpiredSeemError(message) {
+service.findByAboutToEnd = function(page, callback){
+    Seem.find({})
+        .sort({endDate:-1})
+        .where('endDate').gt(Date.now())
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
+}
+
+service.findByEnded = function(page, callback){
+    Seem.find({})
+        .sort({endDate:-1})
+        .where('endDate').lt(Date.now())
+        .skip(page * MAX_RESULTS_ITEMS)
+        .limit(MAX_RESULTS_ITEMS)
+        .populate("user",PUBLIC_USER_FIELDS)
+        .populate("latestItems.user",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
+}
+
+function EndedSeemError(message) {
     this.name = 'ExpiredSeem';
     this.message = message;
     this.stack = (new Error()).stack;
 }
-ExpiredSeemError.prototype = new Error;
+EndedSeemError.prototype = new Error;
+
+function NotStartedSeemError(message) {
+    this.name = 'NotStartedSeem';
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+NotStartedSeemError.prototype = new Error;
+
+function InvalidPermissions(message) {
+    this.name = 'InvalidPermissions';
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+InvalidPermissions.prototype = new Error;
 
 module.exports = {
     Seem: Seem,
     Item: Item,
     Service:service,
-    ExpiredSeemError:ExpiredSeemError
+    EndedSeemError:EndedSeemError,
+    NotStartedSeemError:NotStartedSeemError,
+    InvalidPermissions:InvalidPermissions
 };

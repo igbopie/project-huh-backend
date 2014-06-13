@@ -24,10 +24,7 @@ describe('Seem', function() {
 
                     TestUtils.createFakeMedia(media, function (err) {
                         if (err) return done(err);
-                        var expire = new Date();
-                        expire.addDays(1);
-
-                        Seem.create("A title for a seam", expire, users[0].token, function (err, data) {
+                        Seem.create("A title for a seam", null,null,media,"EVERYONE", users[0].token, function (err, data) {
                             if (err) return done(err);
                             seem = data;
                             done();
@@ -54,10 +51,9 @@ describe('Seem', function() {
 
     describe('#addToExpiredSeem', function () {
         it('shouldnt allow to do it', function (done) {
-            var expire = new Date();
-            expire.addDays(-1);
-
-            Seem.create("Expired seem", expire, users[0].token, function (err, seem) {
+            var end = new Date();
+            end.addDays(-1);
+            Seem.create("Expired seem", null,end,media,"EVERYONE",users[0].token, function (err, seem) {
                 if (err) return done(err);
                 Seem.addToSeem(seem.id, media, "A caption for the photo", users[0].token, function (err,code) {
                     if (err && code == 472){
@@ -73,11 +69,53 @@ describe('Seem', function() {
 
         });
     });
+
+    describe('#addToANotStartedSeem', function () {
+        it('shouldnt allow to do it', function (done) {
+            var start = new Date();
+            start.addDays(1);
+            Seem.create("Expired seem", start,null,media,"EVERYONE",users[0].token, function (err, seem) {
+                if (err) return done(err);
+                Seem.addToSeem(seem.id, media, "A caption for the photo", users[0].token, function (err,code) {
+                    if (err && code == 473){
+                        done();
+                    } else if (err){
+                        done(err);
+                    } else{
+                        done("Should return an error");
+                    }
+
+                });
+            });
+
+        });
+    });
+
+    describe('#addNotPermitted', function () {
+        it('shouldnt allow to do it', function (done) {
+
+            Seem.create("Only me seem", null,null,media,"ONLY_ME",users[0].token, function (err, seem) {
+                if (err) return done(err);
+                Seem.addToSeem(seem.id, media, "A caption for the photo", users[1].token, function (err,code) {
+                    if (err && code == 401){
+                        done();
+                    } else if (err){
+                        done(err);
+                    } else{
+                        done("Should return an error");
+                    }
+
+                });
+            });
+
+        });
+    });
+
     describe('#getSeemItems', function () {
         it('should get seem post', function (done) {
             Seem.addToSeem(seem.id, media, "A caption for the photo", users[0].token, function (err) {
                 if (err) return done(err);
-                Seem.getSeemItems(seem.id,0, users[0].token, function (err,data) {
+                Seem.getSeemItems(seem.id, 0, users[0].token, function (err, data) {
                     data.length.should.be.equal(1);
                     done();
                 })
@@ -85,23 +123,47 @@ describe('Seem', function() {
             });
         });
     });
-
-    describe('#seemsAboutToExpire', function () {
-        it('should get seems about to expire', function (done) {
-             Seem.findByExpire(0, function (err,data) {
+    describe('#seemsUpdated', function () {
+        it('should get seems', function (done) {
+            Seem.findByUpdated(0, function (err,data) {
+                data.length.should.be.equal(1);
+                done();
+            });
+        });
+    });
+    describe('#seemsAboutToStart', function () {
+        it('should get seems about to start', function (done) {
+            var start = new Date();
+            start.addDays(1);
+            Seem.create("About to start", start,null,media,"EVERYONE",users[0].token, function (err, seem) {
+                Seem.findByAboutToStart(0, function (err,data) {
                     data.length.should.be.equal(1);
                     done();
                 });
+            });
         });
     });
 
-    describe('#seemsExpired', function () {
-        it('should get seems about to expire', function (done) {
+    describe('#seemsAboutToEnd', function () {
+        it('should get seems about to end', function (done) {
+            var end = new Date();
+            end.addDays(1);
+            Seem.create("About to start", null,end,media,"EVERYONE",users[0].token, function (err, seem) {
+                Seem.findByAboutToEnd(0, function (err,data) {
+                    data.length.should.be.equal(1);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#seemsEnded', function () {
+        it('should get seems ended', function (done) {
             var expire = new Date();
             expire.addDays(-1);
 
-            Seem.create("A title for a seam", expire, users[0].token, function (err, data) {
-                Seem.findByExpired(0, function (err,data) {
+            Seem.create("Ended",null, expire,media,"EVERYONE", users[0].token, function (err, data) {
+                Seem.findByEnded(0, function (err,data) {
                     data.length.should.be.equal(1);
                     done();
                 });

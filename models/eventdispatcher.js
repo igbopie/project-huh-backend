@@ -41,6 +41,7 @@ service.onSeemCreated =  function (seem){
         processSendMessageToFollowers(0,user,"@"+user.username+" has created a seem",feed.action,feed.seemId,feed.itemId)
 
     });*/
+    /*
     var timeLeft = seem.expire.getTime() - new Date().getTime();
     var timeLeftMessage = "";
     //Milliseconds
@@ -68,6 +69,7 @@ service.onSeemCreated =  function (seem){
             console.error(err);
         }
     });
+    */
 }
 
 service.onItemAdded =  function (item){
