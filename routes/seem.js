@@ -95,6 +95,32 @@ exports.add = function(req, res) {
     }
 };
 
+exports.findItemById = function(req, res)
+{
+
+    var token = req.body.token;
+    var itemId = req.body.itemId;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.findItemById(itemId, function (err, doc) {
+                    if (err) {
+                        console.error(err);
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else {
+                        ApiUtils.api(req, res, ApiUtils.OK, null, doc);
+                    }
+                });
+            }
+        });
+    } else {
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+    }
+}
 
 exports.findByUpdated = function (req,res){
 

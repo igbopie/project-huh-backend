@@ -172,7 +172,13 @@ service.add = function(seemId,caption,mediaId,replyTo,user,callback){
     });
 }
 
-
+service.findItemById = function(itemId,callback){
+    Item.findOne({_:itemId})
+        .populate('user',PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
+}
 
 service.getSeemItems = function(seemId,page,callback){
     Item.find({seemId:seemId})
