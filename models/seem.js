@@ -25,7 +25,8 @@ var itemSchema = new Schema({
     mediaId : {	type: Schema.Types.ObjectId, required: true},
     created : { type: Date	, required: true, default: Date.now },
     caption : {	type: String, required: false},
-    seemId: {	type: Schema.Types.ObjectId, required: false},
+    seemId: {	type: Schema.Types.ObjectId, required: true},
+    replyTo: {	type: Schema.Types.ObjectId, required: false},
     user:   {	type: Schema.Types.ObjectId, required: false, ref:"User"},
     exifLocation: { type: [Number], required:false,index: '2dsphere'},
     tags: [String]
@@ -100,7 +101,7 @@ service.create = function(title,user,startDate,endDate,coverPhotoMediaId,publish
     });
 }
 
-service.add = function(seemId,caption,mediaId,user,callback){
+service.add = function(seemId,caption,mediaId,replyTo,user,callback){
     Media.findOne({_id:mediaId},function(err,media) {
         if(err){
             callback(err);
@@ -125,6 +126,9 @@ service.add = function(seemId,caption,mediaId,user,callback){
                 item.seemId = seem._id;
                 item.user = user._id;
                 item.mediaId = media._id;
+                if(replyTo){
+                    item.replyTo = replyTo;
+                }
                 if(media.exifLocation){
                     item.exifLocation = media.exifLocation;
                 }

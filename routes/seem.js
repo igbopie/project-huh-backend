@@ -65,6 +65,7 @@ exports.add = function(req, res) {
     var caption = req.body.caption;
     var mediaId = req.body.mediaId;
     var seemId = req.body.seemId;
+    var replyTo = req.body.replyTo;
     var token = req.body.token;
     if(token) {
         UserService.findUserByToken(token, function (err, user) {
@@ -73,7 +74,7 @@ exports.add = function(req, res) {
             } else if (user == null) {
                 ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
             } else {
-                SeemService.add(seemId, caption, mediaId,user, function (err, doc) {
+                SeemService.add(seemId, caption, mediaId,replyTo,user, function (err, doc) {
                     if(err && err instanceof SeemLib.EndedSeemError){
                         ApiUtils.api(req, res, ApiUtils.CLIENT_SEEM_ENDED, err, null);
                     } else if(err && err instanceof SeemLib.NotStartedSeemError){

@@ -24,6 +24,7 @@ db.open("mongodb://nacho:123456@troup.mongohq.com:10033/app22601356",function(er
 
                 db.collection("items").findOne({seemId:seem._id},options,function(err,item){
                     delete seem.expire;
+                    seem.publishPermissions = "EVERYONE";
                     seem.coverPhotoMediaId = item.mediaId;
 
                     db.collection("seems").save(seem, function (err) {
