@@ -184,7 +184,7 @@ function findItemConversationViewAux(itemId,list,callback){
         .exec(function(err,doc){
             list.unshift(doc);
             if(doc.replyTo){
-                findConversationViewAux(doc.replyTo,list,callback);
+                findItemConversationViewAux(doc.replyTo,list,callback);
             }else {
                 callback(err, list);
             }
