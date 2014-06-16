@@ -172,6 +172,25 @@ service.add = function(seemId,caption,mediaId,replyTo,user,callback){
     });
 }
 
+service.findItemConversationView = function(itemId,callback){
+    var list = [];
+    findItemConversationViewAux(itemId,list,callback);
+
+}
+
+function findItemConversationViewAux(itemId,list,callback){
+    Item.findOne({_id:itemId})
+        .populate('user',PUBLIC_USER_FIELDS)
+        .exec(function(err,doc){
+            list.unshift(doc);
+            if(doc.replyTo){
+                findConversationViewAux(doc.replyTo,list,callback);
+            }else {
+                callback(err, list);
+            }
+        });
+}
+
 service.findItemById = function(itemId,callback){
     Item.findOne({_id:itemId})
         .populate('user',PUBLIC_USER_FIELDS)

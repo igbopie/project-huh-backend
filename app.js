@@ -114,6 +114,7 @@ app.post('/api/seem/create', seem.create);
 app.post('/api/seem/items', seem.getSeemItems);
 app.post('/api/seem/add', seem.add);
 app.post('/api/seem/item/get', seem.findItemById);
+app.post('/api/seem/item/conversation', seem.findItemConversationView);
 app.post('/api/seem/by/updated', seem.findByUpdated);
 app.post('/api/seem/by/abouttostart', seem.findByAboutToStart);
 app.post('/api/seem/by/abouttoend', seem.findByAboutToEnd);

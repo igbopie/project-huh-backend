@@ -94,7 +94,32 @@ exports.add = function(req, res) {
         ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
     }
 };
+exports.findItemConversationView = function(req, res)
+{
 
+    var token = req.body.token;
+    var itemId = req.body.itemId;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                SeemService.findItemConversationView(itemId, function (err, docs) {
+                    if (err) {
+                        console.error(err);
+                        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                    } else {
+                        ApiUtils.api(req, res, ApiUtils.OK, null, docs);
+                    }
+                });
+            }
+        });
+    } else {
+        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+    }
+}
 exports.findItemById = function(req, res)
 {
 
