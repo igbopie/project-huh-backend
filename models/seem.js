@@ -173,7 +173,7 @@ service.add = function(seemId,caption,mediaId,replyTo,user,callback){
 }
 
 service.findItemById = function(itemId,callback){
-    Item.findOne({_:itemId})
+    Item.findOne({_id:itemId})
         .populate('user',PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
             callback(err,docs);
