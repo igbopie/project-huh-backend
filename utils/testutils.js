@@ -133,8 +133,9 @@ function loginUsersAux(array,i,callback){
 			if(err) return callback(err);
 
 		    user.err = err;
-		    user.token = object;
-		    
+		    user.token = object.token;
+		    user.id = object.userId;
+
 			i++;	
 			loginUsersAux(array,i,callback)
 		});

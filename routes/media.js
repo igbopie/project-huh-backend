@@ -5,108 +5,100 @@ var MediaService = require('../models/media').Service;
 var fs = require('fs');
 
 exports.create = function(req, res){
-	/*
-	var token = req.body.token;
-	UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {*/
-            MediaService.create(
-                    req.files.file.path,
-                    req.files.file.type,
-                    req.files.file.name,
-                    null,
-                function(err,imageId){
-                    if(err){
-                        console.error("There was an error creating an image:");
-                        console.error(err);
-                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                    }else{
-                        ApiUtils.api(req,res,ApiUtils.OK,null,imageId);
-                    }
-            });/*
-		}
-	})*/
+    ApiUtils.auth(req,res,function(user){
+        MediaService.create(
+            req.files.file.path,
+            req.files.file.type,
+            req.files.file.name,
+            null,
+            function(err,imageId){
+                if(err){
+                    console.error("There was an error creating an image:");
+                    console.error(err);
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                }else{
+                    ApiUtils.api(req,res,ApiUtils.OK,null,imageId);
+                }
+            });
+    });
 };
 
 
 exports.remove = function(req, res){
-	
-	//var token = req.body.token;
+    ApiUtils.auth(req,res,function(user){
     var imageId = req.body.imageId;
-	/*UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {*/
-            MediaService.findById(imageId,function(err,media){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else if (media == null){
-                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+        MediaService.findById(imageId,function(err,media){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else if (media == null){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+            } else {
+                if(media.ownerId != (user._id+"")){
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
                 } else {
-                    /*if(media.ownerId != (user._id+"")){
-                        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                    } else {*/
-                        MediaService.remove(media,function(err){
-                            if(err){
-                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                            } else {
-                                ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                            }
-                        });/*
-                    }*/
-
+                    MediaService.remove(media,function(err){
+                        if(err){
+                            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                        } else {
+                            ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                        }
+                    });
                 }
-            });/*
-
-		}
-	})*/
+            }
+        });
+	})
 };
 
 
 exports.get = function(req, res){
-	//var token = req.body.token;
-    var imageId = req.params.id;
-    var formatName = req.params.format;
-    console.log("ID:"+imageId+" Format:"+formatName);
-	/*UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {*/
-            MediaService.findById(imageId,function(err,media){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else if (media == null){
-                    ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
+    ApiUtils.auth(req,res,function(user) {
+        var imageId = req.params.id;
+        var formatName = req.params.format;
+        console.log("ID:" + imageId + " Format:" + formatName);
+        MediaService.findById(imageId, function (err, media) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (media == null) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+            } else {
+
+                //Check permissions
+                var authorized = false;
+                if(media.visibility == MediaService.VISIBILITY_PUBLIC){
+                    authorized = true;
+                } else if(media.ownerId == (user._id+"")) {
+                    authorized = true;
                 } else {
-                   /* if(media.ownerId != (user._id+"")){
-                        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                    } else {*/
-                        MediaService.get(media,formatName,function(err,media){
-                            if(err){
-                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                            } else {
-                                var stat = fs.statSync(media.tempPath);
-                                res.writeHead(200, {
-                                    'Content-Type' : media.contentType,
-                                    'Content-Length': stat.size
-                                });
+                    //check list
+                    for (var index = 0; index < media.canView.length; ++index) {
+                        if(media.canView[index] == (user._id+"")) {
+                            authorized = true;
+                            break;
+                        }
+                    }
 
-                                var file = fs.createReadStream(media.tempPath);
-                                file.pipe(res);
-
-                            }
-                        });
-                        /*
-                    }*/
                 }
-            });/*
-		}
-	})*/
+
+                if(!authorized) {
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+                } else {
+                    MediaService.get(media, formatName, function (err, media) {
+                        if (err) {
+                            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                        } else {
+                            var stat = fs.statSync(media.tempPath);
+                            res.writeHead(200, {
+                                'Content-Type': media.contentType,
+                                'Content-Length': stat.size
+                            });
+
+                            var file = fs.createReadStream(media.tempPath);
+                            file.pipe(res);
+
+                        }
+                    });
+                }
+            }
+        });
+    });
 };

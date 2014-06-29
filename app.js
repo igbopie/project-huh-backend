@@ -94,31 +94,10 @@ app.post('/api/user/removeapntoken', user.removeApnToken);
 app.post('/api/user/addgcmtoken', user.addGcmToken);
 app.post('/api/user/removegcmtoken', user.removeGcmToken);
 
-//FOLLOW
-app.post('/api/followers', follow.followers);
-app.post('/api/following', follow.following);
-app.post('/api/follow', follow.follow);
-app.post('/api/unfollow', follow.unfollow);
-
-//NOTIFICATION
-app.post('/api/notification', user.notifications);
-
-//MEDIA
 app.post('/api/media/create', media.create);
 app.post('/api/media/remove', media.remove);
 app.post('/api/media/get/:format/:id', media.get);
 app.get('/api/media/get/:format/:id', media.get);
-
-//SEEM
-app.post('/api/seem/create', seem.create);
-app.post('/api/seem/items', seem.getSeemItems);
-app.post('/api/seem/add', seem.add);
-app.post('/api/seem/item/get', seem.findItemById);
-app.post('/api/seem/item/conversation', seem.findItemConversationView);
-app.post('/api/seem/by/updated', seem.findByUpdated);
-app.post('/api/seem/by/abouttostart', seem.findByAboutToStart);
-app.post('/api/seem/by/abouttoend', seem.findByAboutToEnd);
-app.post('/api/seem/by/ended', seem.findByEnded);
 
 
 http.createServer(app).listen(app.get('port'), function(){

@@ -1,4 +1,5 @@
 
+var UserService = require('../models/user').Service;
 
 var ApiResponse = function(code,message,responseObject){
 	this.code = code;
@@ -23,10 +24,6 @@ apiUtils.CLIENT_ENTITY_ALREADY_EXISTS = 465;
 apiUtils.CLIENT_USERNAME_ALREADY_EXISTS = 466;
 apiUtils.CLIENT_EMAIL_ALREADY_EXISTS = 467;
 apiUtils.CLIENT_ENTITY_NOT_FOUND = 470;
-apiUtils.CLIENT_MAX_LIMIT = 471;
-apiUtils.CLIENT_SEEM_ENDED = 472;
-apiUtils.CLIENT_SEEM_NOT_STARTED = 473;
-
 
 
 // CUSTOM 560-580
@@ -36,6 +33,24 @@ apiUtils.SERVER_NOT_IMPLEMENTED = 501;
 apiUtils.api = function(req,res,code,message,responseObject){
 	res.json(code, new ApiResponse(code,message,responseObject)); 		
 }
+
+apiUtils.auth = function(req,res,callback){
+    var token = req.body.token;
+    if(token) {
+        UserService.findUserByToken(token, function (err, user) {
+            if (err) {
+                apiUtils.api(req, res, apiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (user == null) {
+                apiUtils.api(req, res, apiUtils.CLIENT_LOGIN_TIMEOUT, null, null);
+            } else {
+                callback(user);
+            }
+        });
+    } else {
+        apiUtils.api(req, res, apiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+    }
+}
+
 
 // export the class
 module.exports = apiUtils;

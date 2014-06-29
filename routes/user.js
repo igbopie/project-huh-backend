@@ -50,7 +50,6 @@ exports.login = function(req, res) {
 
 	var username = req.body.username;
 	var password = req.body.password;
-	
 	// Using RegEx - search is case insensitive  
 	UserService.findUserByUsername(username, function(err, doc) {  
 		if(err){
@@ -68,7 +67,7 @@ exports.login = function(req, res) {
 	        			if (err){ 
 							ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 						}else{
-							ApiUtils.api(req,res,ApiUtils.OK,null,token);
+							ApiUtils.api(req,res,ApiUtils.OK,null,{token:token,userId:doc._id});
 						}
 	        		});
 				}
@@ -87,278 +86,170 @@ exports.extendToken =  function(req, res) {
         }
     });
 };
+
 exports.profile = function(req, res) {
-    var fields = {
-        username        :1,
-        mediaId  :1,
-        name            :1,
-        bio             :1,
-        following       :1,
-        followers       :1,
-        published       :1,
-        favourites      :1
-    };
-    var token = req.body.token;
-    var username = req.body.username;
-    if(token){
-        UserService.findUserByToken(token,function(err,user){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            } else if (user == null){
-                ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-            } else {
+    ApiUtils.auth(req,res,function(user){
+        var fields = {
+            username        :1,
+            mediaId  :1,
+            name            :1,
+            bio             :1,
+            following       :1,
+            followers       :1,
+            published       :1,
+            favourites      :1
+        };
+        var username = req.body.username;
 
-                if(username == user.username){
-                    //is me?
-                    fields.phone = 1;
-                    fields.facebookId = 1;
-                    fields.email = 1;
-                }
-                UserService.findUserProfile(username,fields,function(err,userProfile){
-                    if(err){
-                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                    } else if (userProfile == null){
-                        ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
-                    } else {
-                        var isFollowingMe = false;
-                        //is the user following me?
-                        FollowService.findFollow(userProfile._id,user._id,function(err,follow){
-                            if(err){
-                                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                            }else{
-                                if(follow){
-                                    isFollowingMe = true;
-                                }
-
-                                userProfile.isFollowingMe = isFollowingMe;
-                                //am I following the user?
-                                var isFollowedByMe = false;
-
-                                FollowService.findFollow(user._id,userProfile._id,function(err,follow) {
-                                    if(err){
-                                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                                    }else {
-                                        if(follow){
-                                            isFollowedByMe = true;
-                                        }
-                                        userProfile.isFollowedByMe = isFollowedByMe;
-
-                                        ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
-                                    }
-                                });
-                            }
-
-                        });
-                    }
-                });
-            }
-        });
-    } else if(username){
+        if(username == user.username){
+            //is me?
+            fields.phone = 1;
+            fields.facebookId = 1;
+            fields.email = 1;
+        }
         UserService.findUserProfile(username,fields,function(err,userProfile){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             } else if (userProfile == null){
                 ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
             } else {
-                ApiUtils.api(req,res,ApiUtils.OK,null,userProfile);
+                ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
             }
         });
-    } else {
-        ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,null,null);
-    }
+    });
+
 }
 
 
 exports.update = function(req, res) {
-    var token = req.body.token;
-    var email = req.body.email;
-    var mediaId = req.body.mediaId;
-    var facebookId = req.body.facebookId;
-    var name = req.body.name;
-    var bio = req.body.bio;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            if(email){
-                user.email = email;
-            }
-            if(mediaId){
-                user.mediaId = mediaId;
-            }
-            if(facebookId){
-                user.facebookId = facebookId;
-            }
-            if(bio){
-                user.bio = bio;
-            }
-            if(name){
-                user.name = name;
-            }
-            user.modified = new Date();
-            user.save(function(err){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                }
-            });
-
+    ApiUtils.auth(req,res,function(user){
+        var email = req.body.email;
+        var mediaId = req.body.mediaId;
+        var facebookId = req.body.facebookId;
+        var name = req.body.name;
+        var bio = req.body.bio;
+        var changedMedia = false;
+        if(email){
+            user.email = email;
         }
+        if(mediaId){
+            user.mediaId = mediaId;
+            changedMedia = true;
+        }
+        if(facebookId){
+            user.facebookId = facebookId;
+        }
+        if(bio){
+            user.bio = bio;
+        }
+        if(name){
+            user.name = name;
+        }
+        user.modified = new Date();
+        user.save(function(err){
+            if(changedMedia){
+                //Modify media permissions to be public
+            }
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
     });
 }
 
-
-exports.notifications = function(req, res) {
-	var token = req.body.token;
-	UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
-			ApiUtils.api(req,res,ApiUtils.OK,null,user.notifications);		
-		}
-	});
-}
-
-
 exports.addPhone = function(req, res) {
-	var token = req.body.token;
-	var phone = req.body.phone;
-	UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
-			user.addPhone(phone,function(err,verficationCode){
-				if(err){
-					ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-				} else {
-					// TODO SEND VERIFICATION CODE
-					console.log("SEND code "+verficationCode+" to "+phone);
-					SMS.send(phone,"Seem verification code:"+verficationCode,function(){
-						ApiUtils.api(req,res,ApiUtils.OK,null,null);	
-					});
-				}
-			});
-		}
-	});
+    ApiUtils.auth(req,res,function(user) {
+        var phone = req.body.phone;
+        user.addPhone(phone, function (err, verficationCode) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else {
+                // TODO SEND VERIFICATION CODE
+                console.log("SEND code " + verficationCode + " to " + phone);
+                SMS.send(phone, "Seem verification code:" + verficationCode, function () {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, null);
+                });
+            }
+        });
+    });
 }
 
 
 
 exports.verifyPhone = function(req, res) {
-	var token = req.body.token;
-	var phone = req.body.phone;
-	var verificationcode = req.body.verificationcode;
-	
-	UserService.findUserByToken(token,function(err,user){
-		if(err){
-			ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-		} else if (user == null){
-			ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-		} else {
-			user.verifyPhone(phone,verificationcode,function(err,didVerified){
-				if(err){
-					ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-				} else {
-					ApiUtils.api(req,res,ApiUtils.OK,null,didVerified);
-				}
-			});
-		}
+    ApiUtils.auth(req,res,function(user) {
+        var phone = req.body.phone;
+        var verificationcode = req.body.verificationcode;
+        user.verifyPhone(phone,verificationcode,function(err,didVerified){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,didVerified);
+            }
+        });
 	});
 }
 
 
 exports.addApnToken = function(req, res) {
-    var token = req.body.token;
-    var apntoken = req.body.apntoken;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            user.apnToken = apntoken;
-            user.apnSubscribeDate = Date.now();
-            user.save(function(err){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                }
-            });
-        }
+    ApiUtils.auth(req,res,function(user) {
+        var apntoken = req.body.apntoken;
+        user.apnToken = apntoken;
+        user.apnSubscribeDate = Date.now();
+        user.save(function (err) {
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else {
+                ApiUtils.api(req, res, ApiUtils.OK, null, null);
+            }
+        });
     });
 }
 
 
 exports.removeApnToken = function(req, res) {
-    var token = req.body.token;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            user.apnToken = undefined;
-            user.apnSubscribeDate = undefined;
-            user.save(function(err){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                }
-            });
-        }
+    ApiUtils.auth(req,res,function(user) {
+        user.apnToken = undefined;
+        user.apnSubscribeDate = undefined;
+        user.save(function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
     });
 }
 
 
 exports.addGcmToken = function(req, res) {
-    var token = req.body.token;
-    var gcmtoken = req.body.gcmtoken;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            user.gcmToken = gcmtoken;
-            user.gcmSubscribeDate = Date.now();
-            user.save(function(err){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                }
-            });
-        }
+    ApiUtils.auth(req,res,function(user) {
+        var gcmtoken = req.body.gcmtoken;
+        user.gcmToken = gcmtoken;
+        user.gcmSubscribeDate = Date.now();
+        user.save(function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
     });
 }
 
 exports.removeGcmToken = function(req, res) {
-    var token = req.body.token;
-    UserService.findUserByToken(token,function(err,user){
-        if(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-        } else if (user == null){
-            ApiUtils.api(req,res,ApiUtils.CLIENT_LOGIN_TIMEOUT,null,null);
-        } else {
-            user.gcmToken = undefined;
-            user.gcmSubscribeDate = undefined;
-            user.save(function(err){
-                if(err){
-                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                } else {
-                    ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                }
-            });
-        }
+    ApiUtils.auth(req,res,function(user) {
+        user.gcmToken = undefined;
+        user.gcmSubscribeDate = undefined;
+        user.save(function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            } else {
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
     });
 }
 

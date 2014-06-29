@@ -9,8 +9,6 @@ var mongoose = require('mongoose')
   , MAX_TOKENS = 10
   , SMS_VERIFICATION_LENGTH = 6
   , MAX_PHONE_VERIFICATION_TRIES = 3
-  , MAX_NOTIFICATIONS = 200
-  , NOTIFICATION_TYPES = {FOLLOW:"FOLLOW"}
   , TOKEN_EXPIRATION_DAYS = 30
   , TOKEN_EXPIRATION_HOURS = 0
   , textSearch = require('mongoose-text-search');
@@ -60,15 +58,8 @@ var userSchema = new Schema({
   , phoneDateVerified	: { type: Date	  , required: false }
   , phoneDateAdded		: { type: Date	  , required: false }
   , tokens		    : [tokenSchema]
-  , notifications   :[notificationSchema]
   , mediaId	: {	type: Schema.Types.ObjectId, required: false}
   , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
-  , following : { type: Number	  , required: true, default: 0}
-  , followers : { type: Number	  , required: true, default: 0}
-  , favourites : { type: Number	  , required: true, default: 0}
-  , published : { type: Number	  , required: true, default: 0}
-  , isFollowingMe: { type: Boolean , required: false} //TRANSIENT!!! DO NOT PERSIST
-  , isFollowedByMe: { type: Boolean , required: false }//TRANSIENT!!! DO NOT PERSIST
   , apnToken        : { type: String  , required: false } //iOs notification
   , apnSubscribeDate: { type: Date	  , required: false }
   , gcmToken        : { type: String  , required: false } //Android notification
@@ -110,45 +101,6 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
     });
 };
 
-userSchema.methods.findFriendIndex = function(username) {
-	var friendIndex = -1;
-	for(var i = 0;i < this.friends.length && friendIndex < 0; i++){
-		var friend = this.friends[i];
-		
-		if(friend.friendUsername == username){
-			friendIndex = i;
-		}
-	}
-    return friendIndex;
-    
-};
-userSchema.methods.findFriendRequestIndex = function(username) {
-	var friendIndex = -1;
-	for(var i = 0;i < this.friendRequests.length && friendIndex < 0; i++){
-		var friend = this.friendRequests[i];
-		
-		if(friend.friendUsername == username){
-			friendIndex = i;
-		}
-	}
-    return friendIndex;
-    
-};
-
-
-userSchema.methods.createNotification = function(type,target,cb) {
-	
-	var notification = {};
-	notification.type = type;
-	notification.target = target;
-	
-	//CHECK SIZE
-	this.notifications.push(notification);
-	this.save(function(err){
-		cb(err);
-	})
-
-}
 
 userSchema.methods.createToken = function(cb) {
 	var me = this;
@@ -277,14 +229,6 @@ service.extendToken= function(token,callback){
             months: 0,
             years: 0});
 
-        /*var conditions = {"_id":user._id,"tokens.token":token}
-            , update = { "$set": { "tokens.$.expiration": expiration }};
-
-        user.update(conditions, update,function(err){
-            if(err) return callback(err);
-            callback();
-        });*/
-        //user.tokens.id(my_id).....
         for(var i = 0;i<user.tokens.length;i++){
             var tokenObj = user.tokens[i];
             if(tokenObj.token == token){
@@ -381,7 +325,7 @@ service.search = function(text,callback){
 
     });*/
 
-    user.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1,followers:1,following:1} ).limit(20).exec(function(err,docs){
+    user.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1} ).limit(20).exec(function(err,docs){
         callback(err,docs);
     });;
 }
@@ -390,6 +334,5 @@ service.search = function(text,callback){
 
 module.exports = {
   User: user,
-  Service:service,
-  NOTIFICATION_TYPES:NOTIFICATION_TYPES
+  Service:service
 };
