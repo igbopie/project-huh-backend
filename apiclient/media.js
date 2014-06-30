@@ -1,8 +1,8 @@
 var apiClientBase = require('./apiclientbase');
 
 
-exports.create = function(filepath,callback){
-	var params ={};
+exports.create = function(filepath,token,callback){
+	var params ={token:token};
 	apiClientBase.postFile("/api/media/create",filepath,params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code:"+code+ " "+data);
@@ -12,8 +12,8 @@ exports.create = function(filepath,callback){
     });
 }
 
-exports.get = function(id,format,pathfile,callback){
-    var params ={};
+exports.get = function(id,format,pathfile,token,callback){
+    var params ={token:token};
     apiClientBase.postSaveFile("/api/media/get/"+format+"/"+id,params,pathfile,function(code,headers){
         if(code != 200){
             callback("The server responded with an invalid code:"+code,code);

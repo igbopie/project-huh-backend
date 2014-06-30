@@ -2,6 +2,7 @@ var Media = require('../models/media').Media;
 var ApiUtils = require('../utils/apiutils');
 var UserService = require('../models/user').Service;
 var MediaService = require('../models/media').Service;
+var MediaVars = require('../models/media');
 var fs = require('fs');
 
 exports.create = function(req, res){
@@ -10,7 +11,7 @@ exports.create = function(req, res){
             req.files.file.path,
             req.files.file.type,
             req.files.file.name,
-            null,
+            user._id,
             function(err,imageId){
                 if(err){
                     console.error("There was an error creating an image:");
@@ -60,8 +61,9 @@ exports.get = function(req, res){
                 ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
             } else if (media == null) {
                 ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+            } else if(media.uploadStatus != MediaVars.UPLOAD_STATUSES_ASSIGNED){
+                ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, null, null);
             } else {
-
                 //Check permissions
                 var authorized = false;
                 if(media.visibility == MediaService.VISIBILITY_PUBLIC){
@@ -76,7 +78,6 @@ exports.get = function(req, res){
                             break;
                         }
                     }
-
                 }
 
                 if(!authorized) {

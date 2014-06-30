@@ -122,7 +122,7 @@ describe('User', function(){
                 if (err) return done(err);
                 TestUtils.loginUsers(users,function(err){
                     if (err) return done(err);
-                    Media.create("test/resources/testimage.jpg",function(err,data){
+                    Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
                         if(err) return done(err);
                         User.update(null,null,data,null,null,users[0].token,function(err){
                             if (err) return done(err);

@@ -14,12 +14,12 @@ var mongoose = require('mongoose')
     , FORMAT_THUMB = {name: "thumb", height: 480, width: 480}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
     , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
     , QUALITY = 5
-    , VISIBILITY_PUBLIC="PUBLIC"
-    , VISIBILITY_PRIVATE="PRIVATE"
+    , VISIBILITY_PUBLIC = "PUBLIC"
+    , VISIBILITY_PRIVATE = "PRIVATE"
     , VISIBILITY = [VISIBILITY_PUBLIC,VISIBILITY_PRIVATE]
     , UPLOAD_STATUSES_UPLOADED = "UPLOADED"
     , UPLOAD_STATUSES_ASSIGNED = "ASSIGNED"
-    , UPLOAD_STATUSES = [VISIBILITY_PUBLIC,VISIBILITY_PRIVATE]
+    , UPLOAD_STATUSES = [UPLOAD_STATUSES_UPLOADED,UPLOAD_STATUSES_ASSIGNED]
     ;
 
 /* Lifecicle: Upload -> UPLOADED, then assign. If not assigned, the media can be cleaned by a "garbage collector" TODO */
@@ -371,5 +371,6 @@ module.exports = {
     Media: Media,
     Service: service,
     VISIBILITY_PUBLIC: VISIBILITY_PUBLIC,
-    VISIBILITY_PRIVATE: VISIBILITY_PRIVATE
+    VISIBILITY_PRIVATE: VISIBILITY_PRIVATE,
+    UPLOAD_STATUSES_ASSIGNED:UPLOAD_STATUSES_ASSIGNED
 };

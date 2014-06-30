@@ -1,9 +1,10 @@
 
 var User = require('../models/user').User; 
 var UserService = require('../models/user').Service;
-var FollowService = require('../models/follow').Service;
+var MediaService = require('../models/media').Service;
+var MediaVars = require('../models/media');
 var ApiUtils = require('../utils/apiutils'); 
-var SMS = require('../utils/sms'); 
+var SMS = require('../utils/sms');
 
 
 exports.create = function(req, res) {
@@ -146,11 +147,17 @@ exports.update = function(req, res) {
             user.name = name;
         }
         user.modified = new Date();
+
         user.save(function(err){
             if(changedMedia){
-                //Modify media permissions to be public
-            }
-            if(err){
+                MediaService.assign(user.mediaId,[],MediaVars.VISIBILITY_PUBLIC,user._id,"User#mediaId",function(err){
+                    if(err){
+                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                    } else {
+                        ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                    }
+                });
+            }else if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             } else {
                 ApiUtils.api(req,res,ApiUtils.OK,null,null);
