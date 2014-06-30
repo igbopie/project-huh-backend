@@ -37,44 +37,26 @@ var mediaSchema = new Schema({
 });
 
 mediaSchema.index({ ownerId: 1 });
+mediaSchema.index({ uploadStatus: 1 });
+var Media = mongoose.model('media', mediaSchema);
+
 
 var mediaGcJob = new CronJob({
     cronTime: '0 0 0 * * *',
     onTick: function() {
         console.log("CRON!");
 
-        //mediaGcJobS3CleanAux();
+        mediaGcJobS3Clean();
+        mediaJobCleanDb();
 
-
-        /*
-        var stream = Seem.find().stream();
-
-        stream.on('data', function (doc) {
-            this.pause();
-            var self = this;
-            // do something with the mongoose document
-            hotness(doc,function(seem){
-                viral(seem,function(seem) {
-                    seem.save(function (err) {
-                        if (err) {
-                            console.error(err);
-                        }
-
-                        self.resume();
-                    })
-                });
-            });
-        }).on('error', function (err) {
-            // handle the error
-        }).on('close', function () {
-            // the stream is closed
-        });*/
     },
     start: false,
     timeZone: "America/Los_Angeles"
 });
 
-function mediaGcJobS3CleanAux(nextMarker){
+function mediaGcJobS3Clean(nextMarker){
+
+    console.log("mediaGcJobS3Clean");
     //Clean S3!
     var params = {Bucket: S3_BUCKET,Delimiter:"/"};
     if(nextMarker){
@@ -90,9 +72,10 @@ function mediaGcJobS3CleanAux(nextMarker){
                 var mediaId = file.substring(0, file.indexOf("_"));
                 (function(file,mediaId){
                     service.findById(mediaId,function(err,media){
-                        if(err){
+                        var invalidId = err.name == "CastError" && err.type == "ObjectId" && err.path =="_id";
+                        if(err && !invalidId){
                             console.log(err);
-                        } else if(!media){
+                        } else if(!media || invalidId){
                             //Delete s3 file!
                             console.log("File "+file+" not found");
                             var params = {Bucket: S3_BUCKET, Key:file};
@@ -122,9 +105,38 @@ function mediaGcJobS3CleanAux(nextMarker){
 
 }
 
+function mediaJobCleanDb(){
+    console.log("mediaJobCleanDb ");
+    var stream = Media.find({uploadStatus:UPLOAD_STATUSES_UPLOADED}).stream();
+
+    stream.on('data', function (media) {
+        //stream pause
+        this.pause();
+        var self = this;
+
+        if(media.created.getDaysBetween(Date.now()) > 1){
+            //Media expired
+            console.log("Media expired "+media._id);
+            service.remove(media,function(err){
+                if (err) {
+                    console.error(err);
+                }
+                self.resume();
+            })
+        }else{
+            self.resume();
+        }
+
+    }).on('error', function (err) {
+        // handle the error
+    }).on('close', function () {
+        // the stream is closed
+        console.log("mediaJobCleanDb end");
+    });
+}
+
 mediaGcJob.start();
 
-var Media = mongoose.model('media', mediaSchema);
 
 var service = {};
 
