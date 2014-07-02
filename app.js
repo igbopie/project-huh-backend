@@ -51,7 +51,7 @@ var app = express();
 //ROUTES
 
 var user = require('./routes/user');
-var follow = require('./routes/follow');
+var friend = require('./routes/friend');
 var media = require('./routes/media');
 var seem = require('./routes/seem');
 
@@ -98,6 +98,14 @@ app.post('/api/media/create', media.create);
 app.post('/api/media/remove', media.remove);
 app.post('/api/media/get/:format/:id', media.get);
 app.get('/api/media/get/:format/:id', media.get);
+
+app.post('/api/friends', friend.friends);
+app.post('/api/friends/request', friend.requests);
+app.post('/api/friends/request/send', friend.sendFriendRequest);
+app.post('/api/friends/request/accept', friend.acceptFriendRequest);
+app.post('/api/friends/request/decline', friend.declineFriendRequest);
+app.post('/api/friends/unfriend', friend.unfriend);
+
 
 
 http.createServer(app).listen(app.get('port'), function(){

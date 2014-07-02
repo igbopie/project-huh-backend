@@ -11,7 +11,9 @@ var mongoose = require('mongoose')
   , MAX_PHONE_VERIFICATION_TRIES = 3
   , TOKEN_EXPIRATION_DAYS = 30
   , TOKEN_EXPIRATION_HOURS = 0
-  , textSearch = require('mongoose-text-search');
+  , textSearch = require('mongoose-text-search')
+  , PUBLIC_USER_FIELDS ="username mediaId bio name"
+  , FRIENDS_LIMIT = 1000;
 
 /*var friendRequestSchema = new Schema({
     friendId		: {	type: Schema.Types.ObjectId, required: true}
@@ -28,13 +30,6 @@ var friendSchema = new Schema({
 });
 */
 
-var notificationSchema = new Schema({
-	type: {type: String, enum: ['FOLLOW'], required: true , default:"FOLLOW"}
-  , target		: {	type: String, required: true}
-  , created		: { type: Date	, required: true, default: Date.now }
-  , read  : { type: Boolean	, required: false}
-  , dateReaded	: { type: Date 	, required: false }
-});
 
 var tokenSchema = new Schema({
     token		: {	type: String, required: true, index: { unique: true , sparse: true} }
@@ -43,6 +38,15 @@ var tokenSchema = new Schema({
   , lastUsed	: { type: Date 	, required: false }
 });
 
+var friendSchema = new Schema({
+    userId		:   { type: Schema.Types.ObjectId, required: true , ref:"User"}
+    , added		:   { type: Date	, required: true, default: Date.now }
+    , requested :   { type: Date	, required: true}
+});
+var friendRequestSchema = new Schema({
+    fromUserId		: {	type: Schema.Types.ObjectId, required: true , ref:"User"}
+    , requested		: { type: Date	, required: true, default: Date.now }
+});
 var userSchema = new Schema({
     username	    : { type: String, required: true, trim: true, index: { unique: true } }
   ,	password	    : { type: String, required: true }
@@ -64,6 +68,9 @@ var userSchema = new Schema({
   , apnSubscribeDate: { type: Date	  , required: false }
   , gcmToken        : { type: String  , required: false } //Android notification
   , gcmSubscribeDate: { type: Date	  , required: false }
+  , friends         : [friendSchema]
+  , friendRequests   : [friendRequestSchema]
+
     //TODO photo, iOS Device ID,Android Device ID,Facebook ID
 });
 
@@ -198,13 +205,15 @@ userSchema.methods.verifyPhone = function(phone,verificationCode,cb) {
 	        
 }
 
-var user = mongoose.model('User', userSchema);
+var User = mongoose.model('User', userSchema);
+var Friend = mongoose.model('Friend', friendSchema);
+var FriendRequest = mongoose.model('FriendRequest', friendRequestSchema);
 
 //Service?
 var service = {};
 
 service.findUserProfile = function(username,fields,callback){
-    user.findOne({ username: { $regex: new RegExp(username, "i") } },fields, function(err, doc) {
+    User.findOne({ username: { $regex: new RegExp(username, "i") } },fields, function(err, doc) {
         if(err) {
             callback(err);
         } else {
@@ -241,7 +250,7 @@ service.extendToken= function(token,callback){
     });
 }
 service.findUserByToken = function(token,callback){
-	user.findOne({"tokens.token":token},function(err,user){
+    User.findOne({"tokens.token":token},function(err,user){
 			if(err) {
 				callback(user);
 			} else if (user == null){
@@ -272,7 +281,7 @@ service.findUserByToken = function(token,callback){
 };
 service.findUserByUsername = function(username,callback){
 	// Using RegEx - search is case insensitive
-	user.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) { 
+    User.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) {
 		if(err) { 
 			callback(err);
 		} else {
@@ -285,7 +294,7 @@ service.findUserByUsername = function(username,callback){
 
 service.findUserByEmail = function(email,callback){
     // Using RegEx - search is case insensitive
-    user.findOne({ email: { $regex: new RegExp(email, "i") } }, function(err, doc) {
+    User.findOne({ email: { $regex: new RegExp(email, "i") } }, function(err, doc) {
         if(err) {
             callback(err);
         } else {
@@ -298,7 +307,7 @@ service.findUserByEmail = function(email,callback){
 
 service.findUserById = function(id,callback){
 	// Using RegEx - search is case insensitive
-	user.findOne({ _id: id }, function(err, doc) { 
+    User.findOne({ _id: id }, function(err, doc) {
 		if(err) { 
 			callback(err);
 		} else {
@@ -325,14 +334,75 @@ service.search = function(text,callback){
 
     });*/
 
-    user.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1} ).limit(20).exec(function(err,docs){
+    User.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1} ).limit(20).exec(function(err,docs){
         callback(err,docs);
     });;
 }
 
+service.findFriends = function(userId,callback){
+    User.findOne({_id:userId})
+        .populate("friends.userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
+}
+
+service.findFriendRequests = function(userId,callback){
+    User.findOne({_id:userId})
+        .populate("friendRequests.fromUserId",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+            callback(err,docs);
+        });
+}
+service.sendFriendRequest = function(fromUserId,toUserId,callback){
+    //TODO Check only one user request to a user and not already friends
+    User.findOne({_id:fromUserId},function(err,fromUser){
+        if(err){
+            return callback(err);
+        }else if(!fromUser){
+            return callback(new UserNotFoundError("User "+fromUserId+" does not exist"));
+        }else if(fromUser.friends.length == FRIENDS_LIMIT){
+            return callback(new FriendsLimitExceeded("User "+fromUserId+" exceeded the number of friends"));
+        }
+        User.findOne({_id:toUserId},function(err,toUser){
+            if(err){
+                return callback(err);
+            }else if(!toUser){
+                return callback(new UserNotFoundError("User "+toUserId+" does not exist"));
+            }else if(toUser.friends.length == FRIENDS_LIMIT){
+                return callback(new FriendsLimitExceeded("User "+toUserId+" exceeded the number of friends"));
+            }
+
+            var friendRequest = new FriendRequest();
+            friendRequest.fromUserId = fromUserId;
+            toUser.friendRequests.push(friendRequest);
+            toUser.save(function(err) {
+                callback(err);
+            });
+        });
+
+    });
+
+}
+
+function UserNotFoundError(message) {
+    this.name = 'UserNotFoundError';
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+UserNotFoundError.prototype = new Error;
+
+
+function FriendsLimitExceeded(message) {
+    this.name = 'FriendsLimitExceeded';
+    this.message = message;
+    this.stack = (new Error()).stack;
+}
+FriendsLimitExceeded.prototype = new Error;
 
 
 module.exports = {
-  User: user,
-  Service:service
+  User: User,
+  Service:service,
+  PUBLIC_USER_FIELDS:PUBLIC_USER_FIELDS
 };

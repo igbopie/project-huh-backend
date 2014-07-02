@@ -1,15 +1,12 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-    , Follow = require('../models/follow').Follow
     , User = require('../models/user').User
-    , Schema = mongoose.Schema
     , PAGE_LIMIT = 20
     , FEED_ACTION_REPLY_TO = "replyTo"
     , FEED_ACTION_CREATE_SEEM = "createSeem"
     , FEED_ACTION_FAVOURITE = "favourite"
     , Apn = require("../utils/apn")
     , Gcm = require("../utils/gcm")
-    , FollowService = require("../models/follow").Service
     , UserService = require("../models/user").Service
     , Utils = require('../utils/utils')
     , PUBLIC_USER_FIELDS ="username mediaId bio name";
