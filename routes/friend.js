@@ -43,12 +43,39 @@ exports.sendFriendRequest = function(req, res){
     });
 };
 exports.acceptFriendRequest = function(req, res){
-
+    ApiUtils.auth(req,res,function(user) {
+        var fromUserId = req.body.userId;
+        FriendService.acceptFriendRequest(fromUserId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        })
+    });
 };
 exports.declineFriendRequest = function(req, res){
-
+    ApiUtils.auth(req,res,function(user) {
+        var fromUserId = req.body.userId;
+        FriendService.declineFriendRequest(fromUserId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        })
+    });
 };
 
 exports.unfriend = function(req, res){
-
+    ApiUtils.auth(req,res,function(user) {
+        var fromUserId = req.body.userId;
+        FriendService.unfriend(fromUserId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        })
+    });
 };

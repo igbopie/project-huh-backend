@@ -24,7 +24,7 @@ exports.cleanDatabase = function(callback){
                     callback(err);
                     return;
                 }*/
-                db.collection('follows').remove(	function(err) {
+                db.collection('friends').remove(	function(err) {
                     if(err) {
                         console.log(err);
                         callback(err);

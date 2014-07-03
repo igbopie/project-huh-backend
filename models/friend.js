@@ -12,7 +12,7 @@ var friendSchema = new Schema({
     userId		:   { type: Schema.Types.ObjectId, required: true , ref:"User"}
     , friendUserId: {	type: Schema.Types.ObjectId, required: true , ref:"User"}
     , status    :   { type: String, enum: FRIEND_STATUS,required:true, default:FRIEND_STATUS_REQUEST}
-    , added		:   { type: Date	, required: false }
+    , accepted		:   { type: Date	, required: false }
     , requested :   { type: Date	, required: false }
     , blocked   :   { type: Date	, required: false }
 });
@@ -27,11 +27,11 @@ var Friend = mongoose.model('Friend', friendSchema);
 var service = {};
 
 service.findFriends = function(userId,callback){
-   /* FriendRequest.findOne({_id:userId})
-        .populate("friends.userId",PUBLIC_USER_FIELDS)
+    Friend.find({userId:userId,status:FRIEND_STATUS_FRIENDSHIP})
+        .populate("friendUserId",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
             callback(err,docs);
-        });*/
+        });
 }
 
 service.findFriendRequests = function(userId,callback){
@@ -78,6 +78,89 @@ service.sendFriendRequest = function(fromUserId,toUserId,callback){
 
     });
 
+}
+
+service.acceptFriendRequest = function(fromUserId,toUserId,callback){
+    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest){
+        if(err){
+            return callback(err);
+        } else if(!friendRequest){
+            return callback("User not found");
+        }
+        friendRequest.status = FRIEND_STATUS_FRIENDSHIP;
+        friendRequest.accepted = Date.now();
+        friendRequest.save(function(err){
+            if(err){
+                return callback(err);
+            }
+            var friendRequestOtherSide = new Friend();
+            friendRequestOtherSide.userId = friendRequest.friendUserId;
+            friendRequestOtherSide.friendUserId = friendRequest.userId;
+            friendRequestOtherSide.requested = friendRequest.requested;
+            friendRequestOtherSide.accepted = friendRequest.accepted;
+            friendRequestOtherSide.status = friendRequest.status;
+            friendRequestOtherSide.save(function(err){
+                if(err){
+                    //TODO Try to recover!
+                    friendRequest.status = FRIEND_STATUS_REQUEST;
+                    delete friendRequest.accepted;
+
+                    friendRequest.save(function(err){
+                        //PRAY
+                        console.error("Could rollback an error ocurred while trying to accept a friendship: "+err);
+                    });
+                    return callback(err);
+                }
+                callback();
+            })
+        })
+    });
+}
+
+service.declineFriendRequest = function(fromUserId,toUserId,callback){
+    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest){
+        if(err){
+            return callback(err);
+        } else if(!friendRequest){
+            return callback("User not found");
+        }
+        //Just remove it.
+        friendRequest.remove(function(err) {
+            if (err) {
+                return callback(err);
+            }
+            callback();
+        });
+    });
+}
+service.unfriend =  function(fromUserId,toUserId,callback){
+    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest) {
+        if (err) {
+            return callback(err);
+        } else if (!friendRequest) {
+            return callback("User not found");
+        }
+        //Just remove it.
+        friendRequest.remove(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            Friend.findOne({userId: toUserId, friendUserId: fromUserId}, function (err, friendRequest) {
+                if (err) {
+                    return callback(err);
+                } else if (!friendRequest) {
+                    return callback("User not found");
+                }
+                //Just remove it.
+                friendRequest.remove(function (err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback();
+                });
+            });
+        });
+    });
 }
 
 function UserNotFoundError(message) {
