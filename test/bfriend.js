@@ -32,11 +32,27 @@ describe('Friend', function(){
 		});
 	});
 
+    describe('#sendFriendRequestAndAnother()', function(){
+        it('should follow a user',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+                if(err) return done(err);
+                Friend.sendFriendRequest(users[2].id,users[0].token,function(err) {
+                    if (err) return done(err);
+                    done();
+                });
+            });
+        });
+    });
+
     describe('#sendFriendRequestTwice()', function(){
         it('should follow a user',function (done) {
             Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
                 if(err) return done(err);
-                done();
+                Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                    if (err) return done(err);
+
+                    done();
+                });
             });
         });
     });
@@ -48,7 +64,19 @@ describe('Friend', function(){
             });
         });
     });
-
+    describe('#sendFriendRequestAndListIt()', function(){
+        it('should follow a user',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+                if(err) return done(err);
+                Friend.requests(users[1].token,function(err,list) {
+                    if (err) return done(err);
+                    console.log(list);
+                    list.length.should.be.equal(1);
+                    done();
+                });
+            });
+        });
+    });
 
 });
 

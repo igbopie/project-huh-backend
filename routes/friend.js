@@ -1,5 +1,6 @@
 var UserService = require('../models/user').Service;
 var User = require('../models/user').User;
+var FriendService = require('../models/friend').Service;
 var ApiUtils = require('../utils/apiutils');
 
 
@@ -9,7 +10,7 @@ var ApiUtils = require('../utils/apiutils');
 
 exports.friends = function(req, res){
     ApiUtils.auth(req,res,function(user){
-        UserService.findFriends(user._id,function(err,friends){
+        FriendService.findFriends(user._id,function(err,friends){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -20,7 +21,7 @@ exports.friends = function(req, res){
 };
 exports.requests = function(req, res){
     ApiUtils.auth(req,res,function(user){
-        UserService.findFriendRequests(user._id,function(err,friends){
+        FriendService.findFriendRequests(user._id,function(err,friends){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -32,7 +33,7 @@ exports.requests = function(req, res){
 exports.sendFriendRequest = function(req, res){
     ApiUtils.auth(req,res,function(user){
         var toUserId = req.body.userId;
-        UserService.sendFriendRequest(user._id,toUserId,function(err){
+        FriendService.sendFriendRequest(user._id,toUserId,function(err){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
