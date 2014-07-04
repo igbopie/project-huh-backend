@@ -16,6 +16,16 @@ var mongoose = require('mongoose')
 //Service?
 var service = {};
 
+service.onInboxCreated = function(inbox){
+    User.findOne({_id:inbox.ownerUserId},function(err,owner){
+        if(err){
+            console.error(err);
+            return;
+        }
+        sendNotification(""+owner.username+" has left you a message");
+    });
+}
+
 
 service.onSeemCreated =  function (seem){
 
@@ -115,30 +125,17 @@ module.exports = {
     Service:service
 };
 
-function processSendMessageToFollowers(page,user,message,type,seemId){
-
-    FollowService.findFollowers(user._id,page,function(err,followers){
+function sendNotification(userId,message){
+    UserService.findUserById(userId,function(err,user){
         if(err){
-            console.log("Error sending notifications"+err);
-            return;// ignore errors here
+            console.error(err);
+            return;
         }
-
-        for(var i = 0;i < followers.length;i++){
-            var follow = followers[i];
-            UserService.findUserById(follow.followerId,function(err,followerInfo){
-                if(followerInfo.apnToken){
-                    Apn.send(followerInfo.apnToken,message,{type:type,seemId:seemId});
-                }
-                if(followerInfo.gcmToken){
-                    Gcm.send(followerInfo.gcmToken,message,{type:type,seemId:seemId});
-                }
-            });
+        if(user.apnToken){
+            Apn.send(user.apnToken,message);
         }
-
-        if(followers.length > 0 ){
-            processSendMessageToFollowers(page+1,user,message,seemId);
+        if(user.gcmToken){
+            Gcm.send(user.gcmToken,message);
         }
-
     });
-
 }

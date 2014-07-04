@@ -1,8 +1,8 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-    , FRIEND_STATUS_REQUEST= "REQUEST"
-    , FRIEND_STATUS_FRIENDSHIP = "FRIENDSHIP"
-    , FRIEND_STATUS_BLOCKED = "BLOCKED"
+    , FRIEND_STATUS_REQUEST= 0
+    , FRIEND_STATUS_FRIENDSHIP = 1
+    , FRIEND_STATUS_BLOCKED = 2
     , FRIEND_STATUS = [FRIEND_STATUS_REQUEST,FRIEND_STATUS_FRIENDSHIP,FRIEND_STATUS_BLOCKED];
 
 var User = require('../models/user').User,
@@ -11,7 +11,7 @@ var User = require('../models/user').User,
 var friendSchema = new Schema({
     userId		:   { type: Schema.Types.ObjectId, required: true , ref:"User"}
     , friendUserId: {	type: Schema.Types.ObjectId, required: true , ref:"User"}
-    , status    :   { type: String, enum: FRIEND_STATUS,required:true, default:FRIEND_STATUS_REQUEST}
+    , status    :   { type: Number, enum: FRIEND_STATUS,required:true, default:FRIEND_STATUS_REQUEST}
     , accepted		:   { type: Date	, required: false }
     , requested :   { type: Date	, required: false }
     , blocked   :   { type: Date	, required: false }
@@ -19,6 +19,7 @@ var friendSchema = new Schema({
 
 
 friendSchema.index({userId:1,friendUserId:1},{unique:true});
+friendSchema.index({userId:1,friendUserId:1,status:1});
 friendSchema.index({userId:1,status:1});
 friendSchema.index({friendUserId:1,status:1});
 var Friend = mongoose.model('Friend', friendSchema);
@@ -161,6 +162,16 @@ service.unfriend =  function(fromUserId,toUserId,callback){
             });
         });
     });
+}
+
+service.isFriend = function(fromUserId,toUserId,callback){
+    Friend.findOne({userId:fromUserId,friendUserId:toUserId,status:FRIEND_STATUS_FRIENDSHIP},function(err,friend){
+        if(err) return callback(err);
+        if(!friend) return callback(null,false);
+        if(friend) return callback(null,true);
+    });
+
+
 }
 
 function UserNotFoundError(message) {
