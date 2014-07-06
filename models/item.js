@@ -2,6 +2,8 @@ var mongoose = require('mongoose')
     , Schema = mongoose.Schema
     , User = require("../models/user").User
     , Media = require("../models/media").Media
+    , MediaService = require("../models/media").Service
+    , MediaVars = require('../models/media')
     , FriendService = require("../models/friend").Service
     , EventService = require("../models/eventdispatcher.js").Service
     , Utils = require('../utils/utils')
@@ -61,6 +63,7 @@ var inboxSchema = new Schema({
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED }
 });
 
+inboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
 inboxSchema.index({userId:1,openedDate:-1});
 inboxSchema.index({itemId:1});
 inboxSchema.index({status:1});
@@ -100,263 +103,148 @@ service.create = function(type,message,mediaId,latitude,longitude,radius,openabi
     //TODO check owner exists!
 
     item.save(function(err){
-        callback(err);
-
-        //We return to the user but we keep working on the "background"
-
-        //Send and notify users
-        if(item.to){
-            item.to.forEach(function(userId){
-                //Check friendship!
-                FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
-                   if(err){
-                        console.error(err);
-                   }else if(isFriend){
-                       var inbox = new Inbox();
-                       indox.userId = userId;
-                       inbox.itemId = item._id;
-                       inbox.location = item.location;
-                       inbox.radius = item.radius;
-                       inbox.ownerUserId = item.ownerUserId;
-                       inbox.save(function(err){
-                           if(err){
-                               console.error(err);
-                           }else{
-                               EventService.onInboxCreated(inbox);
-                           }
-                       })
-                   } else {
-                       //¿?
-                   }
-
-                });
-
-
-            })
+        if(err){
+            return callback(err);
         }
+        if(item.mediaId){
+            var visibility = MediaVars.VISIBILITY_PRIVATE;
+            if(item.visibility == VISIBILITY_PUBLIC){
+                visibility = MediaVars.VISIBILITY_PUBLIC;
+            }
+            MediaService.assign(item.mediaId,item.to,visibility,item._id,"Item#mediaId",function(err){
+                if(err){
+                    //TODO remove item
+                    callback(err);
+                }else{
+                    callback();
+                    createBackground(item);
+                }
+            });
+        }else{
+            callback();
+            createBackground(item);
+        }
+
 
     })
 }
 
+function createBackground(item){
 
-///Old Stuff
-service.create = function(title,user,startDate,endDate,coverPhotoMediaId,publishPermissions,callback){
-    var seem = new Seem();
-    seem.title = title;
-    seem.user = user._id;
-    if(startDate) {
-        seem.startDate = startDate;
-    }
-    if(endDate) {
-        seem.endDate = endDate;
-    }
-    if(coverPhotoMediaId){
-        seem.coverPhotoMediaId = coverPhotoMediaId;
-    }
-    if(publishPermissions){
-        seem.publishPermissions = publishPermissions;
-    }
-    seem.tags = Utils.extractTags(" "+seem.title);
-
-    seem.save(function(err){
-        if(err){
-            callback(err);
-        } else {
-            callback(null, seem);// ignore errors here
-
-            //Kind of background?
-            EventService.onSeemCreated(seem);
-        }
-    });
-}
-
-service.add = function(seemId,caption,mediaId,replyTo,user,callback){
-    Media.findOne({_id:mediaId},function(err,media) {
-        if(err){
-            callback(err);
-        }else if(!media){
-            callback("Media not found");
-        }else {
-            Seem.findOne({_id:seemId},function(err,seem){
-                if (err) return callback(err);
-
-                if(seem.startDate && new Date().isBefore(seem.startDate)){
-                    return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
-                }
-                if(seem.endDate && new Date().isAfter(seem.endDate)){
-                    return callback(new EndedSeemError("Cannot add photos to an already expired seem"))
-                }
-                if(seem.publishPermissions == PUBLISH_PERMISSIONS_ONLY_ME && seem.user != user._id){
-                    return callback(new InvalidPermissions("You don't have permissions to add to this seem"))
-                }
-
-                var item = new Item();
-                item.caption = caption;
-                item.seemId = seem._id;
-                item.user = user._id;
-                item.mediaId = media._id;
-                if(replyTo){
-                    item.replyTo = replyTo;
-                }
-                if(media.exifLocation){
-                    item.exifLocation = media.exifLocation;
-                }
-                //----------------
-                //Save Item
-                //----------------
-                item.save(function (err) {
-                    if (err) return callback(err);
-
-                    //----------------
-                    //update Seem
-                    //----------------
-                    Seem.update({_id: seem._id},
-                        {   $inc: {itemCount: 1},
-                            $set:{updated:Date.now()},
-                            $push: {latestItems: {
-                                $each: [item],
-                                $slice: -MAX_LASTEST_ITEMS_SEEM
-                            }
-                            }
+    //We return to the user but we keep working on the "background"
+    //Send and notify users
+    if(item.to){
+        item.to.forEach(function(userId){
+            //Check friendship!
+            FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
+                if(err){
+                    console.error(err);
+                }else if(isFriend){
+                    var inbox = new Inbox();
+                    inbox.userId = userId;
+                    inbox.itemId = item._id;
+                    inbox.location = item.location;
+                    inbox.radius = item.radius;
+                    inbox.ownerUserId = item.ownerUserId;
+                    inbox.save(function(err){
+                        if(err){
+                            console.error(err);
+                        }else{
+                            EventService.onInboxCreated(inbox);
                         }
-                        ,
-                        function (err) {
-                            if (err) return callback(err);
-
-                            var userUpdate = {$inc: {"published": 1}};
-                            User.update({"_id": user._id},userUpdate
-                                ,function(err) {
-                                    if (err) return callback(err);
-
-                                    callback(null, item);
-
-                                    EventService.onItemAdded(item);
-                                });
-                        }
-                    );
-                });
+                    })
+                } else {
+                    //TODO maybe send friend request?
+                }
 
             });
+
+
+        })
+    }
+}
+
+service.open = function(itemId,longitude,latitude,userId,callback){
+    Inbox.findOne({itemId:itemId},function(err,inbox){
+        if(err) return callback(err);
+        if(inbox && inbox.status == STATUS_OPENED){
+            Item.findOne({_id:itemId},function(err,item){
+                if(err) return callback(err);
+                if(!item) return callback("Item not found ¿?");
+                openItem(item,callback);
+            });
+        } else {
+
+            var query =
+                {_id:itemId,
+                $or:
+                    [
+                        {openability:OPENABILITY_UNLIMITED},
+                        {$and:
+                            [
+                                {openability:OPENABILITY_ONLY_ONCE},
+                                {status:STATUS_UNOPENED}
+                            ]
+                        }
+                    ]
+                };
+
+            var update = {
+                            $set: { status: STATUS_OPENED },
+                            $inc: { openedCount:1 }
+                        };
+
+            if(!inbox){
+                query.visibility = VISIBILITY_PUBLIC;
+            }
+
+            Item.findOneAndUpdate(
+                query,
+                update,
+                function(err,item) {
+                    if (err) return callback(err);
+                    if (!item) return callback("Item not found");
+
+                    //FOUND
+                    if (!inbox) {
+                        inbox = new Inbox();
+                        inbox.userId = userId;
+                        inbox.itemId = item._id;
+                        inbox.location = item.location;
+                        inbox.radius = item.radius;
+                        inbox.ownerUserId = item.ownerUserId;
+                    }
+
+                    inbox.status = STATUS_OPENED;
+                    inbox.openedDate = Date.now();
+                    inbox.save(function (err) {
+                        if (err) return callback(err);
+                        openItem(item, callback);
+                    });
+
+
+            });
+
         }
     });
 }
 
-service.findItemConversationView = function(itemId,callback){
-    var list = [];
-    findItemConversationViewAux(itemId,list,callback);
-
-}
-
-function findItemConversationViewAux(itemId,list,callback){
-    Item.findOne({_id:itemId})
-        .populate('user',PUBLIC_USER_FIELDS)
-        .exec(function(err,doc){
-            list.unshift(doc);
-            if(doc.replyTo){
-                findItemConversationViewAux(doc.replyTo,list,callback);
-            }else {
-                callback(err, list);
-            }
-        });
-}
-
-service.findItemById = function(itemId,callback){
-    Item.findOne({_id:itemId})
-        .populate('user',PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-
-service.getSeemItems = function(seemId,page,callback){
-    Item.find({seemId:seemId})
-        .sort({created: -1})
-        .skip(page * MAX_RESULTS_ITEMS)
-        .limit(MAX_RESULTS_ITEMS)
-        .populate('user',PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-        callback(err,docs);
-    });
+function openItem(item,callback){
+    callback(null,{mediaId:item.mediaId,message:item.message});
 }
 
 
-service.findByUpdated = function(page, callback){
-    Seem.find({})
-        .sort({updated:-1})
-        .skip(page * MAX_RESULTS_ITEMS)
-        .limit(MAX_RESULTS_ITEMS)
-        .populate("user",PUBLIC_USER_FIELDS)
-        .populate("latestItems.user",PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-
-service.findByAboutToStart = function(page, callback){
-    Seem.find({})
-        .sort({startDate:1})
-        .where('startDate').gt(Date.now())
-        .skip(page * MAX_RESULTS_ITEMS)
-        .limit(MAX_RESULTS_ITEMS)
-        .populate("user",PUBLIC_USER_FIELDS)
-        .populate("latestItems.user",PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-
-service.findByAboutToEnd = function(page, callback){
-    Seem.find({})
-        .sort({endDate:-1})
-        .where('endDate').gt(Date.now())
-        .skip(page * MAX_RESULTS_ITEMS)
-        .limit(MAX_RESULTS_ITEMS)
-        .populate("user",PUBLIC_USER_FIELDS)
-        .populate("latestItems.user",PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-
-service.findByEnded = function(page, callback){
-    Seem.find({})
-        .sort({endDate:-1})
-        .where('endDate').lt(Date.now())
-        .skip(page * MAX_RESULTS_ITEMS)
-        .limit(MAX_RESULTS_ITEMS)
-        .populate("user",PUBLIC_USER_FIELDS)
-        .populate("latestItems.user",PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-
-function EndedSeemError(message) {
+///Old Stuff
+//return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
+/*function EndedSeemError(message) {
     this.name = 'ExpiredSeem';
     this.message = message;
     this.stack = (new Error()).stack;
 }
 EndedSeemError.prototype = new Error;
-
-function NotStartedSeemError(message) {
-    this.name = 'NotStartedSeem';
-    this.message = message;
-    this.stack = (new Error()).stack;
-}
-NotStartedSeemError.prototype = new Error;
-
-function InvalidPermissions(message) {
-    this.name = 'InvalidPermissions';
-    this.message = message;
-    this.stack = (new Error()).stack;
-}
-InvalidPermissions.prototype = new Error;
+*/
 
 module.exports = {
-    Seem: Seem,
     Item: Item,
-    Service:service,
-    EndedSeemError:EndedSeemError,
-    NotStartedSeemError:NotStartedSeemError,
-    InvalidPermissions:InvalidPermissions
+    Service:service
 };
