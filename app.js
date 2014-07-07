@@ -53,7 +53,7 @@ var app = express();
 var user = require('./routes/user');
 var friend = require('./routes/friend');
 var media = require('./routes/media');
-var seem = require('./routes/seem');
+var item = require('./routes/item');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -105,6 +105,9 @@ app.post('/api/friends/request/send', friend.sendFriendRequest);
 app.post('/api/friends/request/accept', friend.acceptFriendRequest);
 app.post('/api/friends/request/decline', friend.declineFriendRequest);
 app.post('/api/friends/unfriend', friend.unfriend);
+
+app.post('/api/item/create',item.create);
+app.post('/api/item/open',item.open);
 
 
 

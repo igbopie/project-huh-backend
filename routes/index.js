@@ -1,6 +1,4 @@
 
-var SeemService = require('../models/seem').Service;
-
 var dateUtils = require('date-utils');
 
 /*
@@ -20,7 +18,7 @@ exports.item = function(req, res){
 
     var itemId = req.params.itemId;
 
-    SeemService.getItem(itemId,function(err,item){
+    /*SeemService.getItem(itemId,function(err,item){
         if(err){
             res.status(500);
             res.render('error', { err: err });
@@ -30,5 +28,5 @@ exports.item = function(req, res){
         } else if(item){
             res.render('item', {item:item,dateUtils:dateUtils});
         }
-    });
+    });*/
 };

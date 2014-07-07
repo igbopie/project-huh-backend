@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var User = require('../apiclient/user');
-var Seem = require('../apiclient/seem');
 var Utils = require('../utils/utils');
 
 exports.cleanDatabase = function(callback){
@@ -183,60 +182,3 @@ function randomUser(){
 	return {email:email,username:username,password:password};
 }
 
-
-
-var fakeMediaId = "5343ce700ceeccdd20189502";//fake
-exports.createSeemsAndItems = function(nSeems,nItems,users,callback){
-    var seemsArray = new Array();
-    var itemsArray = new Array();
-    var seemName= "Seem name ";
-    var itemCaption= "Item caption ";
-
-    auxCreateSeem(0,seemsArray,itemsArray,seemName,itemCaption,nSeems,users,function(err) {
-        if (err) {
-            return callback(err);
-        }
-        auxCreateItems(0,itemsArray,itemCaption,nItems,users,function(err) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null,seemsArray,itemsArray);
-        });
-    });
-}
-
-function auxCreateSeem(depth,seemsArray,itemsArray,seemName,itemCaption,nSeems,users,callback){
-    var randomUserIndex = Math.floor((Math.random()*users.length));
-    var randomUser = users[randomUserIndex];
-
-    Seem.create(seemName+depth,itemCaption+depth,fakeMediaId,randomUser.token,function(err,data){
-        if(err) return callback(err);
-        seemsArray.push(data);
-        itemsArray.push(data.itemId);
-        if(depth < nSeems  ){
-            auxCreateSeem(depth+1,seemsArray,itemsArray,seemName,itemCaption,nSeems,users,callback);
-        }else{
-            callback(null);
-        }
-    });
-}
-
-function auxCreateItems(depth,itemsArray,itemCaption,nItems,users,callback){
-
-    var randomUserIndex = Math.floor((Math.random()*users.length));
-    var randomUser = users[randomUserIndex];
-
-    var randomReplyIndex = Math.floor((Math.random()*itemsArray.length));
-    var randomReplyId = itemsArray[randomReplyIndex];
-    //console.log("RandomIndex:"+randomReplyIndex+" Size:"+itemsArray.length);
-
-    Seem.reply(randomReplyId,itemCaption+depth,fakeMediaId,randomUser.token,function(err,data){
-        if(err) return callback(err);
-        itemsArray.push(data._id);
-        if(depth < nItems  ){
-            auxCreateItems(depth+1,itemsArray,itemCaption,nItems,users,callback);
-        }else{
-            callback(null);
-        }
-    });
-}

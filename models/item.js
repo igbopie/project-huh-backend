@@ -78,16 +78,17 @@ service.create = function(type,message,mediaId,latitude,longitude,radius,openabi
     var item = new Item();
     item.type = type;
     item.message = message;
-    item.mediaId = mediaId;
     item.location = [latitude,longitude]; //TODO maybe the opposite
     item.radius = radius;
     item.openability = openability;
     item.to = to;
     item.ownerUserId = ownerUserId;
 
-    if(item.type == TYPE_MESSAGE){
-        delete item.mediaId;
-    } else if ( (item.type == TYPE_IMAGE || item.type == TYPE_VIDEO) && !item.type ){
+    if(item.type != TYPE_MESSAGE){
+        item.mediaId = mediaId;
+    }
+
+    if ( (item.type == TYPE_IMAGE || item.type == TYPE_VIDEO) && !item.mediaId ){
         return callback("You have to provide a media if the type is an image or a video");
     }
 
@@ -174,7 +175,7 @@ service.open = function(itemId,longitude,latitude,userId,callback){
                 openItem(item,callback);
             });
         } else {
-
+            //TODO Check coordinates!!
             var query =
                 {_id:itemId,
                 $or:
