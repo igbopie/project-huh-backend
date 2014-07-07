@@ -53,5 +53,36 @@ describe('Item', function(){
         });
     });
 
+    describe('#open()', function(){
+        it('should open',function (done) {
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,10,Item.OPENABILITY_UNLIMITED,[],users[0].token,function(err,itemId){
+                if(err) return done(err);
+                Item.open(itemId,40.665350,-3.778955,users[1].token,function(err){
+                    if(!err) return done("Should return an error");
+                    done();
+                })
+            });
+        });
+    });
+
+    describe('#open()', function(){
+        it('should open',function (done) {
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,50,Item.OPENABILITY_UNLIMITED,[],users[0].token,function(err,itemId){
+                if(err) return done(err);
+                Item.open(itemId,40.665350,-3.778955,users[1].token,function(err){
+                    if(err) return done(err);
+                    done();
+                })
+            });
+        });
+    });
 
 });

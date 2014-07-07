@@ -12,11 +12,11 @@ exports.create = function(req, res) {
         var openability = req.body.openability;
         var to = req.body.to;
 
-        ItemService.create(type,message,mediaId,latitude,longitude,radius,openability,to,user._id,function(err){
+        ItemService.create(type,message,mediaId,latitude,longitude,radius,openability,to,user._id,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                ApiUtils.api(req,res,ApiUtils.OK,null,item._id);
             }
         });
     });

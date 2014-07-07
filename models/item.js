@@ -6,6 +6,7 @@ var mongoose = require('mongoose')
     , MediaVars = require('../models/media')
     , FriendService = require("../models/friend").Service
     , EventService = require("../models/eventdispatcher.js").Service
+    , Geolib = require('geolib')
     , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search')
     , CronJob = require('cron').CronJob
@@ -25,6 +26,8 @@ var mongoose = require('mongoose')
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
+    , LOCATION_LONGITUDE = 0
+    , LOCATION_LATITUDE = 1
     ;
 
 
@@ -78,7 +81,10 @@ service.create = function(type,message,mediaId,latitude,longitude,radius,openabi
     var item = new Item();
     item.type = type;
     item.message = message;
-    item.location = [latitude,longitude]; //TODO maybe the opposite
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = longitude;
+    locationArray[LOCATION_LATITUDE] = latitude;
+    item.location = locationArray;
     item.radius = radius;
     item.openability = openability;
     item.to = to;
@@ -117,12 +123,12 @@ service.create = function(type,message,mediaId,latitude,longitude,radius,openabi
                     //TODO remove item
                     callback(err);
                 }else{
-                    callback();
+                    callback(null,item);
                     createBackground(item);
                 }
             });
         }else{
-            callback();
+            callback(null,item);
             createBackground(item);
         }
 
@@ -175,7 +181,6 @@ service.open = function(itemId,longitude,latitude,userId,callback){
                 openItem(item,callback);
             });
         } else {
-            //TODO Check coordinates!!
             var query =
                 {_id:itemId,
                 $or:
@@ -198,40 +203,60 @@ service.open = function(itemId,longitude,latitude,userId,callback){
             if(!inbox){
                 query.visibility = VISIBILITY_PUBLIC;
             }
+            // This first query is to check location,
+            // the other findOneAndUpdate is to guarrantee that no one opened the item between these two
+            // queries.
+            Item.findOne(query,function(err,item){
+                if (err) return callback(err);
+                if (!item) return callback("Item not found");
+                //Check location
+                //distance in meters
+                var distance = Geolib.getDistance(
+                        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
+                        {latitude: latitude, longitude: longitude});
 
-            Item.findOneAndUpdate(
-                query,
-                update,
-                function(err,item) {
-                    if (err) return callback(err);
-                    if (!item) return callback("Item not found");
-
-                    //FOUND
-                    if (!inbox) {
-                        inbox = new Inbox();
-                        inbox.userId = userId;
-                        inbox.itemId = item._id;
-                        inbox.location = item.location;
-                        inbox.radius = item.radius;
-                        inbox.ownerUserId = item.ownerUserId;
-                    }
-
-                    inbox.status = STATUS_OPENED;
-                    inbox.openedDate = Date.now();
-                    inbox.save(function (err) {
+                if(distance > item.radius){
+                    return callback("Not close enough");
+                }
+                //
+                // Atomic operation
+                //
+                Item.findOneAndUpdate(
+                    query,
+                    update,
+                    function(err,item) {
                         if (err) return callback(err);
-                        openItem(item, callback);
+                        if (!item) return callback("Item not found");
+
+                        //FOUND
+                        if (!inbox) {
+                            inbox = new Inbox();
+                            inbox.userId = userId;
+                            inbox.itemId = item._id;
+                            inbox.location = item.location;
+                            inbox.radius = item.radius;
+                            inbox.ownerUserId = item.ownerUserId;
+                        }
+
+                        inbox.status = STATUS_OPENED;
+                        inbox.openedDate = Date.now();
+                        inbox.save(function (err) {
+                            if (err) return callback(err);
+                            openItem(item, callback);
+                        });
+
+
                     });
+            })
 
 
-            });
 
         }
     });
 }
 
 function openItem(item,callback){
-    callback(null,{mediaId:item.mediaId,message:item.message});
+    callback(null,{type:item.type,mediaId:item.mediaId,message:item.message});
 }
 
 

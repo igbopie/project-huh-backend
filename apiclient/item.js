@@ -29,7 +29,7 @@ exports.create = function(type,message,mediaId,latitude,longitude,radius,openabi
 }
 
 
-exports.open = function(itemId,longitude,latitude,token,callback){
+exports.open = function(itemId,latitude,longitude,token,callback){
     var params ={itemId:itemId,
              longitude:longitude,
                 latitude:latitude,
