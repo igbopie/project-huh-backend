@@ -11,7 +11,7 @@ service.onInboxCreated = function(inbox){
             console.error(err);
             return;
         }
-        sendNotification(""+owner.username+" has left you a message");
+        sendNotification(owner._id,""+owner.username+" has left you a message");
     });
 }
 
@@ -33,5 +33,6 @@ function sendNotification(userId,message){
         if(user.gcmToken){
             Gcm.send(user.gcmToken,message);
         }
+        console.log("Notification To:"+userId+" Msg:"+message);
     });
 }

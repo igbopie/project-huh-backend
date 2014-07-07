@@ -17,19 +17,19 @@ exports.cleanDatabase = function(callback){
                 callback(err);
                 return;
             }
-            /*db.collection('media').remove(	function(err) {
+            db.collection('media').remove(	function(err) {
                 if(err) {
                     console.log(err);
                     callback(err);
                     return;
-                }*/
+                }
                 db.collection('friends').remove(	function(err) {
                     if(err) {
                         console.log(err);
                         callback(err);
                         return;
                     }
-                    db.collection('seems').remove(	function(err) {
+                    db.collection('inboxes').remove(	function(err) {
                         if(err) {
                             console.log(err);
                             callback(err);
@@ -41,31 +41,19 @@ exports.cleanDatabase = function(callback){
                                 callback(err);
                                 return;
                             }
-                            db.collection('feeds').remove(	function(err) {
-                                if(err) {
+
+                            db.close(function (err) {
+                                if (err) {
                                     console.log(err);
                                     callback(err);
                                     return;
-                                }db.collection('actions').remove(	function(err) {
-                                    if (err) {
-                                        console.log(err);
-                                        callback(err);
-                                        return;
-                                    }
-                                    db.close(function (err) {
-                                        if (err) {
-                                            console.log(err);
-                                            callback(err);
-                                            return;
-                                        }
-                                        callback();
-                                    });
-                                });
+                                }
+                                callback();
                             });
                         });
                     });
                 });
-			//});
+			});
 		});
     });
 }

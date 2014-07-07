@@ -4,6 +4,7 @@ var TestUtils = require('../utils/testutils');
 var Media = require('../apiclient/media');
 var User = require('../apiclient/user');
 var Item = require('../apiclient/item');
+var Friend = require('../apiclient/friend');
 var nUsers = 2;
 var users = null;
 
@@ -37,10 +38,17 @@ describe('Item', function(){
 
     describe('#create(PRIVATE)', function(){
         it('should create a media object',function (done) {
-            //TODO friendship
-            Item.create(Item.TYPE_MESSAGE,"Test",null,41.2,41.2,10,Item.OPENABILITY_UNLIMITED,[users[1].id],users[0].token,function(err){
-                if(err) return done(err);
-                done();
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 41.2, 41.2, 10, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err) {
+                        if (err) return done(err);
+                        done();
+                    });
+                });
             });
         });
     });
