@@ -108,6 +108,7 @@ app.post('/api/friends/unfriend', friend.unfriend);
 
 app.post('/api/item/create',item.create);
 app.post('/api/item/open',item.open);
+app.post('/api/item/search/inbox/by/location',item.searchInboxByLocation);
 
 
 

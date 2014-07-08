@@ -37,3 +37,18 @@ exports.open = function(req,res){
         });
     });
 }
+
+
+
+
+exports.searchInboxByLocation = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var showOpened = req.body.showOpened;
+        var latitude = req.body.latitude;
+        var longitude = req.body.longitude;
+        var radius = req.body.radius;
+        ItemService.searchInboxByLocation(showOpened,latitude,longitude,radius,function(err){
+
+        });
+    });
+}

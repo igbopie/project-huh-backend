@@ -260,6 +260,22 @@ function openItem(item,callback){
 }
 
 
+service.searchInboxByLocation = function(showOpened,latitude,longitude,radius){
+
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = Number(longitude);
+    locationArray[LOCATION_LATITUDE] = Number(latitude);
+
+    var point = {type: 'Point', coordinates: locationArray};
+    //Radius of earth 6371000 meters
+    Inbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true}, function (err, results,stats) {
+        console.log(err);
+        console.log(results);
+        console.log(stats);
+    });
+
+}
+
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
 /*function EndedSeemError(message) {

@@ -85,4 +85,27 @@ describe('Item', function(){
         });
     });
 
+    describe('#searchInboxByLocation()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.searchInboxByLocation(false, 40.665350, -3.778955, 41, users[1].token, function (err) {
+                            if (err) return done(err);
+                            done();
+                        })
+                    });
+                });
+            });
+        });
+    });
+
 });
