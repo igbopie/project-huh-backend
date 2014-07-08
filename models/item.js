@@ -260,18 +260,30 @@ function openItem(item,callback){
 }
 
 
-service.searchInboxByLocation = function(showOpened,latitude,longitude,radius){
+service.searchInboxByLocation = function(showOpened,latitude,longitude,radius,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
     locationArray[LOCATION_LATITUDE] = Number(latitude);
 
     var point = {type: 'Point', coordinates: locationArray};
+
+    var query = {userId:userId};
+
+    if(showOpened  === "false"){
+        query.status = STATUS_UNOPENED;
+    }
+
     //Radius of earth 6371000 meters
-    Inbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true}, function (err, results,stats) {
-        console.log(err);
-        console.log(results);
-        console.log(stats);
+    Inbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true, query:query}, function (err, results,stats) {
+        if(err) return callback(err);
+        var array = [];
+        for(var i=0;i < results.length;i++){
+            var mongoGeoNearObject = results[i];
+            array.push(mongoGeoNearObject.obj);
+
+        }
+        callback(null,array);
     });
 
 }
