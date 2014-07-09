@@ -72,7 +72,7 @@ function mediaGcJobS3Clean(nextMarker){
                 var mediaId = file.substring(0, file.indexOf("_"));
                 (function(file,mediaId){
                     service.findById(mediaId,function(err,media){
-                        var invalidId = err.name == "CastError" && err.type == "ObjectId" && err.path =="_id";
+                        var invalidId = err && err.name == "CastError" && err.type == "ObjectId" && err.path =="_id";
                         if(err && !invalidId){
                             console.log(err);
                         } else if(!media || invalidId){

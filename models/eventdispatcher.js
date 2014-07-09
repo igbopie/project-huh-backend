@@ -5,10 +5,15 @@ var Apn = require("../utils/apn")
 
 var service = {};
 
-service.onInboxCreated = function(inbox){
+service.onItemInboxCreated = function(inbox){
+
     UserService.findUserById({_id:inbox.ownerUserId},function(err,owner){
         if(err){
             console.error(err);
+            return;
+        }
+        if(!owner){
+            console.error("Couldn't find owner: "+inbox.ownerUserId);
             return;
         }
         sendNotification(owner._id,""+owner.username+" has left you a message");
@@ -22,9 +27,14 @@ module.exports = {
 };
 
 function sendNotification(userId,message){
+
     UserService.findUserById(userId,function(err,user){
         if(err){
             console.error(err);
+            return;
+        }
+        if(!user){
+            console.error("User not found:"+user);
             return;
         }
         if(user.apnToken){

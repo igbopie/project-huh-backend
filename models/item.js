@@ -39,7 +39,7 @@ var itemSchema = new Schema({
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     radius      :   { type: Number, required:true},
-    openability :   { type: Number, enum: OPENABILITY,required:true, default:OPENABILITY_UNLIMITED },
+    openability :   { type: Number, enum: OPENABILITY,required:true, default:OPENABILITY_ONLY_ONCE },
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
     openedCount :   { type: Number, required:true, default:0},
@@ -55,7 +55,7 @@ itemSchema.index({status:1});
 
 var Item = mongoose.model('Item', itemSchema);
 
-var inboxSchema = new Schema({
+var itemItemInboxSchema = new Schema({
     userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     itemId      :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
@@ -66,13 +66,13 @@ var inboxSchema = new Schema({
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED }
 });
 
-inboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
-inboxSchema.index({userId:1,openedDate:-1});
-inboxSchema.index({itemId:1});
-inboxSchema.index({status:1});
-inboxSchema.index({radius:-1});
+itemItemInboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
+itemItemInboxSchema.index({userId:1,openedDate:-1});
+itemItemInboxSchema.index({itemId:1});
+itemItemInboxSchema.index({status:1});
+itemItemInboxSchema.index({radius:-1});
 
-var Inbox = mongoose.model('Inbox', inboxSchema);
+var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 
 //Service?
 var service = {};
@@ -147,17 +147,17 @@ function createBackground(item){
                 if(err){
                     console.error(err);
                 }else if(isFriend){
-                    var inbox = new Inbox();
-                    inbox.userId = userId;
-                    inbox.itemId = item._id;
-                    inbox.location = item.location;
-                    inbox.radius = item.radius;
-                    inbox.ownerUserId = item.ownerUserId;
-                    inbox.save(function(err){
+                    var itemInbox = new ItemInbox();
+                    itemInbox.userId = userId;
+                    itemInbox.itemId = item._id;
+                    itemInbox.location = item.location;
+                    itemInbox.radius = item.radius;
+                    itemInbox.ownerUserId = item.ownerUserId;
+                    itemInbox.save(function(err){
                         if(err){
                             console.error(err);
                         }else{
-                            EventService.onInboxCreated(inbox);
+                            EventService.onItemInboxCreated(itemInbox);
                         }
                     })
                 } else {
@@ -172,9 +172,9 @@ function createBackground(item){
 }
 
 service.open = function(itemId,longitude,latitude,userId,callback){
-    Inbox.findOne({itemId:itemId},function(err,inbox){
+    ItemInbox.findOne({itemId:itemId},function(err,itemInbox){
         if(err) return callback(err);
-        if(inbox && inbox.status == STATUS_OPENED){
+        if(itemInbox && itemInbox.status == STATUS_OPENED){
             Item.findOne({_id:itemId},function(err,item){
                 if(err) return callback(err);
                 if(!item) return callback("Item not found ¿?");
@@ -200,7 +200,7 @@ service.open = function(itemId,longitude,latitude,userId,callback){
                             $inc: { openedCount:1 }
                         };
 
-            if(!inbox){
+            if(!itemInbox){
                 query.visibility = VISIBILITY_PUBLIC;
             }
             // This first query is to check location,
@@ -229,20 +229,21 @@ service.open = function(itemId,longitude,latitude,userId,callback){
                         if (!item) return callback("Item not found");
 
                         //FOUND
-                        if (!inbox) {
-                            inbox = new Inbox();
-                            inbox.userId = userId;
-                            inbox.itemId = item._id;
-                            inbox.location = item.location;
-                            inbox.radius = item.radius;
-                            inbox.ownerUserId = item.ownerUserId;
+                        if (!itemInbox) {
+                            itemInbox = new ItemInbox();
+                            itemInbox.userId = userId;
+                            itemInbox.itemId = item._id;
+                            itemInbox.location = item.location;
+                            itemInbox.radius = item.radius;
+                            itemInbox.ownerUserId = item.ownerUserId;
                         }
 
-                        inbox.status = STATUS_OPENED;
-                        inbox.openedDate = Date.now();
-                        inbox.save(function (err) {
+                        itemInbox.status = STATUS_OPENED;
+                        itemInbox.openedDate = Date.now();
+                        itemInbox.save(function (err) {
                             if (err) return callback(err);
                             openItem(item, callback);
+                            //TODO send a notification to the owner
                         });
 
 
@@ -260,7 +261,7 @@ function openItem(item,callback){
 }
 
 
-service.searchInboxByLocation = function(showOpened,latitude,longitude,radius,userId,callback){
+service.searchItemInboxByLocation = function(showOpened,latitude,longitude,radius,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
@@ -275,7 +276,7 @@ service.searchInboxByLocation = function(showOpened,latitude,longitude,radius,us
     }
 
     //Radius of earth 6371000 meters
-    Inbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true, query:query}, function (err, results,stats) {
+    ItemInbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
         var array = [];
         for(var i=0;i < results.length;i++){

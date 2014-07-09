@@ -47,7 +47,7 @@ exports.searchInboxByLocation = function(req,res){
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
         var radius = req.body.radius;
-        ItemService.searchInboxByLocation(showOpened,latitude,longitude,radius,user._id,function(err,data){
+        ItemService.searchItemInboxByLocation(showOpened,latitude,longitude,radius,user._id,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

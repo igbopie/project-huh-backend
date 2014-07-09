@@ -74,6 +74,7 @@ service.sendFriendRequest = function(fromUserId,toUserId,callback){
 
             friend.save(function(err) {
                 callback(err);
+                //TODO send notification
             });
         });
 
