@@ -390,6 +390,22 @@ function ToPublicItemList(item){
     return transformed;
 }
 
+service.whoOpenedTheItem = function(itemId,userId,callback){
+    ItemInbox.find({itemId:itemId,ownerUserId:userId,status:STATUS_OPENED})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .exec(function(err, data){
+
+        if(err) return callback(err);
+
+        data = data.map(function(x) {
+            var user = x.userId;
+            var jsonUser = {_id:user._id,username:user.username,name:user.name,mediaId:user.mediaId,openedDate:x.openedDate};
+            return jsonUser;
+        });
+        callback(null,data);
+    });
+}
+
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
 /*function EndedSeemError(message) {

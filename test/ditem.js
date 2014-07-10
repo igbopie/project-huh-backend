@@ -214,4 +214,31 @@ describe('Item', function(){
             });
         });
     });
+
+    describe('#whoopened()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
+                            if (err) return done(err);
+                            Item.whoOpened(itemId, users[0].token, function (err, data) {
+                                if (err) return done(err);
+                                console.log(data);
+                                done();
+                            })
+                        });
+                    });
+                });
+            });
+        });
+    });
 });
