@@ -45,13 +45,13 @@ exports.open = function(itemId,latitude,longitude,token,callback){
 
 
 
-exports.searchInboxByLocation = function(showOpened,latitude,longitude,radius,token,callback){
-    var params ={showOpened:showOpened,
+exports.searchByLocation = function(latitude,longitude,radius,token,callback){
+    var params ={
         longitude:longitude,
         latitude:latitude,
         radius:radius,
         token:token};
-    apiClientBase.post('/api/item/search/inbox/by/location',params,function(code,headers,data){
+    apiClientBase.post('/api/item/search/by/location',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {

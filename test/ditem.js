@@ -98,9 +98,9 @@ describe('Item', function(){
                     // 40 m
                     Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.searchInboxByLocation(false, 40.665350, -3.778955, 41, users[1].token, function (err,data) {
+                        Item.searchByLocation(40.665350, -3.778955, 41, users[1].token, function (err,data) {
                             if (err) return done(err);
-                            data.length.should.be.equal(1);
+                            data.sentToMe.length.should.be.equal(1);
                             done();
                         })
                     });
@@ -109,7 +109,7 @@ describe('Item', function(){
         });
     });
 
-    describe('#searchInboxByLocationNotMyInbox()', function(){
+    describe('#searchByLocationNotMyInbox()', function(){
         it('should search',function (done) {
             Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
                 if (err) return done(err);
@@ -122,9 +122,10 @@ describe('Item', function(){
                     // 40 m
                     Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.searchInboxByLocation(false, 40.665350, -3.778955, 50, users[0].token, function (err,data) {
+                        Item.searchByLocation(40.665350, -3.778955, 50, users[0].token, function (err,data) {
                             if (err) return done(err);
-                            data.length.should.be.equal(0);
+                            data.sentToMe.length.should.be.equal(0);
+                            data.sentByMe.length.should.be.equal(1);
                             done();
                         })
                     });
@@ -146,9 +147,9 @@ describe('Item', function(){
                     // 40 m
                     Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.searchInboxByLocation(false, 40.665350, -3.778955, 39, users[1].token, function (err,data) {
+                        Item.searchByLocation(40.665350, -3.778955, 39, users[1].token, function (err,data) {
                             if (err) return done(err);
-                            data.length.should.be.equal(0);
+                            data.sentToMe.length.should.be.equal(0);
                             done();
                         })
                     });
@@ -170,13 +171,41 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
                         Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
                             if (err) return done(err);
-                            Item.searchInboxByLocation(false, 40.665350, -3.778955, 50, users[1].token, function (err, data) {
+                            Item.searchByLocation( 40.665350, -3.778955, 50, users[1].token, function (err, data) {
                                 if (err) return done(err);
-                                data.length.should.be.equal(0);
+                                data.sentToMe.length.should.be.equal(0);
+                                data.opened.length.should.be.equal(1);
+                                done();
+                            })
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#searchInboxByLocationPublic()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
+                            if (err) return done(err);
+                            Item.searchByLocation( 40.665350, -3.778955, 50, users[1].token, function (err, data) {
+                                if (err) return done(err);
+                                data.public.length.should.be.equal(1);
                                 done();
                             })
                         });

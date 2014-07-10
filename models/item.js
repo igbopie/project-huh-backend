@@ -28,6 +28,7 @@ var mongoose = require('mongoose')
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
+    , AVERAGE_EARTH_RADIUS = 6371000 //In meters
     ;
 
 
@@ -261,7 +262,7 @@ function openItem(item,callback){
 }
 
 
-service.searchItemInboxByLocation = function(showOpened,latitude,longitude,radius,userId,callback){
+service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
@@ -269,24 +270,124 @@ service.searchItemInboxByLocation = function(showOpened,latitude,longitude,radiu
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {userId:userId};
-
-    if(showOpened  === "false"){
-        query.status = STATUS_UNOPENED;
-    }
+    var query = {userId:userId,status:STATUS_UNOPENED};
 
     //Radius of earth 6371000 meters
-    ItemInbox.geoNear(point, {maxDistance:Number(radius)/6371000 , spherical: true, query:query}, function (err, results,stats) {
+    ItemInbox.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
-        var array = [];
-        for(var i=0;i < results.length;i++){
-            var mongoGeoNearObject = results[i];
-            array.push(mongoGeoNearObject.obj);
-
-        }
-        callback(null,array);
+        transformGeoNearResults(results,callback);
     });
 
+}
+
+service.searchOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
+
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = Number(longitude);
+    locationArray[LOCATION_LATITUDE] = Number(latitude);
+
+    var point = {type: 'Point', coordinates: locationArray};
+
+    var query = {userId:userId,status:STATUS_OPENED};
+
+    //Radius of earth 6371000 meters
+    ItemInbox.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
+        if(err) return callback(err);
+        transformGeoNearResults(results,callback);
+    });
+
+}
+
+service.searchSentItemsByLocation = function(latitude,longitude,radius,userId,callback){
+
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = Number(longitude);
+    locationArray[LOCATION_LATITUDE] = Number(latitude);
+
+    var point = {type: 'Point', coordinates: locationArray};
+
+    var query = {ownerUserId:userId};
+
+    //Radius of earth 6371000 meters
+    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
+        if(err) return callback(err);
+        transformGeoNearResults(results,callback);
+    });
+
+}
+
+service.searchPublicItemsByLocation = function(latitude,longitude,radius,userId,callback){
+
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = Number(longitude);
+    locationArray[LOCATION_LATITUDE] = Number(latitude);
+
+    var point = {type: 'Point', coordinates: locationArray};
+
+    var query = {visibility:VISIBILITY_PUBLIC};
+
+    //Radius of earth 6371000 meters
+    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
+        if(err) return callback(err);
+        transformGeoNearResults(results,callback);
+    });
+
+}
+service.searchByLocation = function(latitude,longitude,radius,userId,callback){
+    var results ={};
+    service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userId,function(err,data){
+        if(err) return callback(err);
+        results.sentToMe = data;
+
+        service.searchOpenedItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+            if (err) return callback(err);
+            results.opened = data;
+
+            service.searchSentItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+                if (err) return callback(err);
+                results.sentByMe = data;
+
+                service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+                    if (err) return callback(err);
+                    results.public = data;
+
+                    callback(null,results);
+                });
+            });
+        });
+    });
+}
+function transformGeoNearResults(results,callback){
+    /*var array = [];
+    for(var i=0;i < results.length;i++){
+        var mongoGeoNearObject = results[i];
+        array.push(itemToPublicItemList(mongoGeoNearObject.obj));
+
+    }*/
+    //mapping each doc into new object and populating distance
+    results = results.map(function(x) {
+        var a = ToPublicItemList( x.obj );
+        a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
+        return a;
+    });
+
+    // populating user object
+    Item.populate( results, { path: 'ownerUser', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+        if (err) return callback(err);
+        callback(null,items);
+    });
+
+
+}
+function ToPublicItemList(item){
+    var transformed ={latitude:item.location[LOCATION_LATITUDE],longitude:item.location[LOCATION_LONGITUDE],radius:item.radius,ownerUser:item.ownerUserId};
+
+    if(item instanceof Item){
+        transformed.itemId = item._id;
+    }else{
+        transformed.itemId = item.itemId;
+    }
+    return transformed;
 }
 
 ///Old Stuff
