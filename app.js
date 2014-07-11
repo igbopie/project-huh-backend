@@ -107,8 +107,9 @@ app.post('/api/friends/request/decline', friend.declineFriendRequest);
 app.post('/api/friends/unfriend', friend.unfriend);
 
 app.post('/api/item/create',item.create);
-app.post('/api/item/open',item.open);
+app.post('/api/item/collect',item.collect);
 app.post('/api/item/search/by/location',item.searchByLocation);
+app.post('/api/item/leave',item.leave);
 app.post('/api/item/whoopened',item.whoOpened);
 
 

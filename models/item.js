@@ -12,25 +12,36 @@ var mongoose = require('mongoose')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
-    , OPENABILITY_ONLY_ONCE = 0
-    , OPENABILITY_UNLIMITED = 1
-    , OPENABILITY = [OPENABILITY_ONLY_ONCE,OPENABILITY_UNLIMITED]
     , TYPE_MESSAGE = 0
     , TYPE_IMAGE = 1
     , TYPE_VIDEO = 2
     , TYPES = [TYPE_MESSAGE,TYPE_IMAGE,TYPE_VIDEO]
     , STATUS_UNOPENED = 0
     , STATUS_OPENED = 1
-    , STATUS_EXPIRED = 2
-    , STATUS = [STATUS_UNOPENED,STATUS_OPENED,STATUS_EXPIRED]
+    , STATUS_LEFT = 2
+    , STATUS = [STATUS_UNOPENED,STATUS_OPENED,STATUS_LEFT]
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
+    , ACTION_COLLECTED = 0
+    , ACTION_LEFT = 1
+    , ACTIONS = [ACTION_COLLECTED,ACTION_LEFT]
     ;
 
+var actionSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    type    :   { type: Number  , enum: ACTIONS,required:true},
+    date    :   { type: Date	, required: true, default: Date.now }
+});
+
+var commentSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    comment :   { type: String  , required: true },
+    date    :   { type: Date	, required: true, default: Date.now }
+});
 
 var itemSchema = new Schema({
     type        :   { type: Number, enum: TYPES,required:true, default:TYPE_MESSAGE},
@@ -40,11 +51,13 @@ var itemSchema = new Schema({
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     radius      :   { type: Number, required:true},
-    openability :   { type: Number, enum: OPENABILITY,required:true, default:OPENABILITY_ONLY_ONCE },
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    openedCount :   { type: Number, required:true, default:0},
-    to          :   [Schema.Types.ObjectId] //users, no users = public
+    collectedCount :   { type: Number, required:true, default:0},
+    leftCount   :   { type: Number, required:true, default:0},
+    to          :   [Schema.Types.ObjectId], //users, no users = public
+    comments    :   [commentSchema],
+    actions     :   [actionSchema]
 
 
 });
@@ -78,7 +91,7 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,message,mediaId,latitude,longitude,radius,openability,to,ownerUserId,callback){
+service.create = function(type,message,mediaId,latitude,longitude,radius,to,ownerUserId,callback){
     var item = new Item();
     item.type = type;
     item.message = message;
@@ -87,7 +100,6 @@ service.create = function(type,message,mediaId,latitude,longitude,radius,openabi
     locationArray[LOCATION_LATITUDE] = latitude;
     item.location = locationArray;
     item.radius = radius;
-    item.openability = openability;
     item.to = to;
     item.ownerUserId = ownerUserId;
 
@@ -172,7 +184,7 @@ function createBackground(item){
     }
 }
 
-service.open = function(itemId,longitude,latitude,userId,callback){
+service.collect = function(itemId,longitude,latitude,userId,callback){
     ItemInbox.findOne({itemId:itemId},function(err,itemInbox){
         if(err) return callback(err);
         if(itemInbox && itemInbox.status == STATUS_OPENED){
@@ -183,22 +195,15 @@ service.open = function(itemId,longitude,latitude,userId,callback){
             });
         } else {
             var query =
-                {_id:itemId,
-                $or:
-                    [
-                        {openability:OPENABILITY_UNLIMITED},
-                        {$and:
-                            [
-                                {openability:OPENABILITY_ONLY_ONCE},
-                                {status:STATUS_UNOPENED}
-                            ]
-                        }
-                    ]
+                {
+                _id:itemId,
+                status:STATUS_UNOPENED
                 };
 
             var update = {
-                            $set: { status: STATUS_OPENED },
-                            $inc: { openedCount:1 }
+                            $set    : { status: STATUS_OPENED },
+                            $inc    : { collectedCount:1 },
+                            $push   : { actions: {type:ACTION_COLLECTED,date:Date.now(),userId:userId} }
                         };
 
             if(!itemInbox){
@@ -256,6 +261,42 @@ service.open = function(itemId,longitude,latitude,userId,callback){
         }
     });
 }
+
+
+service.leave = function(itemId,userId,callback) {
+    ItemInbox.findOneAndUpdate(
+        {
+            userId:userId,
+            itemId:itemId,
+            status:STATUS_OPENED
+        },
+        {
+            $set:   { status:STATUS_LEFT }
+        }
+        ,
+        function(err,item) {
+            if (err) return callback(err);
+
+            if (!item) return callback("Item not found in your inbox");
+
+            Item.findOneAndUpdate(
+                {_id: itemId, status: STATUS_OPENED},
+                {
+                    $set: {status: STATUS_UNOPENED},
+                    $inc: {leftCount: 1},
+                    $push   : { actions: {type:ACTION_LEFT,date:Date.now(),userId:userId} }
+                }
+                ,
+                function (err, item) {
+                    if (err) return callback(err);
+                    if (!item) return callback("Item not found");
+
+                    callback(null);
+            });
+        }
+    );
+}
+
 
 function openItem(item,callback){
     callback(null,{type:item.type,mediaId:item.mediaId,message:item.message});

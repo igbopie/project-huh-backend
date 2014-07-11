@@ -9,10 +9,9 @@ exports.create = function(req, res) {
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
         var radius = req.body.radius;
-        var openability = req.body.openability;
         var to = req.body.to;
 
-        ItemService.create(type,message,mediaId,latitude,longitude,radius,openability,to,user._id,function(err,item){
+        ItemService.create(type,message,mediaId,latitude,longitude,radius,to,user._id,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -23,12 +22,12 @@ exports.create = function(req, res) {
 };
 
 
-exports.open = function(req,res){
+exports.collect = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var itemId = req.body.itemId;
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.open(itemId,longitude,latitude,user._id,function(err,data){
+        ItemService.collect(itemId,longitude,latitude,user._id,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -47,6 +46,19 @@ exports.searchByLocation = function(req,res){
         var longitude = req.body.longitude;
         var radius = req.body.radius;
         ItemService.searchByLocation(latitude,longitude,radius,user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.leave = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        ItemService.leave(itemId,user._id,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

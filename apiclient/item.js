@@ -8,14 +8,13 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(type,message,mediaId,latitude,longitude,radius,openability,to,token,callback){
+exports.create = function(type,message,mediaId,latitude,longitude,radius,to,token,callback){
 	var params ={type:type,
                 message:message,
                 mediaId:mediaId,
                 latitude:latitude,
                 longitude:longitude,
                 radius:radius,
-                openability:openability,
                 to:to,
                 token:token};
 
@@ -29,12 +28,12 @@ exports.create = function(type,message,mediaId,latitude,longitude,radius,openabi
 }
 
 
-exports.open = function(itemId,latitude,longitude,token,callback){
+exports.collect = function(itemId,latitude,longitude,token,callback){
     var params ={itemId:itemId,
              longitude:longitude,
                 latitude:latitude,
                 token:token};
-    apiClientBase.post('/api/item/open',params,function(code,headers,data){
+    apiClientBase.post('/api/item/collect',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -60,6 +59,19 @@ exports.searchByLocation = function(latitude,longitude,radius,token,callback){
     });
 }
 
+exports.leave = function(itemId,token,callback){
+    var params ={
+        itemId:itemId,
+        token:token
+    };
+    apiClientBase.post('/api/item/leave',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 
 exports.whoOpened = function(itemId,token,callback){
     var params ={

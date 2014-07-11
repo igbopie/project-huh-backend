@@ -29,7 +29,7 @@ describe('Item', function(){
 
     describe('#create(PUBLIC)', function(){
         it('should create a media object',function (done) {
-            Item.create(Item.TYPE_MESSAGE,"Test",null,41.2,41.2,10,Item.OPENABILITY_UNLIMITED,[],users[0].token,function(err){
+            Item.create(Item.TYPE_MESSAGE,"Test",null,41.2,41.2,10,[],users[0].token,function(err){
                 if(err) return done(err);
                 done();
             });
@@ -44,7 +44,7 @@ describe('Item', function(){
                 Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
                     if (err) return done(err);
 
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 41.2, 41.2, 10, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 41.2, 41.2, 10, [users[1].id], users[0].token, function (err) {
                         if (err) return done(err);
                         done();
                     });
@@ -53,15 +53,15 @@ describe('Item', function(){
         });
     });
 
-    describe('#open()', function(){
-        it('should open',function (done) {
+    describe('#collect()', function(){
+        it('should collect',function (done) {
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,10,Item.OPENABILITY_UNLIMITED,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,10,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
-                Item.open(itemId,40.665350,-3.778955,users[1].token,function(err){
+                Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(!err) return done("Should return an error");
                     done();
                 })
@@ -69,21 +69,60 @@ describe('Item', function(){
         });
     });
 
-    describe('#open()', function(){
-        it('should open',function (done) {
+    describe('#collect()', function(){
+        it('should collect',function (done) {
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,50,Item.OPENABILITY_UNLIMITED,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
-                Item.open(itemId,40.665350,-3.778955,users[1].token,function(err){
+                Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(err) return done(err);
                     done();
                 })
             });
         });
     });
+
+    describe('#leave()', function(){
+        it('should leave',function (done) {
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+                if(err) return done(err);
+                Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
+                    if(err) return done(err);
+                    Item.leave(itemId,users[1].token,function(err) {
+                        if(err) return done(err);
+                        done();
+                    });
+                })
+            });
+        });
+    });
+
+    describe('#leaveByOther()', function(){
+        it('shouldnt leave',function (done) {
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create(Item.TYPE_MESSAGE,"Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+                if(err) return done(err);
+                Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
+                    if(err) return done(err);
+                    Item.leave(itemId,users[0].token,function(err) {
+                        if(!err) return done("It should return error");
+                        done();
+                    });
+                })
+            });
+        });
+    });
+
 
     describe('#searchInboxByLocationInRange()', function(){
         it('should search',function (done) {
@@ -96,7 +135,7 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
                         Item.searchByLocation(40.665350, -3.778955, 41, users[1].token, function (err,data) {
                             if (err) return done(err);
@@ -120,7 +159,7 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
                         Item.searchByLocation(40.665350, -3.778955, 50, users[0].token, function (err,data) {
                             if (err) return done(err);
@@ -145,7 +184,7 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
                         Item.searchByLocation(40.665350, -3.778955, 39, users[1].token, function (err,data) {
                             if (err) return done(err);
@@ -171,9 +210,9 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [users[1].id], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
+                        Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                             if (err) return done(err);
                             Item.searchByLocation( 40.665350, -3.778955, 50, users[1].token, function (err, data) {
                                 if (err) return done(err);
@@ -199,9 +238,9 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
+                        Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                             if (err) return done(err);
                             Item.searchByLocation( 40.665350, -3.778955, 50, users[1].token, function (err, data) {
                                 if (err) return done(err);
@@ -226,9 +265,9 @@ describe('Item', function(){
                     //40.665006, -3.779096
                     //40.665350, -3.778955
                     // 40 m
-                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, Item.OPENABILITY_UNLIMITED, [], users[0].token, function (err, itemId) {
+                    Item.create(Item.TYPE_MESSAGE, "Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.open(itemId,40.665350,-3.778955,users[1].token,function(err) {
+                        Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                             if (err) return done(err);
                             Item.whoOpened(itemId, users[0].token, function (err, data) {
                                 if (err) return done(err);
