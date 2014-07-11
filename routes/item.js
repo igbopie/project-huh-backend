@@ -68,10 +68,10 @@ exports.leave = function(req,res){
     });
 }
 
-exports.whoOpened = function(req,res){
+exports.view = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var itemId = req.body.itemId;
-        ItemService.whoOpenedTheItem(itemId,user._id,function(err,data){
+        ItemService.view(itemId,user._id,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

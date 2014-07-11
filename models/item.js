@@ -46,6 +46,7 @@ var commentSchema = new Schema({
 var itemSchema = new Schema({
     type        :   { type: Number, enum: TYPES,required:true, default:TYPE_MESSAGE},
     ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    collectedUserId :   { type: Schema.Types.ObjectId, required: false, ref:"User"},
     created     :   { type: Date	, required: true, default: Date.now },
     message     :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
@@ -201,7 +202,10 @@ service.collect = function(itemId,longitude,latitude,userId,callback){
                 };
 
             var update = {
-                            $set    : { status: STATUS_OPENED },
+                            $set    : {
+                                        status: STATUS_OPENED,
+                                        collectedUserId:userId
+                                    },
                             $inc    : { collectedCount:1 },
                             $push   : { actions: {type:ACTION_COLLECTED,date:Date.now(),userId:userId} }
                         };
@@ -282,8 +286,9 @@ service.leave = function(itemId,userId,callback) {
             Item.findOneAndUpdate(
                 {_id: itemId, status: STATUS_OPENED},
                 {
-                    $set: {status: STATUS_UNOPENED},
-                    $inc: {leftCount: 1},
+                    $set    : { status: STATUS_UNOPENED },
+                    $unset  : { collectedUserId: "" },
+                    $inc    : { leftCount: 1},
                     $push   : { actions: {type:ACTION_LEFT,date:Date.now(),userId:userId} }
                 }
                 ,
@@ -299,7 +304,7 @@ service.leave = function(itemId,userId,callback) {
 
 
 function openItem(item,callback){
-    callback(null,{type:item.type,mediaId:item.mediaId,message:item.message});
+    callback(null);//,{type:item.type,mediaId:item.mediaId,message:item.message});
 }
 
 
@@ -431,20 +436,62 @@ function ToPublicItemList(item){
     return transformed;
 }
 
-service.whoOpenedTheItem = function(itemId,userId,callback){
-    ItemInbox.find({itemId:itemId,ownerUserId:userId,status:STATUS_OPENED})
-        .populate("userId",PUBLIC_USER_FIELDS)
-        .exec(function(err, data){
+service.view = function(itemId,userId,callback){
+    Item.findOne({_id:itemId})
+        .populate("ownerUserId",PUBLIC_USER_FIELDS)
+        .populate("collectedUserId",PUBLIC_USER_FIELDS)
+        .populate("comments.userId",PUBLIC_USER_FIELDS)
+        .populate("actions.userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,item){
+            if(err) return callback(err);
+            if(!item) return callback("Item not found");
 
-        if(err) return callback(err);
+            var publicItem = {_id:item._id};
+            publicItem.longitude = item.location[LOCATION_LONGITUDE];
+            publicItem.latitude = item.location[LOCATION_LATITUDE];
+            publicItem.radius = item.radius;
+            publicItem.ownerUser = item.ownerUserId;
+            publicItem.collectedCount = item.collectedCount;
+            publicItem.leftCount = item.leftCount;
+            publicItem.actions = item.actions;
+            publicItem.comments = item.comments;
+            publicItem.collectedUser = item.collectedUserId;
+            publicItem.type = item.type;
+            publicItem.mediaId = item.mediaId;
+            publicItem.message = item.message;
 
-        data = data.map(function(x) {
-            var user = x.userId;
-            var jsonUser = {_id:user._id,username:user.username,name:user.name,mediaId:user.mediaId,openedDate:x.openedDate};
-            return jsonUser;
-        });
-        callback(null,data);
+            if(String(item.ownerUserId._id) == String(userId) ||
+                (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
+                return callback(null,publicItem);
+            }
+
+            delete publicItem.type;
+            delete publicItem.mediaId;
+            delete publicItem.message;
+
+
+            var containsTo = false;
+
+            for (var i = 0; i < item.to.length && !containsTo; i++) {
+                if (String(item.to[i]) == String(userId)) {
+                    containsTo = true;
+                }
+            }
+
+            if(containsTo){
+                return callback(null,publicItem);
+            }
+
+            if(item.visibility == VISIBILITY_PRIVATE){
+                return callback("Not permitted");
+            }
+
+            delete publicItem.comments;
+            delete publicItem.actions;
+
+            return callback(null,publicItem);
     });
+
 }
 
 ///Old Stuff

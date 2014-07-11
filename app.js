@@ -110,7 +110,7 @@ app.post('/api/item/create',item.create);
 app.post('/api/item/collect',item.collect);
 app.post('/api/item/search/by/location',item.searchByLocation);
 app.post('/api/item/leave',item.leave);
-app.post('/api/item/whoopened',item.whoOpened);
+app.post('/api/item/view',item.view);
 
 
 

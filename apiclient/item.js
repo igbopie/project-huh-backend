@@ -73,12 +73,12 @@ exports.leave = function(itemId,token,callback){
     });
 }
 
-exports.whoOpened = function(itemId,token,callback){
+exports.view = function(itemId,token,callback){
     var params ={
         itemId:itemId,
         token:token
     };
-    apiClientBase.post('/api/item/whoopened',params,function(code,headers,data){
+    apiClientBase.post('/api/item/view',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
