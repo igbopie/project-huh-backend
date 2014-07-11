@@ -112,6 +112,7 @@ app.post('/api/item/search/by/location',item.searchByLocation);
 app.post('/api/item/leave',item.leave);
 app.post('/api/item/view',item.view);
 app.post('/api/item/comment/add',item.addComment);
+app.post('/api/item/find/by/collected',item.listCollected);
 
 
 

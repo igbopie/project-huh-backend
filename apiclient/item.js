@@ -101,3 +101,16 @@ exports.addComment = function(itemId,comment,token,callback){
         }
     });
 }
+
+exports.listCollected = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/item/find/by/collected',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

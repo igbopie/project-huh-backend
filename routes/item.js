@@ -95,3 +95,15 @@ exports.addComment = function(req,res){
         });
     });
 }
+
+exports.listCollected = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        ItemService.listCollected(user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}

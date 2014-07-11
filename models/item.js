@@ -308,6 +308,15 @@ function openItem(item,callback){
 }
 
 
+service.listCollected = function(userId,callback){
+    ItemInbox.find(
+        {userId:userId,status:STATUS_OPENED}
+    ).populate("ownerUserId",PUBLIC_USER_FIELDS)
+    .exec(function(err,docs){
+        callback(err,docs)
+    });
+}
+
 service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
 
     var locationArray = [];
@@ -385,20 +394,15 @@ service.searchByLocation = function(latitude,longitude,radius,userId,callback){
         if(err) return callback(err);
         results.sentToMe = data;
 
-        service.searchOpenedItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+        service.searchSentItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
             if (err) return callback(err);
-            results.opened = data;
+            results.sentByMe = data;
 
-            service.searchSentItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+            service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
                 if (err) return callback(err);
-                results.sentByMe = data;
+                results.public = data;
 
-                service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
-                    if (err) return callback(err);
-                    results.public = data;
-
-                    callback(null,results);
-                });
+                callback(null,results);
             });
         });
     });
