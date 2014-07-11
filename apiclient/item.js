@@ -86,3 +86,18 @@ exports.view = function(itemId,token,callback){
         }
     });
 }
+
+exports.addComment = function(itemId,comment,token,callback){
+    var params ={
+        itemId:itemId,
+        comment:comment,
+        token:token
+    };
+    apiClientBase.post('/api/item/comment/add',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

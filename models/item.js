@@ -494,6 +494,36 @@ service.view = function(itemId,userId,callback){
 
 }
 
+service.addComment = function(itemId,comment,userId,callback) {
+    Item.findOne({_id: itemId})
+        .exec(function (err, item) {
+            if (err) return callback(err);
+            if (!item) return callback("Item not found");
+
+            var allowed = false;
+
+            if (String(item.ownerUserId) == String(userId) ||
+                (item.collectedUserId && String(item.collectedUserId) == String(userId))) {
+                allowed = true;
+            }
+
+            for (var i = 0; i < item.to.length && !allowed; i++) {
+                if (String(item.to[i]) == String(userId)) {
+                    allowed = true;
+                }
+            }
+
+            if (!allowed) return callback("Not allowed");
+
+            Item.update(
+                {_id: item},
+                {$push: {comments: {userId:userId,data:Date.now(),comment:comment}}},
+                function (err) {
+                    callback(err);
+                });
+        });
+}
+
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
 /*function EndedSeemError(message) {

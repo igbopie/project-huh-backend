@@ -80,3 +80,18 @@ exports.view = function(req,res){
         });
     });
 }
+
+
+exports.addComment = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        var comment = req.body.comment;
+        ItemService.addComment(itemId,comment,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}
