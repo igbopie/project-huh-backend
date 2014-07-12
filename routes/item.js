@@ -10,8 +10,9 @@ exports.create = function(req, res) {
         var longitude = req.body.longitude;
         var radius = req.body.radius;
         var to = req.body.to;
+        var title = req.body.title;
 
-        ItemService.create(type,message,mediaId,latitude,longitude,radius,to,user._id,function(err,item){
+        ItemService.create(type,title,message,mediaId,latitude,longitude,radius,to,user._id,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

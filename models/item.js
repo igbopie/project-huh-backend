@@ -48,6 +48,7 @@ var itemSchema = new Schema({
     ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     collectedUserId :   { type: Schema.Types.ObjectId, required: false, ref:"User"},
     created     :   { type: Date	, required: true, default: Date.now },
+    title       :   { type: String, required: true},
     message     :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
@@ -92,9 +93,10 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,message,mediaId,latitude,longitude,radius,to,ownerUserId,callback){
+service.create = function(type,title,message,mediaId,latitude,longitude,radius,to,ownerUserId,callback){
     var item = new Item();
     item.type = type;
+    item.title = title;
     item.message = message;
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = longitude;
@@ -430,7 +432,7 @@ function transformGeoNearResults(results,callback){
 
 }
 function ToPublicItemList(item){
-    var transformed ={latitude:item.location[LOCATION_LATITUDE],longitude:item.location[LOCATION_LONGITUDE],radius:item.radius,ownerUser:item.ownerUserId};
+    var transformed ={latitude:item.location[LOCATION_LATITUDE],longitude:item.location[LOCATION_LONGITUDE],radius:item.radius,ownerUser:item.ownerUserId,type:item.type,title:item.title};
 
     if(item instanceof Item){
         transformed.itemId = item._id;

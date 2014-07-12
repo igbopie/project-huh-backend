@@ -8,7 +8,7 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(type,message,mediaId,latitude,longitude,radius,to,token,callback){
+exports.create = function(type,title,message,mediaId,latitude,longitude,radius,to,token,callback){
 	var params ={type:type,
                 message:message,
                 mediaId:mediaId,
@@ -16,6 +16,7 @@ exports.create = function(type,message,mediaId,latitude,longitude,radius,to,toke
                 longitude:longitude,
                 radius:radius,
                 to:to,
+                title:title,
                 token:token};
 
 	apiClientBase.post('/api/item/create',params,function(code,headers,data){
