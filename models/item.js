@@ -465,6 +465,7 @@ service.view = function(itemId,userId,callback){
             publicItem.type = item.type;
             publicItem.mediaId = item.mediaId;
             publicItem.message = item.message;
+            publicItem.created = item.created;
 
             if(String(item.ownerUserId._id) == String(userId) ||
                 (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
