@@ -381,7 +381,7 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userId,
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {visibility:VISIBILITY_PUBLIC};
+    var query = {visibility:VISIBILITY_PUBLIC,status:STATUS_UNOPENED};
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {

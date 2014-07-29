@@ -85,6 +85,26 @@ describe('Item', function(){
         });
     });
 
+    describe('#collectAndDisappear()', function(){
+        it('should collect and disappear',function (done) {
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+                if(err) return done(err);
+                Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
+                    if(err) return done(err);
+                    Item.searchByLocation(40.665350, -3.778955, 100, users[1].token, function (err,data) {
+                        if (err) return done(err);
+                        data.public.length.should.be.equal(0);
+                        done();
+                    })
+                })
+            });
+        });
+    });
+
     describe('#leave()', function(){
         it('should leave',function (done) {
             //LAT       LONG
@@ -226,7 +246,7 @@ describe('Item', function(){
             });
         });
     });
-
+    /*
     describe('#searchInboxByLocationPublic()', function(){
         it('should search',function (done) {
             Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
@@ -253,6 +273,7 @@ describe('Item', function(){
             });
         });
     });
+    */
 
 
     describe('#viewCollected()', function(){
