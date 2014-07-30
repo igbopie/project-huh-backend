@@ -68,6 +68,7 @@ itemSchema.index({ownerUserId:1});
 itemSchema.index({created:-1});
 itemSchema.index({radius:-1});
 itemSchema.index({status:1});
+itemSchema.index({collectedUserId:1});
 
 var Item = mongoose.model('Item', itemSchema);
 
@@ -310,14 +311,6 @@ function openItem(item,callback){
 }
 
 
-service.listCollected = function(userId,callback){
-    ItemInbox.find(
-        {userId:userId,status:STATUS_OPENED}
-    ).populate("ownerUserId",PUBLIC_USER_FIELDS)
-    .exec(function(err,docs){
-        callback(err,docs)
-    });
-}
 
 service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
 
@@ -432,7 +425,15 @@ function transformGeoNearResults(results,callback){
 
 }
 function ToPublicItemList(item){
-    var transformed ={latitude:item.location[LOCATION_LATITUDE],longitude:item.location[LOCATION_LONGITUDE],radius:item.radius,ownerUser:item.ownerUserId,type:item.type,title:item.title};
+    var transformed =
+        {
+            latitude:item.location[LOCATION_LATITUDE],
+            longitude:item.location[LOCATION_LONGITUDE],
+            radius:item.radius,
+            ownerUser:item.ownerUserId,
+            type:item.type,
+            title:item.title
+        };
 
     if(item instanceof Item){
         transformed.itemId = item._id;
@@ -442,9 +443,21 @@ function ToPublicItemList(item){
     return transformed;
 }
 
+service.listCollected = function(userId,callback){
+    finishItemQuery(Item.find(
+        {
+            collectedUserId:userId,
+            status:STATUS_OPENED
+        }
+    ),userId,callback);
+}
+
 service.view = function(itemId,userId,callback){
-    Item.findOne({_id:itemId})
-        .populate("ownerUserId",PUBLIC_USER_FIELDS)
+    finishItemQuery(Item.findOne({_id:itemId}),userId,callback);
+}
+
+function finishItemQuery(query,userId,callback){
+    query.populate("ownerUserId",PUBLIC_USER_FIELDS)
         .populate("collectedUserId",PUBLIC_USER_FIELDS)
         .populate("comments.userId",PUBLIC_USER_FIELDS)
         .populate("actions.userId",PUBLIC_USER_FIELDS)
@@ -452,52 +465,71 @@ service.view = function(itemId,userId,callback){
             if(err) return callback(err);
             if(!item) return callback("Item not found");
 
-            var publicItem = {_id:item._id};
-            publicItem.longitude = item.location[LOCATION_LONGITUDE];
-            publicItem.latitude = item.location[LOCATION_LATITUDE];
-            publicItem.radius = item.radius;
-            publicItem.ownerUser = item.ownerUserId;
-            publicItem.collectedCount = item.collectedCount;
-            publicItem.leftCount = item.leftCount;
-            publicItem.actions = item.actions;
-            publicItem.comments = item.comments;
-            publicItem.collectedUser = item.collectedUserId;
-            publicItem.type = item.type;
-            publicItem.mediaId = item.mediaId;
-            publicItem.message = item.message;
-            publicItem.created = item.created;
-
-            if(String(item.ownerUserId._id) == String(userId) ||
-                (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
-                return callback(null,publicItem);
-            }
-
-            delete publicItem.type;
-            delete publicItem.mediaId;
-            delete publicItem.message;
-
-
-            var containsTo = false;
-
-            for (var i = 0; i < item.to.length && !containsTo; i++) {
-                if (String(item.to[i]) == String(userId)) {
-                    containsTo = true;
+            if(item instanceof Item) {
+                var publicItem = fillItem(item, userId);
+                if (publicItem) {
+                    return callback(null, publicItem);
+                } else {
+                    return callback("Not permitted");
                 }
+            }else{
+                //Collection
+                item = item.map(function(x) {
+                    var a = fillItem(x, userId);
+                    return a;
+                });
+                callback(null, item);
             }
 
-            if(containsTo){
-                return callback(null,publicItem);
-            }
+        });
+}
+function fillItem(item,userId){
+    var publicItem = {_id:item._id};
+    publicItem.longitude = item.location[LOCATION_LONGITUDE];
+    publicItem.latitude = item.location[LOCATION_LATITUDE];
+    publicItem.radius = item.radius;
+    publicItem.ownerUser = item.ownerUserId;
+    publicItem.collectedCount = item.collectedCount;
+    publicItem.leftCount = item.leftCount;
+    publicItem.actions = item.actions;
+    publicItem.comments = item.comments;
+    publicItem.collectedUser = item.collectedUserId;
+    publicItem.type = item.type;
+    publicItem.mediaId = item.mediaId;
+    publicItem.message = item.message;
+    publicItem.created = item.created;
+    publicItem.title = item.title;
 
-            if(item.visibility == VISIBILITY_PRIVATE){
-                return callback("Not permitted");
-            }
+    if(String(item.ownerUserId._id) == String(userId) ||
+        (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
+        return publicItem;
+    }
 
-            delete publicItem.comments;
-            delete publicItem.actions;
+    delete publicItem.type;
+    delete publicItem.mediaId;
+    delete publicItem.message;
 
-            return callback(null,publicItem);
-    });
+
+    var containsTo = false;
+
+    for (var i = 0; i < item.to.length && !containsTo; i++) {
+        if (String(item.to[i]) == String(userId)) {
+            containsTo = true;
+        }
+    }
+
+    if(containsTo){
+        return publicItem;
+    }
+
+    if(item.visibility == VISIBILITY_PRIVATE){
+        return null;
+    }
+
+    delete publicItem.comments;
+    delete publicItem.actions;
+
+    return publicItem;
 
 }
 
