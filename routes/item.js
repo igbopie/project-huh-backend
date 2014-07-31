@@ -108,3 +108,27 @@ exports.listCollected = function(req,res){
         });
     });
 }
+
+exports.listSentToMe = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        ItemService.listSentToMe(user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.listSentByMe = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        ItemService.listSentByMe(user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}

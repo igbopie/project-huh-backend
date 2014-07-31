@@ -442,6 +442,42 @@ function ToPublicItemList(item){
     }
     return transformed;
 }
+service.listSentToMe = function(userId,callback){
+    ItemInbox.find({userId:userId,status:STATUS_UNOPENED})
+        .populate("ownerUserId",PUBLIC_USER_FIELDS)
+        .sort({created:-1})
+        .exec(function(err,iteminboxes){
+        if(err) return callback(err);
+
+        iteminboxes = iteminboxes.map(function(x) {
+            var a = ToPublicItemList(x);
+            return a;
+        });
+
+        callback(null,iteminboxes);
+    });
+
+}
+
+service.listSentByMe = function(userId,callback){
+    Item.find({ownerUserId:userId})
+        .populate("ownerUserId",PUBLIC_USER_FIELDS)
+        .populate("collectedUserId",PUBLIC_USER_FIELDS)
+        .populate("comments.userId",PUBLIC_USER_FIELDS)
+        .populate("actions.userId",PUBLIC_USER_FIELDS)
+        .sort({created:-1})
+        .exec(function(err,iteminboxes){
+            if(err) return callback(err);
+
+            iteminboxes = iteminboxes.map(function(x) {
+                var a = fillItem(x,userId);
+                return a;
+            });
+
+            callback(null,iteminboxes);
+        });
+
+}
 
 service.listCollected = function(userId,callback){
     finishItemQuery(Item.find(
@@ -499,6 +535,8 @@ function fillItem(item,userId){
     publicItem.message = item.message;
     publicItem.created = item.created;
     publicItem.title = item.title;
+    publicItem.status = item.status;
+    publicItem.openedDate = item.openedDate;
 
     if(String(item.ownerUserId._id) == String(userId) ||
         (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){

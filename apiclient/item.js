@@ -115,3 +115,28 @@ exports.listCollected = function(token,callback){
         }
     });
 }
+exports.listSentToMe = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/item/find/by/senttome',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
+exports.listSentByMe = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/item/find/by/sentbyme',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

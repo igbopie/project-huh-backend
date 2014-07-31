@@ -403,5 +403,82 @@ describe('Item', function(){
             });
         });
     });
+    describe('#listInbox()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
 
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.listSentToMe(users[1].token, function (err,data) {
+                            if (err) return done(err);
+                            //console.log(data);
+                            data.length.should.be.equal(1);
+                            done();
+                        })
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#listSentByMe()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.listSentByMe(users[0].token, function (err,data) {
+                            if (err) return done(err);
+                            //console.log(data);
+                            data.length.should.be.equal(1);
+                            done();
+                        })
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#listSentByMeAndOpened()', function(){
+        it('should search',function (done) {
+            Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                if (err) return done(err);
+
+                Friend.acceptFriendRequest(users[0].id, users[1].token, function (err) {
+                    if (err) return done(err);
+                    //LAT       LONG
+                    //40.665006, -3.779096
+                    //40.665350, -3.778955
+                    // 40 m
+                    Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                        if (err) return done(err);
+                        Item.collect(itemId, 40.665006, -3.779096,users[1].token,function(err){
+                            if (err) return done(err);
+                            Item.listSentByMe(users[0].token, function (err,data) {
+                                if (err) return done(err);
+                                //console.log(data);
+                                data.length.should.be.equal(1);
+                                done();
+                            })
+                        });
+
+                    });
+                });
+            });
+        });
+    });
 });
