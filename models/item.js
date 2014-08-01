@@ -52,6 +52,7 @@ var itemSchema = new Schema({
     message     :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
+    textLocation:   { type: String, required: false},
     radius      :   { type: Number, required:true},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
@@ -94,7 +95,7 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,title,message,mediaId,latitude,longitude,radius,to,ownerUserId,callback){
+service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,to,ownerUserId,callback){
     var item = new Item();
     item.type = type;
     item.title = title;
@@ -106,6 +107,7 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
     item.radius = radius;
     item.to = to;
     item.ownerUserId = ownerUserId;
+    item.textLocation = textLocation;
 
     if(item.type != TYPE_MESSAGE){
         item.mediaId = mediaId;
@@ -542,6 +544,7 @@ function fillItem(item,userId){
     publicItem.title = item.title;
     publicItem.status = item.status;
     publicItem.openedDate = item.openedDate;
+    publicItem.textLocation = item.textLocation;
 
     if(String(item.ownerUserId._id) == String(userId) ||
         (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
