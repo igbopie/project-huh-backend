@@ -187,6 +187,11 @@ function createBackground(item){
         })
     }
 }
+service.findById = function(itemId,callback){
+    Item.findOne({_id:itemId},function(err,item){
+        callback(err,item);
+    });
+}
 
 service.collect = function(itemId,longitude,latitude,userId,callback){
     ItemInbox.findOne({itemId:itemId},function(err,itemInbox){
@@ -601,6 +606,29 @@ service.addComment = function(itemId,comment,userId,callback) {
         });
 }
 
+service.checkContentPermissions = function(itemId,userId,callback){
+    Item.findOne({_id:itemId},function(err,item) {
+        if (err) {
+            callback(err);
+        } else if (!item) {
+            callback("Entity Not Found");
+        } else {
+            var show = false;
+            if (item.visibility == VISIBILITY_PUBLIC) {
+                show = true;
+            }
+
+            if (String(item.ownerUserId) == String(userId)) {
+                show = true;
+            }
+
+            if (String(item.collectedUserId) == String(userId)) {
+                show = true;
+            }
+            callback(null,show);
+        }
+    });
+}
 
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
@@ -614,7 +642,5 @@ EndedSeemError.prototype = new Error;
 
 module.exports = {
     Item: Item,
-    Service:service,
-    VISIBILITY_PRIVATE:VISIBILITY_PRIVATE,
-    VISIBILITY_PUBLIC:VISIBILITY_PUBLIC
+    Service:service
 };

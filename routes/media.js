@@ -1,11 +1,47 @@
 var Media = require('../models/media').Media;
 var ApiUtils = require('../utils/apiutils');
 var UserService = require('../models/user').Service;
-var Item = require('../models/item').Item;
-var ItemModel = require('../models/item');
+var ItemService = require('../models/item').Service;
 var MediaService = require('../models/media').Service;
 var MediaVars = require('../models/media');
 var fs = require('fs');
+
+
+function sendImage(req,res,media,formatName){
+    MediaService.get(media, formatName, function (err, media) {
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        } else {
+            var stat = fs.statSync(media.tempPath);
+            res.writeHead(200, {
+                'Content-Type': media.contentType,
+                'Content-Length': stat.size
+            });
+
+            var file = fs.createReadStream(media.tempPath);
+            file.pipe(res);
+
+        }
+    });
+}
+
+function sendBlurImage(req,res,media) {
+    MediaService.blur(media, function (err, media) {
+        if (err) {
+            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        } else {
+            var stat = fs.statSync(media.tempPath);
+            res.writeHead(200, {
+                'Content-Type': media.contentType,
+                'Content-Length': stat.size
+            });
+
+            var file = fs.createReadStream(media.tempPath);
+            file.pipe(res);
+
+        }
+    });
+}
 
 exports.create = function(req, res){
     ApiUtils.auth(req,res,function(user){
@@ -68,7 +104,7 @@ exports.get = function(req, res){
             } else {
                 //Check permissions
                 var authorized = false;
-                if(media.visibility == MediaService.VISIBILITY_PUBLIC){
+                if(media.visibility == MediaVars.VISIBILITY_PUBLIC){
                     authorized = true;
                 } else if(media.ownerId == (user._id+"")) {
                     authorized = true;
@@ -81,25 +117,22 @@ exports.get = function(req, res){
                         }
                     }
                 }
-
-                if(!authorized) {
-                    ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                } else {
-                    MediaService.get(media, formatName, function (err, media) {
+                //Item overrides media security...
+                if(media.entityRefName == "Item#mediaId"){
+                    //checkdata
+                    ItemService.checkContentPermissions(media.entityRefId,user._id,function(err,canView){
                         if (err) {
                             ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                        } else {
-                            var stat = fs.statSync(media.tempPath);
-                            res.writeHead(200, {
-                                'Content-Type': media.contentType,
-                                'Content-Length': stat.size
-                            });
-
-                            var file = fs.createReadStream(media.tempPath);
-                            file.pipe(res);
-
+                        } else if(canView){
+                            sendImage(req,res,media,formatName);
+                        } else{
+                            sendBlurImage(req,res,media);
                         }
                     });
+                }else if(!authorized) {
+                    ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+                } else {
+                    sendImage(req,res,media,formatName);
                 }
             }
         });
@@ -111,56 +144,22 @@ exports.get = function(req, res){
 exports.preview = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var itemId = req.params.itemId;
-        Item.findOne({_id:itemId},function(err,item){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else if(!item){
-                ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
-            }else{
-                var show = false;
-                if(item.visibility == ItemModel.VISIBILITY_PUBLIC){
-                    show = true;
-                }
-
-                if(String(item.ownerUserId)  == String(user._id) ){
-                    show = true;
-                }
-                for (var i = 0; i < item.to.length && !show; i++) {
-                    if (String(item.to[i]) == String(user._id)) {
-                        show = true;
-                    }
-                }
-
-                if(!show){
-                    return ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
-                }
-
+        ItemService.findById(itemId,function(err,item){
+            if (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            } else if (!item) {
+                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
+            } else {
                 if(!item.mediaId){
                     return ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,null,null);
                 }
-
                 MediaService.findById(item.mediaId, function (err, media) {
                     if(err){
                         ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
                     }else if(!media) {
                         return ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
                     }
-                    MediaService.blur(media, function (err, media) {
-                        if (err) {
-                            ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-                        } else {
-                            var stat = fs.statSync(media.tempPath);
-                            res.writeHead(200, {
-                                'Content-Type': media.contentType,
-                                'Content-Length': stat.size
-                            });
-
-                            var file = fs.createReadStream(media.tempPath);
-                            file.pipe(res);
-
-                        }
-                    });
-
+                    sendBlurImage(req,res,media);
                 });
             }
         });
