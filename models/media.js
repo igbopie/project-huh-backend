@@ -146,6 +146,35 @@ service.findById = function (id, callback) {
     });
 }
 
+
+service.blur = function (media, callback) {
+    var file = temp.createWriteStream();
+    var params = {Bucket: S3_BUCKET, Key: getName(media,FORMAT_THUMB.name)};
+    s3.getObject(params).
+        on('httpData',function (chunk) {
+            file.write(chunk);
+        }).
+        on('httpDone',function () {
+            file.on('close', function () {
+                var tempPath = temp.path();
+
+                imageMagick(file.path)
+                    .blur(0,50)
+                    .write(tempPath, function (err) {
+                        if (err) {
+                            callback(err);
+                        } else {
+                            media.tempPath = tempPath;
+                            callback(null, media);
+                        }
+                    }
+                );
+            });
+            file.end();
+        }).
+        send();
+};
+
 service.get = function (media, formatName, callback) {
     var file = temp.createWriteStream();
     var params = {Bucket: S3_BUCKET, Key: getName(media,formatName)};

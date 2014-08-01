@@ -601,6 +601,7 @@ service.addComment = function(itemId,comment,userId,callback) {
         });
 }
 
+
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
 /*function EndedSeemError(message) {
@@ -613,5 +614,7 @@ EndedSeemError.prototype = new Error;
 
 module.exports = {
     Item: Item,
-    Service:service
+    Service:service,
+    VISIBILITY_PRIVATE:VISIBILITY_PRIVATE,
+    VISIBILITY_PUBLIC:VISIBILITY_PUBLIC
 };
