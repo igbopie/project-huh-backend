@@ -551,7 +551,6 @@ function fillItem(item,userId){
         return publicItem;
     }
 
-    delete publicItem.type;
     delete publicItem.mediaId;
     delete publicItem.message;
 
