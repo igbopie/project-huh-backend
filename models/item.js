@@ -640,18 +640,13 @@ function allowedToSeeContent(item,longitude,latitude,userId){
     }
 
 
-
+    //Sometimes it's populated
     if(item.collectedUserId instanceof mongoose.Types.ObjectId){
         collectedUserId = item.collectedUserId;
-        console.log("I am not a populated user - ObjectId");
     } else if(item.collectedUserId) {
         collectedUserId = item.collectedUserId._id;
-        console.log("I am a populated user");
     }
-    //Sometimes it's populated
-    console.log("CollectedUser:"+item.collectedUserId);
-    console.log("CollectedUserField:"+collectedUserId);
-    console.log("Me:"+userId);
+
 
     //I am the owner or I have collected the item
     if(String(ownerUserId) == String(userId) ||
