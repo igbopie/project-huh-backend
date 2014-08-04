@@ -633,7 +633,7 @@ function allowedToSeeContent(item,longitude,latitude,userId){
 
 
     //Sometimes it's populated
-    if(item.ownerUserId instanceof Mongoose.Types.ObjectId){
+    if(item.ownerUserId instanceof mongoose.Types.ObjectId){
         ownerUserId = item.ownerUserId;
     } else if(item.ownerUserId) {
         ownerUserId = item.ownerUserId._id;
@@ -641,7 +641,7 @@ function allowedToSeeContent(item,longitude,latitude,userId){
 
 
 
-    if(item.collectedUserId instanceof Mongoose.Types.ObjectId){
+    if(item.collectedUserId instanceof mongoose.Types.ObjectId){
         collectedUserId = item.collectedUserId;
         console.log("I am not a populated user - ObjectId");
     } else if(item.collectedUserId) {
