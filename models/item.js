@@ -639,13 +639,17 @@ function allowedToSeeContent(item,longitude,latitude,userId){
         ownerUserId = item.ownerUserId._id;
     }
 
-    //Sometimes it's populated
+
+
     if(item.collectedUserId instanceof Schema.Types.ObjectId){
         collectedUserId = item.collectedUserId;
     } else if(item.collectedUserId) {
         collectedUserId = item.collectedUserId._id;
     }
-
+    //Sometimes it's populated
+    console.log("CollectedUser:"+item.collectedUserId);
+    console.log("CollectedUserField:"+collectedUserId);
+    console.log("Me:"+userId);
 
     //I am the owner or I have collected the item
     if(String(ownerUserId) == String(userId) ||
