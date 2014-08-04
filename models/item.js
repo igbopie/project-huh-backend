@@ -29,7 +29,6 @@ var mongoose = require('mongoose')
     , ACTION_COLLECTED = 0
     , ACTION_LEFT = 1
     , ACTIONS = [ACTION_COLLECTED,ACTION_LEFT]
-    ObjectID = require("mongodb").ObjectID
 ;
 
 var actionSchema = new Schema({
@@ -634,7 +633,7 @@ function allowedToSeeContent(item,longitude,latitude,userId){
 
 
     //Sometimes it's populated
-    if(item.ownerUserId instanceof Schema.Types.ObjectID){
+    if(item.ownerUserId instanceof Mongoose.Types.ObjectId){
         ownerUserId = item.ownerUserId;
     } else if(item.ownerUserId) {
         ownerUserId = item.ownerUserId._id;
@@ -642,7 +641,7 @@ function allowedToSeeContent(item,longitude,latitude,userId){
 
 
 
-    if(item.collectedUserId instanceof Schema.Types.ObjectID){
+    if(item.collectedUserId instanceof Mongoose.Types.ObjectId){
         collectedUserId = item.collectedUserId;
         console.log("I am not a populated user - ObjectId");
     } else if(item.collectedUserId) {
