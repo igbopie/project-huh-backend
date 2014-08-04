@@ -643,8 +643,10 @@ function allowedToSeeContent(item,longitude,latitude,userId){
 
     if(item.collectedUserId instanceof Schema.Types.ObjectId){
         collectedUserId = item.collectedUserId;
+        console.log("I am not a populated user - ObjectId");
     } else if(item.collectedUserId) {
         collectedUserId = item.collectedUserId._id;
+        console.log("I am a populated user");
     }
     //Sometimes it's populated
     console.log("CollectedUser:"+item.collectedUserId);
