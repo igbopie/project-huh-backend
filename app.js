@@ -116,10 +116,6 @@ app.post('/api/item/find/by/collected',item.listCollected);
 app.post('/api/item/find/by/senttome',item.listSentToMe);
 app.post('/api/item/find/by/sentbyme',item.listSentByMe);
 
-
-app.post('/api/media/item/preview/:itemId',media.preview);
-
-
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });

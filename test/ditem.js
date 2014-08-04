@@ -319,7 +319,6 @@ describe('Item', function(){
                         if (err) return done(err);
                         Item.view(itemId, users[1].token, function (err, data) {
                             if (err) return done(err);
-                            data.should.not.have.property('type');
                             data.should.not.have.property('message');
                             done();
                         })

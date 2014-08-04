@@ -93,6 +93,8 @@ exports.get = function(req, res){
     ApiUtils.auth(req,res,function(user) {
         var imageId = req.params.id;
         var formatName = req.params.format;
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
         console.log("ID:" + imageId + " Format:" + formatName);
         MediaService.findById(imageId, function (err, media) {
             if (err) {
@@ -120,7 +122,7 @@ exports.get = function(req, res){
                 //Item overrides media security...
                 if(media.entityRefName == "Item#mediaId"){
                     //checkdata
-                    ItemService.checkContentPermissions(media.entityRefId,user._id,function(err,canView){
+                    ItemService.allowedToSeeContent(media.entityRefId,longitude,latitude,user._id,function(err,canView){
                         if (err) {
                             ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                         } else if(canView){
@@ -138,30 +140,3 @@ exports.get = function(req, res){
         });
     });
 };
-
-
-
-exports.preview = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var itemId = req.params.itemId;
-        ItemService.findById(itemId,function(err,item){
-            if (err) {
-                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-            } else if (!item) {
-                ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
-            } else {
-                if(!item.mediaId){
-                    return ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_BAD_REQUEST,null,null);
-                }
-                MediaService.findById(item.mediaId, function (err, media) {
-                    if(err){
-                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                    }else if(!media) {
-                        return ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
-                    }
-                    sendBlurImage(req,res,media);
-                });
-            }
-        });
-    });
-}

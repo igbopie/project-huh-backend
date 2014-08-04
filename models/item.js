@@ -229,13 +229,7 @@ service.collect = function(itemId,longitude,latitude,userId,callback){
             Item.findOne(query,function(err,item){
                 if (err) return callback(err);
                 if (!item) return callback("Item not found");
-                //Check location
-                //distance in meters
-                var distance = Geolib.getDistance(
-                        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
-                        {latitude: latitude, longitude: longitude});
-
-                if(distance > item.radius){
+                if(!inRange(item,longitude,latitude)){
                     return callback("Not close enough");
                 }
                 //
@@ -492,14 +486,27 @@ service.listCollected = function(userId,callback){
             collectedUserId:userId,
             status:STATUS_OPENED
         }
-    ),userId,callback);
+    ),null,null,userId,callback);
 }
 
-service.view = function(itemId,userId,callback){
-    finishItemQuery(Item.findOne({_id:itemId}),userId,callback);
+service.view = function(itemId,longitude,latitude,userId,callback){
+    finishItemQuery(Item.findOne({_id:itemId}),longitude,latitude,userId,callback);
 }
+function inRange(item,longitude,latitude){
+    //Check location
+    //distance in meters
+    var distance = Geolib.getDistance(
+        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
+        {latitude: latitude, longitude: longitude});
 
-function finishItemQuery(query,userId,callback){
+    if(distance > item.radius){
+        return false;
+    }else{
+        return true;
+    }
+
+}
+function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("ownerUserId",PUBLIC_USER_FIELDS)
         .populate("collectedUserId",PUBLIC_USER_FIELDS)
         .populate("comments.userId",PUBLIC_USER_FIELDS)
@@ -509,7 +516,7 @@ function finishItemQuery(query,userId,callback){
             if(!item) return callback("Item not found");
 
             if(item instanceof Item) {
-                var publicItem = fillItem(item, userId);
+                var publicItem = fillItem(item, userId,longitude,latitude);
                 if (publicItem) {
                     return callback(null, publicItem);
                 } else {
@@ -518,7 +525,7 @@ function finishItemQuery(query,userId,callback){
             }else{
                 //Collection
                 item = item.map(function(x) {
-                    var a = fillItem(x, userId);
+                    var a = fillItem(x, userId,longitude,latitude);
                     return a;
                 });
                 callback(null, item);
@@ -526,7 +533,7 @@ function finishItemQuery(query,userId,callback){
 
         });
 }
-function fillItem(item,userId){
+function fillItem(item,userId,longitude,latitude){
     var publicItem = {_id:item._id};
     publicItem.longitude = item.location[LOCATION_LONGITUDE];
     publicItem.latitude = item.location[LOCATION_LATITUDE];
@@ -546,12 +553,12 @@ function fillItem(item,userId){
     publicItem.openedDate = item.openedDate;
     publicItem.textLocation = item.textLocation;
 
-    if(String(item.ownerUserId._id) == String(userId) ||
-        (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
+
+    if(allowedToSeeContent(item,longitude,latitude,userId)){
         return publicItem;
     }
-
-    delete publicItem.mediaId;
+    // Not going to delete the media Id since the media API will blur the image anyway
+    // delete publicItem.mediaId;
     delete publicItem.message;
 
 
@@ -577,6 +584,7 @@ function fillItem(item,userId){
     return publicItem;
 
 }
+
 
 service.addComment = function(itemId,comment,userId,callback) {
     Item.findOne({_id: itemId})
@@ -607,29 +615,31 @@ service.addComment = function(itemId,comment,userId,callback) {
                 });
         });
 }
-
-service.checkContentPermissions = function(itemId,userId,callback){
+service.allowedToSeeContent= function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId},function(err,item) {
         if (err) {
             callback(err);
         } else if (!item) {
             callback("Entity Not Found");
         } else {
-            var show = false;
-            if (item.visibility == VISIBILITY_PUBLIC) {
-                show = true;
-            }
-
-            if (String(item.ownerUserId) == String(userId)) {
-                show = true;
-            }
-
-            if (String(item.collectedUserId) == String(userId)) {
-                show = true;
-            }
-            callback(null,show);
+            callback(null,allowedToSeeContent(item,longitude,latitude,userId));
         }
     });
+}
+
+function allowedToSeeContent(item,longitude,latitude,userId){
+    //I am the owner or I have collected the item
+    if(String(item.ownerUserId._id) == String(userId) ||
+        (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
+        return true;
+    }
+
+    //The item is public and I am in range
+    if(item.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item,longitude,latitude)){
+        return true;
+    }
+
+    return false;
 }
 
 ///Old Stuff
