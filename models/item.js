@@ -628,9 +628,28 @@ service.allowedToSeeContent= function(itemId,longitude,latitude,userId,callback)
 }
 
 function allowedToSeeContent(item,longitude,latitude,userId){
+    var ownerUserId;
+    var collectedUserId;
+
+
+    //Sometimes it's populated
+    if(item.ownerUserId instanceof Schema.Types.ObjectId){
+        ownerUserId = item.ownerUserId;
+    } else if(item.ownerUserId) {
+        ownerUserId = item.ownerUserId._id;
+    }
+
+    //Sometimes it's populated
+    if(item.collectedUserId instanceof Schema.Types.ObjectId){
+        collectedUserId = item.collectedUserId;
+    } else if(item.collectedUserId) {
+        collectedUserId = item.collectedUserId._id;
+    }
+
+
     //I am the owner or I have collected the item
-    if(String(item.ownerUserId._id) == String(userId) ||
-        (item.collectedUserId && String(item.collectedUserId._id) == String(userId))){
+    if(String(ownerUserId) == String(userId) ||
+        (collectedUserId && String(collectedUserId) == String(userId))){
         return true;
     }
 
