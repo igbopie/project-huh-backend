@@ -53,6 +53,7 @@ var itemSchema = new Schema({
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     textLocation:   { type: String, required: false},
+    textLocationAlias:   { type: String, required: false},
     radius      :   { type: Number, required:true},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
@@ -95,7 +96,7 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,to,ownerUserId,callback){
+service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,ownerUserId,callback){
     var item = new Item();
     item.type = type;
     item.title = title;
@@ -108,6 +109,7 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
     item.to = to;
     item.ownerUserId = ownerUserId;
     item.textLocation = textLocation;
+    item.textLocationAlias = textLocationAlias;
 
     if(item.type != TYPE_MESSAGE){
         item.mediaId = mediaId;
@@ -552,6 +554,7 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.status = item.status;
     publicItem.openedDate = item.openedDate;
     publicItem.textLocation = item.textLocation;
+    publicItem.textLocationAlias = item.textLocationAlias;
 
 
     if(allowedToSeeContent(item,longitude,latitude,userId)){
