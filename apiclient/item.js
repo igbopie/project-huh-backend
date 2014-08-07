@@ -59,7 +59,22 @@ exports.searchByLocation = function(latitude,longitude,radius,token,callback){
         }
     });
 }
-
+exports.searchByLocationUserLocation = function(latitude,longitude,radius,userLatitude,userLongitude,token,callback){
+    var params ={
+        longitude:longitude,
+        latitude:latitude,
+        radius:radius,
+        userLatitude:userLatitude,
+        userLongitude:userLongitude,
+        token:token};
+    apiClientBase.post('/api/item/search/by/location',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 exports.leave = function(itemId,token,callback){
     var params ={
         itemId:itemId,

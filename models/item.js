@@ -316,7 +316,7 @@ function openItem(item,callback){
 
 
 
-service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
+service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
@@ -329,12 +329,12 @@ service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userI
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
-        transformGeoNearResults(results,longitude,latitude,userId,callback);
+        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
     });
 
 }
 
-service.searchPublicItemsByLocation = function(latitude,longitude,radius,userId,callback){
+service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
@@ -347,16 +347,16 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userId,
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
-        transformGeoNearResults(results,longitude,latitude,userId,callback);
+        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
     });
 
 }
-service.searchByLocation = function(latitude,longitude,radius,userId,callback){
+service.searchByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
     var results ={};
-    service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userId,function(err,data){
+    service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data){
         if(err) return callback(err);
         results.sentToMe = data;
-        service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+        service.searchPublicItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data) {
             if (err) return callback(err);
             results.public = data;
 
@@ -417,19 +417,25 @@ service.view = function(itemId,longitude,latitude,userId,callback){
     finishItemQuery(Item.findOne({_id:itemId}),longitude,latitude,userId,callback);
 }
 function inRange(item,longitude,latitude){
-    //Check location
-    //distance in meters
-    var distance = Geolib.getDistance(
-        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
-        {latitude: latitude, longitude: longitude});
 
-    if(distance > item.radius){
+
+    if(distance(item,longitude,latitude) > item.radius){
         return false;
     }else{
         return true;
     }
 
 }
+
+function distance(item,longitude,latitude){
+    //Check location
+    //distance in meters
+    var distance = Geolib.getDistance(
+        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
+        {latitude: latitude, longitude: longitude});
+    return distance;
+}
+
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("ownerUserId",PUBLIC_USER_FIELDS)
         .populate("collectedUserId",PUBLIC_USER_FIELDS)
@@ -477,6 +483,11 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.openedDate = item.openedDate;
     publicItem.textLocation = item.textLocation;
     publicItem.textLocationAlias = item.textLocationAlias;
+
+    if(longitude && latitude){
+        publicItem.userDistance = distance(item,longitude,latitude);
+        publicItem.canCollect = inRange(item,longitude,latitude);
+    }
 
 
     if(allowedToSeeContent(item,longitude,latitude,userId)){

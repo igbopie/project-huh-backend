@@ -157,9 +157,10 @@ describe('Item', function(){
                     // 40 m
                     Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                         if (err) return done(err);
-                        Item.searchByLocation(40.665350, -3.778955, 41, users[1].token, function (err,data) {
+                        Item.searchByLocationUserLocation(40.665350, -3.778955, 41,40.665350, -3.778955, users[1].token, function (err,data) {
                             if (err) return done(err);
                             data.sentToMe.length.should.be.equal(1);
+                            data.sentToMe[0].canCollect.should.be.ok;
                             done();
                         })
                     });
