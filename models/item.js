@@ -70,6 +70,7 @@ itemSchema.index({ownerUserId:1});
 itemSchema.index({created:-1});
 itemSchema.index({radius:-1});
 itemSchema.index({status:1});
+itemSchema.index({to:1});
 itemSchema.index({collectedUserId:1});
 
 var Item = mongoose.model('Item', itemSchema);
@@ -323,48 +324,12 @@ service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userI
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {userId:userId,status:STATUS_UNOPENED};
-
-    //Radius of earth 6371000 meters
-    ItemInbox.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
-        if(err) return callback(err);
-        transformGeoNearResults(results,callback);
-    });
-
-}
-
-service.searchOpenedItemsByLocation = function(latitude,longitude,radius,userId,callback){
-
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = Number(longitude);
-    locationArray[LOCATION_LATITUDE] = Number(latitude);
-
-    var point = {type: 'Point', coordinates: locationArray};
-
-    var query = {userId:userId,status:STATUS_OPENED};
-
-    //Radius of earth 6371000 meters
-    ItemInbox.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
-        if(err) return callback(err);
-        transformGeoNearResults(results,callback);
-    });
-
-}
-
-service.searchSentItemsByLocation = function(latitude,longitude,radius,userId,callback){
-
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = Number(longitude);
-    locationArray[LOCATION_LATITUDE] = Number(latitude);
-
-    var point = {type: 'Point', coordinates: locationArray};
-
-    var query = {ownerUserId:userId};
+    var query = {to:userId,status:STATUS_UNOPENED};
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
-        transformGeoNearResults(results,callback);
+        transformGeoNearResults(results,longitude,latitude,userId,callback);
     });
 
 }
@@ -382,7 +347,7 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userId,
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
         if(err) return callback(err);
-        transformGeoNearResults(results,callback);
+        transformGeoNearResults(results,longitude,latitude,userId,callback);
     });
 
 }
@@ -391,21 +356,15 @@ service.searchByLocation = function(latitude,longitude,radius,userId,callback){
     service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userId,function(err,data){
         if(err) return callback(err);
         results.sentToMe = data;
-
-        service.searchSentItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
+        service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
             if (err) return callback(err);
-            results.sentByMe = data;
+            results.public = data;
 
-            service.searchPublicItemsByLocation(latitude,longitude,radius,userId,function(err,data) {
-                if (err) return callback(err);
-                results.public = data;
-
-                callback(null,results);
-            });
+            callback(null,results);
         });
     });
 }
-function transformGeoNearResults(results,callback){
+function transformGeoNearResults(results,longitude,latitude,userId,callback){
     /*var array = [];
     for(var i=0;i < results.length;i++){
         var mongoGeoNearObject = results[i];
@@ -414,7 +373,7 @@ function transformGeoNearResults(results,callback){
     }*/
     //mapping each doc into new object and populating distance
     results = results.map(function(x) {
-        var a = ToPublicItemList( x.obj );
+        var a = fillItem( x.obj,userId ,longitude,latitude);
         a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
         return a;
     });
@@ -427,59 +386,22 @@ function transformGeoNearResults(results,callback){
 
 
 }
-function ToPublicItemList(item){
-    var transformed =
-        {
-            latitude:item.location[LOCATION_LATITUDE],
-            longitude:item.location[LOCATION_LONGITUDE],
-            radius:item.radius,
-            ownerUser:item.ownerUserId,
-            type:item.type,
-            title:item.title
-        };
 
-    if(item instanceof Item){
-        transformed.itemId = item._id;
-    }else{
-        transformed.itemId = item.itemId;
-    }
-    return transformed;
-}
 service.listSentToMe = function(userId,callback){
-    ItemInbox.find({userId:userId,status:STATUS_UNOPENED})
-        .populate("ownerUserId",PUBLIC_USER_FIELDS)
-        .sort({created:-1})
-        .exec(function(err,iteminboxes){
-        if(err) return callback(err);
-
-        iteminboxes = iteminboxes.map(function(x) {
-            var a = ToPublicItemList(x);
-            return a;
-        });
-
-        callback(null,iteminboxes);
-    });
+    finishItemQuery(
+           Item.find({to:userId,status:STATUS_UNOPENED})
+               .sort({created:-1}
+           )
+        ,null,null,userId,callback);
 
 }
 
 service.listSentByMe = function(userId,callback){
-    Item.find({ownerUserId:userId})
-        .populate("ownerUserId",PUBLIC_USER_FIELDS)
-        .populate("collectedUserId",PUBLIC_USER_FIELDS)
-        .populate("comments.userId",PUBLIC_USER_FIELDS)
-        .populate("actions.userId",PUBLIC_USER_FIELDS)
-        .sort({created:-1})
-        .exec(function(err,iteminboxes){
-            if(err) return callback(err);
-
-            iteminboxes = iteminboxes.map(function(x) {
-                var a = fillItem(x,userId);
-                return a;
-            });
-
-            callback(null,iteminboxes);
-        });
-
+    finishItemQuery(
+        Item.find({ownerUserId:userId})
+            .sort({created:-1}
+        )
+        ,null,null,userId,callback);
 }
 
 service.listCollected = function(userId,callback){

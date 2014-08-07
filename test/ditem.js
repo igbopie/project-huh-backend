@@ -183,8 +183,8 @@ describe('Item', function(){
                         if (err) return done(err);
                         Item.searchByLocation(40.665350, -3.778955, 50, users[0].token, function (err,data) {
                             if (err) return done(err);
+
                             data.sentToMe.length.should.be.equal(0);
-                            data.sentByMe.length.should.be.equal(1);
                             done();
                         })
                     });
