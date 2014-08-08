@@ -58,7 +58,7 @@ service.addFriend = function(username,userId,callback){
                 if(err){
                     callback(err);
                 } else {
-                    callback(null,friendUser._id);
+                    callback(null,{_id:friendUser._id,username:friendUser.username,name:friendUser.name,mediaId:friendUser.mediaId});
                 }
             });
         }
