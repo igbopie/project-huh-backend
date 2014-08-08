@@ -100,10 +100,8 @@ app.post('/api/media/get/:format/:id', media.get);
 app.get('/api/media/get/:format/:id', media.get);
 
 app.post('/api/friends', friend.friends);
-app.post('/api/friends/request', friend.requests);
-app.post('/api/friends/request/send', friend.sendFriendRequest);
-app.post('/api/friends/request/accept', friend.acceptFriendRequest);
-app.post('/api/friends/request/decline', friend.declineFriendRequest);
+app.post('/api/friends/add', friend.addFriend);
+app.post('/api/friends/search', friend.search);
 app.post('/api/friends/unfriend', friend.unfriend);
 
 app.post('/api/item/create',item.create);

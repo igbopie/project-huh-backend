@@ -3,9 +3,11 @@ var mongoose = require('mongoose')
     , FRIEND_STATUS_REQUEST= 0
     , FRIEND_STATUS_FRIENDSHIP = 1
     , FRIEND_STATUS_BLOCKED = 2
-    , FRIEND_STATUS = [FRIEND_STATUS_REQUEST,FRIEND_STATUS_FRIENDSHIP,FRIEND_STATUS_BLOCKED];
+    , FRIEND_STATUS = [FRIEND_STATUS_REQUEST,FRIEND_STATUS_FRIENDSHIP,FRIEND_STATUS_BLOCKED]
+    , textSearch = require('mongoose-text-search');
 
 var User = require('../models/user').User,
+    UserService = require('../models/user').Service,
     PUBLIC_USER_FIELDS = require('../models/user').PUBLIC_USER_FIELDS;
 
 var friendSchema = new Schema({
@@ -31,112 +33,40 @@ service.findFriends = function(userId,callback){
     Friend.find({userId:userId,status:FRIEND_STATUS_FRIENDSHIP})
         .populate("friendUserId",PUBLIC_USER_FIELDS)
         .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
 
-service.findFriendRequests = function(userId,callback){
-    Friend.find({friendUserId:userId,status:FRIEND_STATUS_REQUEST})
-        .populate("userId",PUBLIC_USER_FIELDS)
-        .exec(function(err,docs){
-            callback(err,docs);
-        });
-}
-service.sendFriendRequest = function(fromUserId,toUserId,callback){
-    //TODO Check only one user request to a user and not already friends
-    User.findOne({_id:fromUserId},function(err,fromUser){
-        if(err){
-            return callback(err);
-        }else if(!fromUser){
-            return callback(new UserNotFoundError("User "+fromUserId+" does not exist"));
-        }
-
-        //else if(fromUser.friends.length == FRIENDS_LIMIT){
-        //    return callback(new FriendsLimitExceeded("User "+fromUserId+" exceeded the number of friends"));
-        //}
-
-        User.findOne({_id:toUserId},function(err,toUser){
-            if(err){
-                return callback(err);
-            }else if(!toUser){
-                return callback(new UserNotFoundError("User "+toUserId+" does not exist"));
-            }
-
-            //else if(toUser.friends.length == FRIENDS_LIMIT){
-            //    return callback(new FriendsLimitExceeded("User "+toUserId+" exceeded the number of friends"));
-            //}
-
-            var friend = new Friend();
-            friend.userId = fromUserId;
-            friend.friendUserId = toUserId;
-            friend.requested = Date.now();
-            friend.status = FRIEND_STATUS_REQUEST;
-
-            friend.save(function(err) {
-                callback(err);
-                //TODO send notification
+            docs = docs.map(function(friend) {
+                return friend.friendUserId;
             });
+
+            callback(err,docs);
         });
-
-    });
-
 }
 
-service.acceptFriendRequest = function(fromUserId,toUserId,callback){
-    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest){
+service.addFriend = function(username,userId,callback){
+    UserService.findUserByUsername(username,function(err,friendUser){
         if(err){
-            return callback(err);
-        } else if(!friendRequest){
-            return callback("User not found");
-        }
-        friendRequest.status = FRIEND_STATUS_FRIENDSHIP;
-        friendRequest.accepted = Date.now();
-        friendRequest.save(function(err){
-            if(err){
-                return callback(err);
-            }
-            var friendRequestOtherSide = new Friend();
-            friendRequestOtherSide.userId = friendRequest.friendUserId;
-            friendRequestOtherSide.friendUserId = friendRequest.userId;
-            friendRequestOtherSide.requested = friendRequest.requested;
-            friendRequestOtherSide.accepted = friendRequest.accepted;
-            friendRequestOtherSide.status = friendRequest.status;
-            friendRequestOtherSide.save(function(err){
+            callback(err);
+        } else if(!friendUser){
+            callback(null,null);
+        } else {
+            var friend = new Friend();
+            friend.userId = userId;
+            friend.friendUserId = friendUser._id;
+            friend.status = FRIEND_STATUS_FRIENDSHIP;
+            friend.requested = Date.now();
+            friend.save(function(err){
                 if(err){
-                    //TODO Try to recover!
-                    friendRequest.status = FRIEND_STATUS_REQUEST;
-                    delete friendRequest.accepted;
-
-                    friendRequest.save(function(err){
-                        //PRAY
-                        console.error("Could rollback an error ocurred while trying to accept a friendship: "+err);
-                    });
-                    return callback(err);
+                    callback(err);
+                } else {
+                    callback(null,friendUser._id);
                 }
-                callback();
-            })
-        })
+            });
+        }
     });
 }
 
-service.declineFriendRequest = function(fromUserId,toUserId,callback){
-    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest){
-        if(err){
-            return callback(err);
-        } else if(!friendRequest){
-            return callback("User not found");
-        }
-        //Just remove it.
-        friendRequest.remove(function(err) {
-            if (err) {
-                return callback(err);
-            }
-            callback();
-        });
-    });
-}
 service.unfriend =  function(fromUserId,toUserId,callback){
-    Friend.findOne({userId:fromUserId,friendUserId:toUserId},function(err,friendRequest) {
+    Friend.findOne({userId:toUserId,friendUserId:fromUserId},function(err,friendRequest) {
         if (err) {
             return callback(err);
         } else if (!friendRequest) {
@@ -147,20 +77,7 @@ service.unfriend =  function(fromUserId,toUserId,callback){
             if (err) {
                 return callback(err);
             }
-            Friend.findOne({userId: toUserId, friendUserId: fromUserId}, function (err, friendRequest) {
-                if (err) {
-                    return callback(err);
-                } else if (!friendRequest) {
-                    return callback("User not found");
-                }
-                //Just remove it.
-                friendRequest.remove(function (err) {
-                    if (err) {
-                        return callback(err);
-                    }
-                    callback();
-                });
-            });
+            callback();
         });
     });
 }
@@ -170,6 +87,39 @@ service.isFriend = function(fromUserId,toUserId,callback){
         if(err) return callback(err);
         if(!friend) return callback(null,false);
         if(friend) return callback(null,true);
+    });
+
+
+}
+
+service.search = function(query,userId,callback){
+    Friend.find({userId:userId,status:FRIEND_STATUS_FRIENDSHIP},function(err,results){
+        if(err) return callback(err);
+
+
+        results = results.map(function(friend) {
+            return friend.friendUserId;
+        });
+
+        var options = {
+            project: {_id:1,username:1,name:1}           // do not include the `created` property
+            , filter: { _id:{ $in:results}} // casts queries based on schema
+            , limit: 20
+            , language: 'english'
+            , lean: true
+        }
+
+        User.textSearch(query, options,  function (err, output) {
+            if (err) return callback(err);
+
+            //console.log(output);
+
+            var results = output.results.map(function(textSearchResult) {
+                return textSearchResult.obj;
+            });
+            callback(null,results);
+
+        });
     });
 
 

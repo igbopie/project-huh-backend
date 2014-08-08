@@ -23,32 +23,20 @@ describe('Friend', function(){
     });
 
 
-    describe('#sendFriendRequest()', function(){
+    describe('#addFriend()', function(){
         it('should send a request to a user',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+            Friend.addFriend(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
                 done();
 			});
 		});
 	});
 
-    describe('#sendFriendRequestAndAnother()', function(){
-        it('should send one request to a user and then to another one',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+    describe('#addFriendTwice()', function(){
+        it('shouldnt send a friend request to someone who is already a friend',function (done) {
+            Friend.addFriend(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
-                Friend.sendFriendRequest(users[2].id,users[0].token,function(err) {
-                    if (err) return done(err);
-                    done();
-                });
-            });
-        });
-    });
-
-    describe('#sendFriendRequestTwice()', function(){
-        it('should send a request twice to the same user and return an error',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
-                if(err) return done(err);
-                Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
+                Friend.addFriend(users[1].username,users[0].token,function(err) {
                     if (!err) return done("Should return an error!");
                     done();
                 });
@@ -56,92 +44,46 @@ describe('Friend', function(){
         });
     });
 
-    describe('#sendFriendRequestAndListIt()', function(){
-        it('should follow a user',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+    describe('#AddAndListFriends()', function(){
+        it('should add a friend and list it',function (done) {
+            Friend.addFriend(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
-                Friend.requests(users[1].token,function(err,list) {
+                Friend.friends(users[0].token,function(err,list) {
                     if (err) return done(err);
-                    //console.log(list);
                     list.length.should.be.equal(1);
-                    done();
+                    list[0]._id.should.be.equal(users[1].id);
+                   done();
                 });
-            });
-        });
-    });
-
-    describe('#acceptFriendRequest()', function(){
-        it('should send a friend request and accept it',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
-                if(err) return done(err);
-                Friend.acceptFriendRequest(users[0].id,users[1].token,function(err){
-                    if(err) return done(err);
-                    done();
-                })
-            });
-        });
-    });
-    describe('#sendFriendRequestToAnAlreadyFriend()', function(){
-        it('shouldnt send a friend request to someone who is already a friend',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
-                if(err) return done(err);
-                Friend.acceptFriendRequest(users[0].id,users[1].token,function(err){
-                    if(err) return done(err);
-                    Friend.sendFriendRequest(users[1].id,users[0].token,function(err) {
-                        if (!err) return done("Should return an error!");
-                        done();
-                    });
-                })
-            });
-        });
-    });
-    describe('#declineFriendRequest()', function(){
-        it('should send a friend request and decline it',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
-                if(err) return done(err);
-                Friend.declineFriendRequest(users[0].id,users[1].token,function(err){
-                    if(err) return done(err);
-                    done();
-                })
-            });
-        });
-    });
-
-    describe('#sendFriendRequestAcceptAndListFriends()', function(){
-        it('should send a friend request to someone, accept it, and list it',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
-                if(err) return done(err);
-                Friend.acceptFriendRequest(users[0].id,users[1].token,function(err){
-                    if(err) return done(err);
-                    Friend.friends(users[0].token,function(err,list) {
-                        if (err) return done(err);
-                        list.length.should.be.equal(1);
-                        Friend.friends(users[0].token,function(err,list) {
-                            if (err) return done(err);
-                            list.length.should.be.equal(1);
-                            done();
-                        });
-                    });
-                })
             });
         });
     });
 
     describe('#sendFriendRequestAcceptAndUnFriend()', function(){
         it('should send a friend request to someone, accept it, and unfriend ',function (done) {
-            Friend.sendFriendRequest(users[1].id,users[0].token,function(err){
+            Friend.addFriend(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
-                Friend.acceptFriendRequest(users[0].id,users[1].token,function(err){
-                    if(err) return done(err);
-                    Friend.unfriend(users[1].id,users[0].token,function(err) {
+                Friend.unfriend(users[1].id,users[0].token,function(err) {
+                    if (err) return done(err);
+                    Friend.friends(users[0].token, function (err, list) {
                         if (err) return done(err);
-                        Friend.friends(users[0].token,function(err,list) {
-                            if (err) return done(err);
-                            list.length.should.be.equal(0);
-                            done();
-                        });
+                        list.length.should.be.equal(0);
+                        done();
                     });
-                })
+                });
+            });
+        });
+    });
+
+    describe('#search()', function(){
+        it('should search',function (done) {
+            Friend.addFriend(users[1].username,users[0].token,function(err){
+                if(err) return done(err);
+                Friend.search(users[1].username,users[0].token,function(err,list) {
+                    if (err) return done(err);
+                    list.length.should.be.equal(1);
+                    list[0]._id.should.be.equal(users[1].id);
+                    done();
+                });
             });
         });
     });

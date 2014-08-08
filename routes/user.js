@@ -259,17 +259,3 @@ exports.removeGcmToken = function(req, res) {
         });
     });
 }
-
-exports.search = function(req, res) {
-    ApiUtils.auth(req,res,function(user) {
-        var query = req.body.query;
-        UserService.search(query,function(err,docs){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            } else {
-                ApiUtils.api(req,res,ApiUtils.OK,null,docs);
-            }
-        })
-    });
-}
-

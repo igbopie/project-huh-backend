@@ -165,28 +165,27 @@ function createBackground(item){
     if(item.to){
         item.to.forEach(function(userId){
             //Check friendship!
-            FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
+            //FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
+            //    if(err){
+            //        console.error(err);
+            //    }else if(isFriend){
+            var itemInbox = new ItemInbox();
+            itemInbox.userId = userId;
+            itemInbox.itemId = item._id;
+            itemInbox.location = item.location;
+            itemInbox.radius = item.radius;
+            itemInbox.ownerUserId = item.ownerUserId;
+            itemInbox.save(function(err){
                 if(err){
                     console.error(err);
-                }else if(isFriend){
-                    var itemInbox = new ItemInbox();
-                    itemInbox.userId = userId;
-                    itemInbox.itemId = item._id;
-                    itemInbox.location = item.location;
-                    itemInbox.radius = item.radius;
-                    itemInbox.ownerUserId = item.ownerUserId;
-                    itemInbox.save(function(err){
-                        if(err){
-                            console.error(err);
-                        }else{
-                            EventService.onItemInboxCreated(itemInbox);
-                        }
-                    })
-                } else {
-                    //TODO maybe send friend request?
+                }else{
+                    EventService.onItemInboxCreated(itemInbox);
                 }
-
             });
+            //    } else {
+            //        //TODO maybe send friend request?
+            //    }
+            //});
 
 
         })

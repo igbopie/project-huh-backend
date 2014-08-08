@@ -66,7 +66,7 @@ var userSchema = new Schema({
 
 
 userSchema.plugin(textSearch);
-userSchema.index({username: 'text'});
+userSchema.index({username: 'text',name:'text'});
 
 
 userSchema.pre('save', function(next) {

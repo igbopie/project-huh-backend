@@ -12,19 +12,11 @@ exports.friends = function(token,callback){
 	    }
     });
 }
-exports.requests = function(token,callback){
-	var params ={token:token};
-	apiClientBase.post('/api/friends/request',params,function(code,headers,data){
-		if(code != 200){
-			callback("The server responded with an invalid code:"+code+ " "+data);
-		} else {
-			callback(null,JSON.parse(data).response);
-	    }
-    });
-}
-exports.sendFriendRequest = function(userId,token,callback){
-	var params ={userId:userId,token:token};
-	apiClientBase.post('/api/friends/request/send',params,function(code,headers,data){
+
+
+exports.addFriend = function(username,token,callback){
+	var params ={username:username,token:token};
+	apiClientBase.post('/api/friends/add',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code:"+code+ " "+data,code);
 		} else {
@@ -32,27 +24,19 @@ exports.sendFriendRequest = function(userId,token,callback){
 	    }
     });
 }
-exports.acceptFriendRequest = function(userId,token,callback){
-	var params ={userId:userId,token:token};
-	apiClientBase.post('/api/friends/request/accept',params,function(code,headers,data){
-		if(code != 200){
-			callback("The server responded with an invalid code:"+code+ " "+data);
-		} else {
-	    	callback(null,JSON.parse(data).response);
-	    }
-    });
-}
 
-exports.declineFriendRequest = function(userId,token,callback){
-    var params ={userId:userId,token:token};
-    apiClientBase.post('/api/friends/request/decline',params,function(code,headers,data){
+exports.search = function(query,token,callback){
+    var params ={query:query,token:token};
+    apiClientBase.post('/api/friends/search',params,function(code,headers,data){
         if(code != 200){
-            callback("The server responded with an invalid code:"+code+ " "+data);
+            callback("The server responded with an invalid code:"+code+ " "+data,code);
         } else {
             callback(null,JSON.parse(data).response);
         }
     });
 }
+
+
 
 exports.unfriend = function(userId,token,callback){
     var params ={userId:userId,token:token};
