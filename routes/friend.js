@@ -57,6 +57,7 @@ exports.search = function(req, res){
         var query = req.body.query;
         FriendService.search(query,user._id,function(err,results){
             if(err){
+                console.log(err);
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,results);
