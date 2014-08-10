@@ -102,7 +102,7 @@ exports.profile = function(req, res) {
         };
         var username = req.body.username;
 
-        if(username == user.username){
+        if(username.toLowerCase() == user.username){
             //is me?
             fields.phone = 1;
             fields.facebookId = 1;

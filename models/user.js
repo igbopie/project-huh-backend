@@ -71,7 +71,10 @@ userSchema.index({username: 'text',name:'text'});
 
 userSchema.pre('save', function(next) {
     var user = this;
- 
+
+    user.username = user.username.toLowerCase();
+    user.email = user.email.toLowerCase();
+
 	// only hash the password if it has been modified (or is new)
 	if (!user.isModified('password')) return next();
 	 
@@ -270,7 +273,7 @@ service.findUserByToken = function(token,callback){
 };
 service.findUserByUsername = function(username,callback){
 	// Using RegEx - search is case insensitive
-    User.findOne({ username: { $regex: new RegExp(username, "i") } }, function(err, doc) {
+    User.findOne({ username: username.toLowerCase() }, function(err, doc) {
 		if(err) { 
 			callback(err);
 		} else {
@@ -283,7 +286,7 @@ service.findUserByUsername = function(username,callback){
 
 service.findUserByEmail = function(email,callback){
     // Using RegEx - search is case insensitive
-    User.findOne({ email: { $regex: new RegExp(email, "i") } }, function(err, doc) {
+    User.findOne({ email: email.toLowerCase() }, function(err, doc) {
         if(err) {
             callback(err);
         } else {
@@ -325,7 +328,7 @@ service.search = function(text,callback){
 
     User.find({"username": { $regex: new RegExp(text, "i") }},{_id:1,username:1} ).limit(20).exec(function(err,docs){
         callback(err,docs);
-    });;
+    });
 }
 
 

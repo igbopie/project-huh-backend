@@ -104,7 +104,7 @@ describe('User', function(){
                             if (err) return done(err);
                             should(data.bio).be.eql(bio);
                             should(data.name).be.eql(name);
-                            should(data.email).be.eql(newEmail);
+                            should(data.email.toLowerCase()).be.eql(newEmail.toLowerCase());
                             should(data.facebookId).be.eql(facebookId);
                             done();
                         });
@@ -143,7 +143,7 @@ describe('User', function(){
                     if (err) return done(err);
                     User.profile(users[1].username,users[0].token,function(err,data){
                         if (err) return done(err);
-                        should(data.username).be.eql(users[1].username);
+                        should(data.username.toLowerCase()).be.eql(users[1].username.toLowerCase());
                         done();
                     });
                 });
@@ -160,7 +160,7 @@ describe('User', function(){
                     if (err) return done(err);
                     User.profile(users[0].username,users[0].token,function(err,data){
                         if (err) return done(err);
-                        should(data.email).be.eql(users[0].email);
+                        should(data.email.toLowerCase()).be.eql(users[0].email.toLowerCase());
                         done();
                     });
                 });

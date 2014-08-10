@@ -88,7 +88,7 @@ exports.findDBUser = function(username,callback){
             callback(err);
             return;
         }
-        db.collection('users').findOne({username:username},function(err,user){
+        db.collection('users').findOne({username:username.toLowerCase()},function(err,user){
             if(err){
                 callback(err);
             }else{
