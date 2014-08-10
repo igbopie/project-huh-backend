@@ -28,6 +28,7 @@ exports.addFriend = function(req, res){
         }else {
             FriendService.addFriend(username, user._id, function (err, friendId) {
                 if (err) {
+                    console.error(err);
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
                     ApiUtils.api(req, res, ApiUtils.OK, null, friendId);
