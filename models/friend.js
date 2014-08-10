@@ -101,6 +101,7 @@ service.search = function(query,userId,callback){
             return friend.friendUserId;
         });
 
+        /*
         var options = {
             project: {_id:1,username:1,name:1}           // do not include the `created` property
             , filter: { _id:{ $in:results}} // casts queries based on schema
@@ -120,6 +121,12 @@ service.search = function(query,userId,callback){
             callback(null,results);
 
         });
+        */
+        User.find(
+            {"username": { $regex: new RegExp(query, "i") },_id:{ $in:results}},
+            {_id:1,username:1,name:1,mediaId:1} ).limit(20).exec(function(err,docs){
+            callback(err,docs);
+        });;
     });
 
 
