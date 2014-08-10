@@ -31,6 +31,9 @@ apiUtils.SERVER_INTERNAL_ERROR = 500;
 apiUtils.SERVER_NOT_IMPLEMENTED = 501;
 
 apiUtils.api = function(req,res,code,message,responseObject){
+    if(code == apiUtils.SERVER_INTERNAL_ERROR){
+        console.error(message);
+    }
 	res.json(code, new ApiResponse(code,message,responseObject)); 		
 }
 
