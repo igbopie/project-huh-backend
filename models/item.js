@@ -59,7 +59,7 @@ var itemSchema = new Schema({
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
     collectedCount :   { type: Number, required:true, default:0},
     leftCount   :   { type: Number, required:true, default:0},
-    to          :   [Schema.Types.ObjectId], //users, no users = public
+    to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
     actions     :   [actionSchema]
 
@@ -440,6 +440,7 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
         .populate("collectedUserId",PUBLIC_USER_FIELDS)
         .populate("comments.userId",PUBLIC_USER_FIELDS)
         .populate("actions.userId",PUBLIC_USER_FIELDS)
+        .populate("to", PUBLIC_USER_FIELDS )
         .exec(function(err,item){
             if(err) return callback(err);
             if(!item) return callback("Item not found");
@@ -482,12 +483,12 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.openedDate = item.openedDate;
     publicItem.textLocation = item.textLocation;
     publicItem.textLocationAlias = item.textLocationAlias;
+    publicItem.to = item.to;
 
     if(longitude && latitude){
         publicItem.userDistance = distance(item,longitude,latitude);
         publicItem.canCollect = inRange(item,longitude,latitude);
     }
-
 
     if(allowedToSeeContent(item,longitude,latitude,userId)){
         return publicItem;
@@ -500,7 +501,17 @@ function fillItem(item,userId,longitude,latitude){
     var containsTo = false;
 
     for (var i = 0; i < item.to.length && !containsTo; i++) {
-        if (String(item.to[i]) == String(userId)) {
+        var toUserId ="" ;
+        var toUserElement = item.to[i];
+        console.log(toUserElement);
+        if(toUserElement instanceof mongoose.Types.ObjectId){
+            toUserId = toUserElement;
+        } else {
+            toUserId = toUserElement._id;
+        }
+
+
+        if (String(toUserId) == String(userId)) {
             containsTo = true;
         }
     }
