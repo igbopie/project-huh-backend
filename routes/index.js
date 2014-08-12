@@ -30,3 +30,7 @@ exports.item = function(req, res){
         }
     });*/
 };
+
+exports.template = function(req, res) {
+    res.render('template', {});
+}
