@@ -4,3 +4,13 @@
 
 
 $(".template_message").focus();
+
+$(".template_message").on("click",checkContent);
+$(".template_message").on("tap",checkContent);
+
+function checkContent(){
+    var lastValue = $(".template_message").html();
+    if(lastValue ==""){
+        $(".template_message").html(" ");
+    }
+}
