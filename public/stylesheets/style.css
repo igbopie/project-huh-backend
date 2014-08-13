@@ -54,23 +54,13 @@ img.seem-item{
 html,body{
     height: 100%;
 }
-.template{
-    min-height: 100%;
-    background:  url("/images/templates/1/bg.jpg") no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-}
-.template div.template_message{
-    padding-top: 20px;
+
+.template_message{
     font-size: 40px;
-    color: white;
-
 }
 
 
-.template div.template_message {
+.template_message {
     position: relative;
     top: 50%;
     -webkit-transform: translateY(-50%);
@@ -110,20 +100,7 @@ html,body{
     height: 31px;
 }
 
-.effect4 {
-    text-shadow: 0 1px 0 #ccc,
-    0 2px 0 #c9c9c9,
-    0 3px 0 #bbb,
-    0 4px 0 #b9b9b9,
-    0 5px 0 #aaa,
-    0 6px 1px rgba(0,0,0,.1),
-    0 0 5px rgba(0,0,0,.1),
-    0 1px 3px rgba(0,0,0,.3),
-    0 3px 5px rgba(0,0,0,.2),
-    0 5px 10px rgba(0,0,0,.25),
-    0 10px 10px rgba(0,0,0,.2),
-    0 20px 20px rgba(0,0,0,.15);
-}
+
 .template div.template_message.effect5 {
     background: #222 -webkit-gradient(linear, left top, right top, from(#222), to(#222), color-stop(0.5, #fff)) 0 0 no-repeat;
     -webkit-background-size: 125px;
@@ -150,3 +127,46 @@ html,body{
     content: attr(placeholder);
 }
 
+/* TEMPLATES */
+
+.template1{
+    min-height: 100%;
+    background:  url("/images/templates/1/bg.jpg") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+.template1 .template_message{
+    color:white;
+    text-shadow: 0 1px 0 #ccc,
+    0 2px 0 #c9c9c9,
+    0 3px 0 #bbb,
+    0 4px 0 #b9b9b9,
+    0 5px 0 #aaa,
+    0 6px 1px rgba(0,0,0,.1),
+    0 0 5px rgba(0,0,0,.1),
+    0 1px 3px rgba(0,0,0,.3),
+    0 3px 5px rgba(0,0,0,.2),
+    0 5px 10px rgba(0,0,0,.25),
+    0 10px 10px rgba(0,0,0,.2),
+    0 20px 20px rgba(0,0,0,.15);
+}
+
+.template2{
+    min-height: 100%;
+    background:  url("/images/templates/2/bg.gif") repeat;
+}
+.template2 .template_message{
+    font-family: 'Indie Flower', cursive;
+    color: #C20404;
+    text-shadow: 0 1px 0 #ffffff,
+
+    0 6px 1px rgba(0,0,0,.1),
+    0 0 5px rgba(0,0,0,.1),
+    0 1px 3px rgba(0,0,0,.3),
+    0 3px 5px rgba(0,0,0,.2),
+    0 5px 10px rgba(0,0,0,.25),
+    0 10px 10px rgba(0,0,0,.2),
+    0 20px 20px rgba(0,0,0,.15);
+}
