@@ -50,6 +50,7 @@ var itemSchema = new Schema({
     created     :   { type: Date	, required: true, default: Date.now },
     title       :   { type: String, required: true},
     message     :   { type: String, required: false},
+    templateId  :   { type: Number, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     textLocation:   { type: String, required: false},
@@ -97,7 +98,7 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,ownerUserId,callback){
+service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,ownerUserId,templateId,callback){
     var item = new Item();
     item.type = type;
     item.title = title;
@@ -111,9 +112,18 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
     item.ownerUserId = ownerUserId;
     item.textLocation = textLocation;
     item.textLocationAlias = textLocationAlias;
+    item.templateId = templateId;
 
     if(item.type != TYPE_MESSAGE){
         item.mediaId = mediaId;
+    }
+    if(item.type == TYPE_MESSAGE &&
+        ( !item.message || item.message.trim() === "")){
+        return callback("For a message type it is required a message");
+    }
+
+    if(item.type == TYPE_MESSAGE && !templateId){
+        return callback("For a message type it is required a template id");
     }
 
     if ( (item.type == TYPE_IMAGE || item.type == TYPE_VIDEO) && !item.mediaId ){
