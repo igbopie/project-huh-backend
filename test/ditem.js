@@ -29,7 +29,7 @@ describe('Item', function(){
 
     describe('#create(PUBLIC)', function(){
         it('should create a media object',function (done) {
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,41.2,41.2,10,[],users[0].token,function(err){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,41.2,41.2,10,[],users[0].token,function(err){
                 if(err) return done(err);
                 done();
             });
@@ -41,7 +41,7 @@ describe('Item', function(){
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 41.2, 41.2, 10, [users[1].id], users[0].token, function (err) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 41.2, 41.2, 10, [users[1].id], users[0].token, function (err) {
                     if (err) return done(err);
                     done();
                 });
@@ -55,7 +55,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,10,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,40.665006,-3.779096,10,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(!err) return done("Should return an error");
@@ -71,7 +71,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(err) return done(err);
@@ -87,7 +87,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(err) return done(err);
@@ -107,7 +107,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(err) return done(err);
@@ -126,7 +126,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1,null,40.665006,-3.779096,50,[],users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err){
                     if(err) return done(err);
@@ -149,7 +149,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocationUserLocation(40.665350, -3.778955, 41,40.665350, -3.778955, users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -171,7 +171,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocation(40.665350, -3.778955, 50, users[0].token, function (err,data) {
                         if (err) return done(err);
@@ -192,7 +192,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocation(40.665350, -3.778955, 39, users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -215,7 +215,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 100, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 100, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                         if (err) return done(err);
@@ -269,7 +269,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                         if (err) return done(err);
@@ -291,7 +291,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
+            Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                 if (err) return done(err);
                 Item.view(itemId, users[1].token, function (err, data) {
                     if (err) return done(err);
@@ -311,7 +311,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 100, [users[0].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 100, [users[0].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.view(itemId, users[1].token, function (err, data) {
                         if (!err) return done("Should return an error");
@@ -328,7 +328,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test", "Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
+            Item.create(Item.TYPE_MESSAGE, "Title Test", "Test",1, null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                 if (err) return done(err);
                 Item.addComment(itemId,"Hello comment", users[0].token, function (err) {
                     if (err) return done(err);
@@ -345,7 +345,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create(Item.TYPE_MESSAGE, "Title Test","Test", null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
+            Item.create(Item.TYPE_MESSAGE, "Title Test","Test",1, null, 40.665006, -3.779096, 100, [], users[0].token, function (err, itemId) {
                 if (err) return done(err);
                 Item.collect(itemId,40.665350,-3.778955,users[1].token,function(err) {
                     if (err) return done(err);
@@ -368,7 +368,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentToMe(users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -390,7 +390,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentByMe(users[0].token, function (err,data) {
                         if (err) return done(err);
@@ -412,7 +412,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test", null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
+                Item.create(Item.TYPE_MESSAGE,  "Title Test","Test",1, null, 40.665006, -3.779096, 50, [users[1].id], users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.collect(itemId, 40.665006, -3.779096,users[1].token,function(err){
                         if (err) return done(err);

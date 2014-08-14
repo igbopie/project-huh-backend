@@ -13,8 +13,9 @@ exports.create = function(req, res) {
         var title = req.body.title;
         var textLocation = req.body.textLocation;
         var textLocationAlias = req.body.textLocationAlias;
+        var templateId = req.body.templateId;
 
-        ItemService.create(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,user._id,function(err,item){
+        ItemService.create(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,user._id,templateId,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

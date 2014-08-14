@@ -8,9 +8,10 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(type,title,message,mediaId,latitude,longitude,radius,to,token,callback){
+exports.create = function(type,title,message,templateId,mediaId,latitude,longitude,radius,to,token,callback){
 	var params ={type:type,
                 message:message,
+                templateId:templateId,
                 mediaId:mediaId,
                 latitude:latitude,
                 longitude:longitude,

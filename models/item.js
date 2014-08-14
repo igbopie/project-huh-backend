@@ -5,6 +5,7 @@ var mongoose = require('mongoose')
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
     , FriendService = require("../models/friend").Service
+    , TemplateService = require("../models/template").Service
     , EventService = require("../models/eventdispatcher.js").Service
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
@@ -141,6 +142,22 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
 
     //TODO check owner exists!
 
+    if(item.type == TYPE_MESSAGE){
+        //check if template exist
+        TemplateService.findById(item.templateId,function(err,template){
+            if(err) return callback(err);
+            if(!template) return callback("Template "+item.templateId+" does not exists");
+
+            createProcess(item,callback);
+        });
+
+    } else {
+        createProcess(item,callback);
+    }
+
+}
+
+function createProcess(item,callback){
     item.save(function(err){
         if(err){
             return callback(err);
