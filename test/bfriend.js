@@ -58,14 +58,47 @@ describe('Friend', function(){
         });
     });
 
-    describe('#sendFriendRequestAcceptAndUnFriend()', function(){
-        it('should send a friend request to someone, accept it, and unfriend ',function (done) {
+    describe('#sendFriendRequestAcceptAndDeleteFriend()', function(){
+        it('should send a friend request to someone, accept it, and deleteFriend ',function (done) {
             Friend.addFriend(users[1].username,users[0].token,function(err){
                 if(err) return done(err);
-                Friend.unfriend(users[1].id,users[0].token,function(err) {
+                Friend.deleteFriend(users[1].id,users[0].token,function(err) {
                     if (err) return done(err);
                     Friend.friends(users[0].token, function (err, list) {
                         if (err) return done(err);
+                        list.length.should.be.equal(0);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#blockFriend()', function(){
+        it('should send a friend request to someone, accept it, and deleteFriend ',function (done) {
+            Friend.block(users[1].id,users[0].token,function(err){
+                if(err) return done(err);
+
+                Friend.blocked(users[0].token, function (err, list) {
+                    if (err) return done(err);
+
+                    list.length.should.be.equal(1);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#unblockFriend()', function(){
+        it('should send a friend request to someone, accept it, and deleteFriend ',function (done) {
+            Friend.block(users[1].id,users[0].token,function(err){
+                if(err) return done(err);
+
+                Friend.unblock(users[1].id,users[0].token,function(err) {
+                    if (err) return done(err);
+                    Friend.blocked(users[0].token, function (err, list) {
+                        if (err) return done(err);
+
                         list.length.should.be.equal(0);
                         done();
                     });

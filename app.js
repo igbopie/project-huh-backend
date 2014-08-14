@@ -103,8 +103,11 @@ app.get('/api/media/get/:format/:id', media.get);
 
 app.post('/api/friends', friend.friends);
 app.post('/api/friends/add', friend.addFriend);
+app.post('/api/friends/delete', friend.deleteFriend);
+app.post('/api/friends/blocked', friend.listBlocked);
+app.post('/api/friends/block', friend.block);
+app.post('/api/friends/unblock', friend.unblock);
 app.post('/api/friends/search', friend.search);
-app.post('/api/friends/unfriend', friend.unfriend);
 
 app.post('/api/item/create',item.create);
 app.post('/api/item/collect',item.collect);

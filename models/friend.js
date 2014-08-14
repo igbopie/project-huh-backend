@@ -65,7 +65,7 @@ service.addFriend = function(username,userId,callback){
     });
 }
 
-service.unfriend =  function(fromUserId,toUserId,callback){
+service.deleteFriend =  function(fromUserId,toUserId,callback){
     Friend.findOne({userId:toUserId,friendUserId:fromUserId},function(err,friendRequest) {
         if (err) {
             return callback(err);
@@ -79,6 +79,78 @@ service.unfriend =  function(fromUserId,toUserId,callback){
             }
             callback();
         });
+    });
+}
+
+service.listBlocked = function(userId,callback){
+    Friend.find({userId:userId,status:FRIEND_STATUS_BLOCKED})
+        .populate("friendUserId",PUBLIC_USER_FIELDS)
+        .exec(function(err,docs){
+
+            docs = docs.map(function(friend) {
+                return friend.friendUserId;
+            });
+
+            callback(err,docs);
+        });
+}
+
+service.block = function(toUserId,userId,callback){
+    UserService.findUserById(toUserId,function(err,friendUser){
+        if(err){
+            callback(err);
+        } else if(!friendUser){
+            callback(null);
+        } else {
+            Friend.findOne({userId:userId,friendUserId:friendUser._id},function(err,friendship){
+                if(err) return callback(err);
+                if(!friendship){
+                    var friendship = new Friend();
+                    friendship.userId = userId;
+                    friendship.friendUserId = friendUser._id;
+                    friendship.requested = Date.now();
+                }
+
+                friendship.status = FRIEND_STATUS_BLOCKED;
+                friendship.blocked = Date.now();
+                friendship.save(function(err){
+                    if(err){
+                        callback(err);
+                    } else {
+                        callback(null);
+                    }
+                });
+
+            });
+        }
+    });
+}
+
+service.unblock = function(toUserId,userId,callback){
+    UserService.findUserById(toUserId,function(err,friendUser){
+        if(err){
+            callback(err);
+        } else if(!friendUser){
+            callback(null);
+        } else {
+            Friend.findOne({userId:userId,friendUserId:friendUser._id},function(err,friendship){
+                if(err) return callback(err);
+                if(!friendship || friendship.status != FRIEND_STATUS_BLOCKED){
+                    callback("This user was not blocked");
+                }
+
+                friendship.status = FRIEND_STATUS_FRIENDSHIP;
+                delete friendship.blocked;
+                friendship.save(function(err){
+                    if(err){
+                        callback(err);
+                    } else {
+                        callback(null);
+                    }
+                });
+
+            });
+        }
     });
 }
 

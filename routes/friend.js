@@ -40,10 +40,10 @@ exports.addFriend = function(req, res){
 };
 
 
-exports.unfriend = function(req, res){
+exports.deleteFriend = function(req, res){
     ApiUtils.auth(req,res,function(user) {
         var fromUserId = req.body.userId;
-        FriendService.unfriend(fromUserId,user._id,function(err){
+        FriendService.deleteFriend(fromUserId,user._id,function(err){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -52,6 +52,46 @@ exports.unfriend = function(req, res){
         })
     });
 };
+
+exports.listBlocked = function(req, res){
+    ApiUtils.auth(req,res,function(user) {
+        FriendService.listBlocked(user._id,function(err,list){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,list);
+            }
+        })
+    });
+};
+
+exports.block = function(req, res){
+    ApiUtils.auth(req,res,function(user) {
+        var fromUserId = req.body.userId;
+        FriendService.block(fromUserId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        })
+    });
+};
+
+
+exports.unblock = function(req, res){
+    ApiUtils.auth(req,res,function(user) {
+        var fromUserId = req.body.userId;
+        FriendService.unblock(fromUserId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        })
+    });
+};
+
 
 exports.search = function(req, res){
     ApiUtils.auth(req,res,function(user) {
