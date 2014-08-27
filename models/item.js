@@ -112,7 +112,9 @@ service.create = function(title,message,mediaId,latitude,longitude,radius,addres
     item.aliasName = aliasName;
     item.templateId = templateId;
     item.visibility = VISIBILITY_PRIVATE;
-
+    if(mediaId){
+        item.mediaId = mediaId;
+    }
     if(!item.to || to.length == 0){
         delete item.to; //PUBLIC!
         item.visibility = VISIBILITY_PUBLIC;
