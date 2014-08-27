@@ -12,11 +12,12 @@ exports.create = function(req, res) {
         var title = req.body.title;
         var address = req.body.address;
         var aliasName = req.body.aliasName;
+        var aliasSubname = req.body.aliasSubname;
         var aliasId = req.body.aliasId;
         var templateId = req.body.templateId;
         var iconId = req.body.iconId;
 
-        ItemService.create(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasId,to,user._id,templateId,iconId,function(err,item){
+        ItemService.create(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasSubname,aliasId,to,user._id,templateId,iconId,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

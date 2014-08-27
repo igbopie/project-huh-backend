@@ -57,13 +57,16 @@ var itemSchema = new Schema({
     radius      :   { type: Number, required:true},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    collectedCount :{ type: Number, required:true, default:0},
-    leftCount   :   { type: Number, required:true, default:0},
+    openedCount :   { type: Number, required:true, default:0},
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
     actions     :   [actionSchema]
+});
 
-
+var favouriteItemSchema = new Schema({
+    userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    itemId :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
+    openedDate: { type: Date	, required: true, default: Date.now }
 });
 
 itemSchema.index({ownerUserId:1});
@@ -97,7 +100,7 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasId,to,ownerUserId,templateId,iconId,callback){
+service.create = function(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasSubname,aliasId,to,ownerUserId,templateId,iconId,callback){
     var item = new Item();
     item.title = title;
     item.message = message;
@@ -110,6 +113,7 @@ service.create = function(title,message,mediaId,latitude,longitude,radius,addres
     item.ownerUserId = ownerUserId;
     item.address = address;
     item.aliasName = aliasName;
+    item.aliasSubname = aliasSubname;
     item.templateId = templateId;
     item.visibility = VISIBILITY_PRIVATE;
     if(mediaId){
@@ -145,7 +149,7 @@ service.create = function(title,message,mediaId,latitude,longitude,radius,addres
 
     } else if(item.aliasName){
         //if no Id and Create Alias -> create a new one
-        AliasService.create(ownerUserId,latitude,longitude,item.visibility,aliasName,address,function(err,alias){
+        AliasService.create(ownerUserId,latitude,longitude,item.visibility,aliasName,aliasSubname,address,function(err,alias){
             if(err) return callback(err);
 
             item.aliasId = alias._id;
@@ -253,7 +257,7 @@ service.collect = function(itemId,longitude,latitude,userId,callback){
                                         status: STATUS_OPENED,
                                         collectedUserId:userId
                                     },
-                            $inc    : { collectedCount:1 },
+                            //$inc    : { collectedCount:1 },
                             $push   : { actions: {type:ACTION_COLLECTED,date:Date.now(),userId:userId} }
                         };
 
@@ -329,7 +333,7 @@ service.leave = function(itemId,userId,callback) {
                 {
                     $set    : { status: STATUS_UNOPENED },
                     $unset  : { collectedUserId: "" },
-                    $inc    : { leftCount: 1},
+                    //$inc    : { leftCount: 1},
                     $push   : { actions: {type:ACTION_LEFT,date:Date.now(),userId:userId} }
                 }
                 ,
@@ -504,11 +508,8 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.latitude = item.location[LOCATION_LATITUDE];
     publicItem.radius = item.radius;
     publicItem.ownerUser = item.ownerUserId;
-    publicItem.collectedCount = item.collectedCount;
-    publicItem.leftCount = item.leftCount;
     publicItem.actions = item.actions;
     publicItem.comments = item.comments;
-    publicItem.collectedUser = item.collectedUserId;
     publicItem.mediaId = item.mediaId;
     publicItem.message = item.message;
     publicItem.created = item.created;
