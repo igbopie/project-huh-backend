@@ -4,6 +4,7 @@ var mongoose = require('mongoose')
     , Media = require("../models/media").Media
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
+    , AliasService = require("../models/alias").Service
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
     , EventService = require("../models/eventdispatcher.js").Service
@@ -13,10 +14,6 @@ var mongoose = require('mongoose')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
-    , TYPE_MESSAGE = 0
-    , TYPE_IMAGE = 1
-    , TYPE_VIDEO = 2
-    , TYPES = [TYPE_MESSAGE,TYPE_IMAGE,TYPE_VIDEO]
     , STATUS_UNOPENED = 0
     , STATUS_OPENED = 1
     , STATUS_LEFT = 2
@@ -45,21 +42,22 @@ var commentSchema = new Schema({
 });
 
 var itemSchema = new Schema({
-    type        :   { type: Number, enum: TYPES,required:true, default:TYPE_MESSAGE},
     ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    collectedUserId :   { type: Schema.Types.ObjectId, required: false, ref:"User"},
+    collectedUserId:{ type: Schema.Types.ObjectId, required: false, ref:"User"},
     created     :   { type: Date	, required: true, default: Date.now },
     title       :   { type: String, required: true},
     message     :   { type: String, required: false},
-    templateId  :   { type: Number, required: false},
+    templateId  :   { type: String, required: false},
+    iconId      :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
-    textLocation:   { type: String, required: false},
-    textLocationAlias:   { type: String, required: false},
+    address     :   { type: String, required: false},
+    aliasName   :   { type: String, required: false},
+    aliasId     :   { type: Schema.Types.ObjectId, required: false, ref:"Alias"},
     radius      :   { type: Number, required:true},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    collectedCount :   { type: Number, required:true, default:0},
+    collectedCount :{ type: Number, required:true, default:0},
     leftCount   :   { type: Number, required:true, default:0},
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
@@ -99,9 +97,8 @@ var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
 //Service?
 var service = {};
 
-service.create = function(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,ownerUserId,templateId,callback){
+service.create = function(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasId,to,ownerUserId,templateId,iconId,callback){
     var item = new Item();
-    item.type = type;
     item.title = title;
     item.message = message;
     var locationArray = [];
@@ -111,25 +108,10 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
     item.radius = radius;
     item.to = to;
     item.ownerUserId = ownerUserId;
-    item.textLocation = textLocation;
-    item.textLocationAlias = textLocationAlias;
+    item.address = address;
+    item.aliasName = aliasName;
     item.templateId = templateId;
-
-    if(item.type != TYPE_MESSAGE){
-        item.mediaId = mediaId;
-    }
-    if(item.type == TYPE_MESSAGE &&
-        ( !item.message || item.message.trim() === "")){
-        return callback("For a message type it is required a message");
-    }
-
-    if(item.type == TYPE_MESSAGE && !templateId){
-        return callback("For a message type it is required a template id");
-    }
-
-    if ( (item.type == TYPE_IMAGE || item.type == TYPE_VIDEO) && !item.mediaId ){
-        return callback("You have to provide a media if the type is an image or a video");
-    }
+    item.visibility = VISIBILITY_PRIVATE;
 
     if(!item.to || to.length == 0){
         delete item.to; //PUBLIC!
@@ -141,23 +123,47 @@ service.create = function(type,title,message,mediaId,latitude,longitude,radius,t
     }
 
     //TODO check owner exists!
+    //TODO check iconId
+    //TODO check templateId
 
-    if(item.type == TYPE_MESSAGE){
-        //check if template exist
-        TemplateService.findById(item.templateId,function(err,template){
+    //find Alias
+    if(aliasId && aliasId != ""){
+        //if found, bring data
+        //TODO check visibility and permissions
+        AliasService.findById(aliasId,function(err, alias){
             if(err) return callback(err);
-            if(!template) return callback("Template "+item.templateId+" does not exists");
+
+            item.aliasId = alias._id;
+            item.aliasName = alias.name;
+            item.address = alias.address;
+            item.location = alias.location;
 
             createProcess(item,callback);
         });
 
-    } else {
+    } else if(item.aliasName){
+        //if no Id and Create Alias -> create a new one
+        AliasService.create(ownerUserId,latitude,longitude,item.visibility,aliasName,address,function(err,alias){
+            if(err) return callback(err);
+
+            item.aliasId = alias._id;
+
+            createProcess(item,callback);
+        });
+
+    } else{
+        //no alias
+
+        delete item.aliasId;
+        delete item.aliasName;
+
         createProcess(item,callback);
     }
 
 }
 
 function createProcess(item,callback){
+    //console.log(item);
     item.save(function(err){
         if(err){
             return callback(err);
@@ -501,15 +507,17 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.actions = item.actions;
     publicItem.comments = item.comments;
     publicItem.collectedUser = item.collectedUserId;
-    publicItem.type = item.type;
     publicItem.mediaId = item.mediaId;
     publicItem.message = item.message;
     publicItem.created = item.created;
     publicItem.title = item.title;
     publicItem.status = item.status;
     publicItem.openedDate = item.openedDate;
-    publicItem.textLocation = item.textLocation;
-    publicItem.textLocationAlias = item.textLocationAlias;
+    publicItem.address = item.address;
+    publicItem.aliasName = item.aliasName;
+    publicItem.aliasId = item.aliasId;
+    publicItem.templateId = item.templateId;
+    publicItem.iconId = item.iconId;
     publicItem.to = item.to;
 
     if(longitude && latitude){

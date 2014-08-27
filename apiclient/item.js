@@ -8,16 +8,20 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(type,title,message,templateId,mediaId,latitude,longitude,radius,to,token,callback){
-	var params ={type:type,
+exports.create = function(title,message,templateId,iconId,mediaId,latitude,longitude,radius,to,address,aliasName,aliasId,token,callback){
+	var params ={
                 message:message,
                 templateId:templateId,
+                iconId:iconId,
                 mediaId:mediaId,
                 latitude:latitude,
                 longitude:longitude,
                 radius:radius,
                 to:to,
                 title:title,
+                address:address,
+                aliasName:aliasName,
+                aliasId:aliasId,
                 token:token};
 
 	apiClientBase.post('/api/item/create',params,function(code,headers,data){

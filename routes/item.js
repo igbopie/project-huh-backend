@@ -3,7 +3,6 @@ var ApiUtils = require('../utils/apiutils');
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
-        var type = req.body.type;
         var message = req.body.message;
         var mediaId = req.body.mediaId;
         var latitude = req.body.latitude;
@@ -11,11 +10,13 @@ exports.create = function(req, res) {
         var radius = req.body.radius;
         var to = req.body.to;
         var title = req.body.title;
-        var textLocation = req.body.textLocation;
-        var textLocationAlias = req.body.textLocationAlias;
+        var address = req.body.address;
+        var aliasName = req.body.aliasName;
+        var aliasId = req.body.aliasId;
         var templateId = req.body.templateId;
+        var iconId = req.body.iconId;
 
-        ItemService.create(type,title,message,mediaId,latitude,longitude,radius,textLocation,textLocationAlias,to,user._id,templateId,function(err,item){
+        ItemService.create(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasId,to,user._id,templateId,iconId,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
