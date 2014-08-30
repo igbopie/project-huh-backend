@@ -34,19 +34,6 @@ exports.create = function(title,message,templateId,iconId,mediaId,latitude,longi
 }
 
 
-exports.collect = function(itemId,latitude,longitude,token,callback){
-    var params ={itemId:itemId,
-             longitude:longitude,
-                latitude:latitude,
-                token:token};
-    apiClientBase.post('/api/item/collect',params,function(code,headers,data){
-        if(code != 200){
-            callback("The server responded with an invalid code: "+code+" : "+data,code);
-        } else {
-            callback(null,JSON.parse(data).response);
-        }
-    });
-}
 
 
 
@@ -80,25 +67,13 @@ exports.searchByLocationUserLocation = function(latitude,longitude,radius,userLa
         }
     });
 }
-exports.leave = function(itemId,token,callback){
-    var params ={
-        itemId:itemId,
-        token:token
-    };
-    apiClientBase.post('/api/item/leave',params,function(code,headers,data){
-        if(code != 200){
-            callback("The server responded with an invalid code: "+code+" : "+data,code);
-        } else {
-            callback(null,JSON.parse(data).response);
-        }
-    });
-}
 
-exports.view = function(itemId,token,callback){
-    var params ={
-        itemId:itemId,
-        token:token
-    };
+
+exports.view = function(itemId,latitude,longitude,token,callback){
+    var params ={itemId:itemId,
+            longitude:longitude,
+            latitude:latitude,
+            token:token};
     apiClientBase.post('/api/item/view',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
