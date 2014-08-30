@@ -376,7 +376,7 @@ function transformGeoNearResults(results,longitude,latitude,userId,callback){
     });
 
     // populating user object
-    Item.populate( results, { path: 'ownerUser', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+    Item.populate( results, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
         if (err) return callback(err);
         callback(null,items);
     });
@@ -453,7 +453,7 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.longitude = item.location[LOCATION_LONGITUDE];
     publicItem.latitude = item.location[LOCATION_LATITUDE];
     publicItem.radius = item.radius;
-    publicItem.userId = item.userId;
+    publicItem.user = item.userId;
     publicItem.created = item.created;
     publicItem.openedDate = item.openedDate;
     publicItem.locationAddress = item.locationAddress;
