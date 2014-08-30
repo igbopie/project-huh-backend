@@ -9,7 +9,8 @@ exports.generatePreviewImage = function(item,callback){
 
     var backgroundMediaId = null;
     if(item.templateId){
-        backgroundMediaId = item.templateId;
+        //TODO not supported yet
+        //backgroundMediaId = item.templateId;
     }else if(item.mediaId){
         backgroundMediaId = item.mediaId;
     }
@@ -17,14 +18,24 @@ exports.generatePreviewImage = function(item,callback){
     var image;
     //go to media and get it
     if(backgroundMediaId){
-
+        MediaService.findById(backgroundMediaId,function(err,media){
+            MediaService.get(media,"large",function(err,media){
+                image = imageMagick(media.tempPath);
+                image = image.blur(0,50)
+                continueProcess(item,image,callback);
+            })
+        });
     }else{
-
-
+        image = imageMagick(500, 500, "#d3d3d3ff");
+        continueProcess(item,image,callback);
     }
 
-    image = imageMagick(500, 500, "#d3d3d3ff");
 
+
+
+}
+
+function continueProcess(item,image,callback){
     image = image.font(__dirname+"/../public/fonts/blokkneue-regular.ttf", 40)
     image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
 
