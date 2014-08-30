@@ -1,7 +1,43 @@
 
+var gm = require('gm')
+var imageMagick = gm.subClass({ imageMagick: true })
+var MediaService = require('../models/media.js').Service;
+var temp = require('temp').track();
 
 //TODO
 exports.generatePreviewImage = function(item,callback){
-    item.previewMediaId = item.mediaId;
-    callback(item);
+
+    var backgroundMediaId = null;
+    if(item.templateId){
+        backgroundMediaId = item.templateId;
+    }else if(item.mediaId){
+        backgroundMediaId = item.mediaId;
+    }
+
+    var image;
+    //go to media and get it
+    if(backgroundMediaId){
+
+    }else{
+
+
+    }
+
+    image = imageMagick(500, 500, "#d3d3d3ff");
+
+    image = image.font(__dirname+"/../public/fonts/blokkneue-regular.ttf", 40)
+    image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
+
+    var tempPath = temp.path()+".jpg";
+    image.write(tempPath, function (err) {
+
+        console.log(err);
+        MediaService.create(tempPath, "preview", "image/jpg", item.userId, function (err, mId) {
+
+            console.log(err);
+            item.previewMediaId = mId;
+            callback(item);
+        });
+
+    });
 }

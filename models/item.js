@@ -196,24 +196,28 @@ function createProcess(item,callback){
             if(err){
                 return callback(err);
             }
-            if(item.mediaId){
-                var visibility = MediaVars.VISIBILITY_PRIVATE;
-                if(item.visibility == VISIBILITY_PUBLIC){
-                    visibility = MediaVars.VISIBILITY_PUBLIC;
-                }
-                MediaService.assign(item.mediaId,item.to,visibility,item._id,"Item#mediaId",function(err){
-                    if(err){
-                        //TODO remove item
-                        callback(err);
-                    }else{
-                        callback(null,item);
-                        createBackground(item);
+
+            MediaService.assign(item.previewMediaId,[],MediaVars.VISIBILITY_PUBLIC,item._id,"Item#previewMediaId",function(err) {
+                if(err) console.error(err);
+                if (item.mediaId) {
+                    var visibility = MediaVars.VISIBILITY_PRIVATE;
+                    if (item.visibility == VISIBILITY_PUBLIC) {
+                        visibility = MediaVars.VISIBILITY_PUBLIC;
                     }
-                });
-            }else{
-                callback(null,item);
-                createBackground(item);
-            }
+                    MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
+                        if (err) {
+                            //TODO remove item
+                            callback(err);
+                        } else {
+                            callback(null, item);
+                            createBackground(item);
+                        }
+                    });
+                } else {
+                    callback(null, item);
+                    createBackground(item);
+                }
+            });
         })
     });
 }
