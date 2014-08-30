@@ -263,7 +263,10 @@ service.findById = function(itemId,callback){
 service.view = function(itemId,longitude,latitude,userId,callback){
     service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
         if(allowed){
-            Item.findOne({_id:itemId},function(err,doc){
+            Item.findOne({_id:itemId})
+                .populate("userId",PUBLIC_USER_FIELDS)
+                .populate("comments.userId",PUBLIC_USER_FIELDS)
+                .exec(function(err,doc){
                 if(err) return callback(err);
                 if(!doc) return callback("Not found");
 
@@ -303,12 +306,14 @@ function viewItem(item,userId){
 
     //TODO Mark as viewed in inbox too?
 
-    return {
-        message: item.message,
-        templateId: item.templateId,
-        mediaId: item.mediaId,
-        renderParameters: item.renderParameters
-    };
+    var pItem = fillItem(item,userId);
+    pItem.message = item.message;
+    pItem.templateId = item.templateId;
+    pItem.mediaId = item.mediaId,
+    pItem.renderParameters = item.renderParameters;
+    pItem.comments = item.comments;
+
+    return pItem;
 }
 
 service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
@@ -423,8 +428,6 @@ function distance(item,longitude,latitude){
 
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("userId",PUBLIC_USER_FIELDS)
-        .populate("comments.userId",PUBLIC_USER_FIELDS)
-        .populate("actions.userId",PUBLIC_USER_FIELDS)
         .populate("to", PUBLIC_USER_FIELDS )
         .exec(function(err,item){
             if(err) return callback(err);
