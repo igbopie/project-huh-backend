@@ -8,18 +8,19 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(title,message,templateId,iconId,mediaId,latitude,longitude,radius,to,address,aliasName,aliasId,token,callback){
+exports.create = function(title,message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,aliasName,aliasId,token,callback){
 	var params ={
                 message:message,
                 templateId:templateId,
-                iconId:iconId,
+                mapIconId:mapIconId,
                 mediaId:mediaId,
                 latitude:latitude,
                 longitude:longitude,
                 radius:radius,
                 to:to,
                 title:title,
-                address:address,
+                locationAddress:locationAddress,
+                locationName:locationName,
                 aliasName:aliasName,
                 aliasId:aliasId,
                 token:token};

@@ -10,6 +10,7 @@ var mongoose = require('mongoose')
     ;
 
 var aliasSchema = new Schema({
+    name:   { type: String, required: true},
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     date    :   { type: Date	, required: true, default: Date.now },
     location    :   { type: [Number], required:true,index: '2dsphere'},
