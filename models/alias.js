@@ -13,10 +13,9 @@ var aliasSchema = new Schema({
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     date    :   { type: Date	, required: true, default: Date.now },
     location    :   { type: [Number], required:true,index: '2dsphere'},
-    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    name:   { type: String, required: true},
-    subname:   { type: String, required: false},
-    address:   { type: String, required: true}
+    locationName:   { type: String, required: false},
+    locationAddress:   { type: String, required: false},
+    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE }
 });
 
 
@@ -29,7 +28,7 @@ var Alias = mongoose.model('Alias', aliasSchema);
 //Service?
 var service = {};
 
-service.create = function(userId,latitude,longitude,visibility,name,subname,address,callback){
+service.create = function(userId,latitude,longitude,visibility,name,locationName,locationAddress,callback){
     var alias = new Alias();
     alias.userId = userId;
     alias.visibility = visibility;
@@ -37,8 +36,8 @@ service.create = function(userId,latitude,longitude,visibility,name,subname,addr
     locationArray[LOCATION_LONGITUDE] = longitude;
     locationArray[LOCATION_LATITUDE] = latitude;
     alias.name = name;
-    alias.address = address;
-    alias.subname = subname;
+    alias.locationAddress = locationAddress;
+    alias.locationName = locationName;
     alias.location = locationArray;
     alias.save(function(err){
         if(err){

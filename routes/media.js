@@ -128,7 +128,7 @@ exports.get = function(req, res){
                         } else if(canView){
                             sendImage(req,res,media,formatName);
                         } else{
-                            sendBlurImage(req,res,media);
+                            ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
                         }
                     });
                 }else if(!authorized) {

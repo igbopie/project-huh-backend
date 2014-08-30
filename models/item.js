@@ -8,32 +8,23 @@ var mongoose = require('mongoose')
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
     , EventService = require("../models/eventdispatcher.js").Service
+    , ItemUtils = require("../utils/itemUtils.js")
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
-    , STATUS_UNOPENED = 0
-    , STATUS_OPENED = 1
-    , STATUS_LEFT = 2
-    , STATUS = [STATUS_UNOPENED,STATUS_OPENED,STATUS_LEFT]
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-    , ACTION_COLLECTED = 0
-    , ACTION_LEFT = 1
-    , ACTIONS = [ACTION_COLLECTED,ACTION_LEFT]
+
 ;
 
-var actionSchema = new Schema({
-    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    type    :   { type: Number  , enum: ACTIONS,required:true},
-    date    :   { type: Date	, required: true, default: Date.now }
-});
+
 
 var commentSchema = new Schema({
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
@@ -42,83 +33,111 @@ var commentSchema = new Schema({
 });
 
 var itemSchema = new Schema({
-    ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    collectedUserId:{ type: Schema.Types.ObjectId, required: false, ref:"User"},
-    created     :   { type: Date	, required: true, default: Date.now },
-    title       :   { type: String, required: true},
-    message     :   { type: String, required: false},
-    templateId  :   { type: String, required: false},
-    iconId      :   { type: String, required: false},
+    userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    created       :   { type: Date	, required: true, default: Date.now },
+    //++ Private fields (not viewed)
+    message       :   { type: String, required: false},
+    templateId    :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
+    //--
+    // A pre rendered image of the message
+    previewMediaId:   { type: Schema.Types.ObjectId, required: false},
+    mapIconId   :   { type: String, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
-    address     :   { type: String, required: false},
+    radius      :   { type: Number, required:true},
+    locationName:   { type: String, required: false},
+    locationAddress:   { type: String, required: false},
     aliasName   :   { type: String, required: false},
     aliasId     :   { type: Schema.Types.ObjectId, required: false, ref:"Alias"},
-    radius      :   { type: Number, required:true},
-    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    openedCount :   { type: Number, required:true, default:0},
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
-    actions     :   [actionSchema]
+    //STATS
+    viewCount :   { type: Number, required:true, default:0},
+    //
+    renderParameters   :   { type: String, required: false}
+
 });
 
+itemSchema.index({userId:1});
+itemSchema.index({created:-1});
+itemSchema.index({radius:-1});
+itemSchema.index({to:1});
+
+var Item = mongoose.model('Item', itemSchema);
+///------------------------
+///------------------------
+///------------------------
 var favouriteItemSchema = new Schema({
     userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     itemId :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    openedDate: { type: Date	, required: true, default: Date.now }
+    date: { type: Date	, required: true, default: Date.now }
 });
 
-itemSchema.index({ownerUserId:1});
-itemSchema.index({created:-1});
-itemSchema.index({radius:-1});
-itemSchema.index({status:1});
-itemSchema.index({to:1});
-itemSchema.index({collectedUserId:1});
+favouriteItemSchema.index({userId:1,date:-1});
 
-var Item = mongoose.model('Item', itemSchema);
+var FavouriteItem = mongoose.model('FavouriteItem', favouriteItemSchema);
+///------------------------
+///------------------------
+///------------------------
+var viewItemSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
+    dates   :   { type: [Date], required: true, default: [] },
+    count   :   { type: Number , required:true, default:0}
+});
 
-var itemItemInboxSchema = new Schema({
+viewItemSchema.index({userId:1,itemId:1});
+var ViewItem = mongoose.model('ViewItem', viewItemSchema);
+///------------------------
+///------------------------
+///------------------------
+var itemInboxSchema = new Schema({
     userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     itemId      :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
     created     :   { type: Date	, required: true, default: Date.now },
-    openedDate  :   { type: Date	, required:false },
     location    :   { type: [Number], required:true,index: '2dsphere'},
-    radius      :   { type: Number, required:true},
-    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_UNOPENED }
+    radius      :   { type: Number, required:true}
 });
 
-itemItemInboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
-itemItemInboxSchema.index({userId:1,openedDate:-1});
-itemItemInboxSchema.index({itemId:1});
-itemItemInboxSchema.index({status:1});
-itemItemInboxSchema.index({radius:-1});
+itemInboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
+itemInboxSchema.index({itemId:1});
+itemInboxSchema.index({status:1});
+itemInboxSchema.index({radius:-1});
 
-var ItemInbox = mongoose.model('ItemInbox', itemItemInboxSchema);
-
-//Service?
+var ItemInbox = mongoose.model('ItemInbox', itemInboxSchema);
+///------------------------
+///------------------------
+///------------------------
+//          Service
+///------------------------
+///------------------------
+///------------------------
 var service = {};
 
-service.create = function(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasSubname,aliasId,to,ownerUserId,templateId,iconId,callback){
+service.create = function(message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId,callback){
     var item = new Item();
-    item.title = title;
     item.message = message;
+    if(mediaId){
+        item.mediaId = mediaId;
+    }
+    if(templateId){
+        item.templateId = templateId;
+    }
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = longitude;
     locationArray[LOCATION_LATITUDE] = latitude;
     item.location = locationArray;
     item.radius = radius;
     item.to = to;
-    item.ownerUserId = ownerUserId;
-    item.address = address;
-    item.aliasName = aliasName;
-    item.aliasSubname = aliasSubname;
-    item.templateId = templateId;
+    item.userId = userId;
+
+    item.locationName = locationName;
+    item.locationAddress = locationAddress;
+
     item.visibility = VISIBILITY_PRIVATE;
-    if(mediaId){
-        item.mediaId = mediaId;
-    }
+
     if(!item.to || to.length == 0){
         delete item.to; //PUBLIC!
         item.visibility = VISIBILITY_PUBLIC;
@@ -141,18 +160,20 @@ service.create = function(title,message,mediaId,latitude,longitude,radius,addres
 
             item.aliasId = alias._id;
             item.aliasName = alias.name;
-            item.address = alias.address;
+            item.locationAddress = alias.locationAddress;
+            item.locationName = alias.locationName;
             item.location = alias.location;
 
             createProcess(item,callback);
         });
 
-    } else if(item.aliasName){
+    } else if(aliasName){
         //if no Id and Create Alias -> create a new one
-        AliasService.create(ownerUserId,latitude,longitude,item.visibility,aliasName,aliasSubname,address,function(err,alias){
+        AliasService.create(userId,latitude,longitude,item.visibility,aliasName,locationName,locationAddress,function(err,alias){
             if(err) return callback(err);
 
             item.aliasId = alias._id;
+            item.aliasName = alias.name;
 
             createProcess(item,callback);
         });
@@ -169,32 +190,32 @@ service.create = function(title,message,mediaId,latitude,longitude,radius,addres
 }
 
 function createProcess(item,callback){
-    //console.log(item);
-    item.save(function(err){
-        if(err){
-            return callback(err);
-        }
-        if(item.mediaId){
-            var visibility = MediaVars.VISIBILITY_PRIVATE;
-            if(item.visibility == VISIBILITY_PUBLIC){
-                visibility = MediaVars.VISIBILITY_PUBLIC;
+    ItemUtils.generatePreviewImage(item,function(item){
+        //console.log(item);
+        item.save(function(err){
+            if(err){
+                return callback(err);
             }
-            MediaService.assign(item.mediaId,item.to,visibility,item._id,"Item#mediaId",function(err){
-                if(err){
-                    //TODO remove item
-                    callback(err);
-                }else{
-                    callback(null,item);
-                    createBackground(item);
+            if(item.mediaId){
+                var visibility = MediaVars.VISIBILITY_PRIVATE;
+                if(item.visibility == VISIBILITY_PUBLIC){
+                    visibility = MediaVars.VISIBILITY_PUBLIC;
                 }
-            });
-        }else{
-            callback(null,item);
-            createBackground(item);
-        }
-
-
-    })
+                MediaService.assign(item.mediaId,item.to,visibility,item._id,"Item#mediaId",function(err){
+                    if(err){
+                        //TODO remove item
+                        callback(err);
+                    }else{
+                        callback(null,item);
+                        createBackground(item);
+                    }
+                });
+            }else{
+                callback(null,item);
+                createBackground(item);
+            }
+        })
+    });
 }
 
 function createBackground(item){
@@ -213,7 +234,7 @@ function createBackground(item){
             itemInbox.itemId = item._id;
             itemInbox.location = item.location;
             itemInbox.radius = item.radius;
-            itemInbox.ownerUserId = item.ownerUserId;
+            itemInbox.ownerUserId = item.userId;
             itemInbox.save(function(err){
                 if(err){
                     console.error(err);
@@ -235,124 +256,56 @@ service.findById = function(itemId,callback){
         callback(err,item);
     });
 }
-
-service.collect = function(itemId,longitude,latitude,userId,callback){
-    ItemInbox.findOne({itemId:itemId},function(err,itemInbox){
-        if(err) return callback(err);
-        if(itemInbox && itemInbox.status == STATUS_OPENED){
-            Item.findOne({_id:itemId},function(err,item){
+service.view = function(itemId,longitude,latitude,userId,callback){
+    service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
+        if(allowed){
+            Item.findOne({_id:itemId},function(err,doc){
                 if(err) return callback(err);
-                if(!item) return callback("Item not found ¿?");
-                openItem(item,callback);
+                if(!doc) return callback("Not found");
+
+                callback(null,viewItem(doc,userId));
             });
-        } else {
-            var query =
-                {
-                _id:itemId,
-                status:STATUS_UNOPENED
-                };
-
-            var update = {
-                            $set    : {
-                                        status: STATUS_OPENED,
-                                        collectedUserId:userId
-                                    },
-                            //$inc    : { collectedCount:1 },
-                            $push   : { actions: {type:ACTION_COLLECTED,date:Date.now(),userId:userId} }
-                        };
-
-            if(!itemInbox){
-                query.visibility = VISIBILITY_PUBLIC;
-            }
-            // This first query is to check location,
-            // the other findOneAndUpdate is to guarrantee that no one opened the item between these two
-            // queries.
-            Item.findOne(query,function(err,item){
-                if (err) return callback(err);
-                if (!item) return callback("Item not found");
-                if(!inRange(item,longitude,latitude)){
-                    return callback("Not close enough");
-                }
-                //
-                // Atomic operation
-                //
-                Item.findOneAndUpdate(
-                    query,
-                    update,
-                    function(err,item) {
-                        if (err) return callback(err);
-                        if (!item) return callback("Item not found");
-
-                        //FOUND
-                        if (!itemInbox) {
-                            itemInbox = new ItemInbox();
-                            itemInbox.userId = userId;
-                            itemInbox.itemId = item._id;
-                            itemInbox.location = item.location;
-                            itemInbox.radius = item.radius;
-                            itemInbox.ownerUserId = item.ownerUserId;
-                        }
-
-                        itemInbox.status = STATUS_OPENED;
-                        itemInbox.openedDate = Date.now();
-                        itemInbox.save(function (err) {
-                            if (err) return callback(err);
-                            openItem(item, callback);
-                            //TODO send a notification to the owner
-                        });
-
-
-                    });
-            })
-
-
-
+        }else{
+            callback(null,null);
         }
-    });
+    })
 }
+function viewItem(item,userId){
 
-
-service.leave = function(itemId,userId,callback) {
-    ItemInbox.findOneAndUpdate(
+    ViewItem.update(
         {
             userId:userId,
-            itemId:itemId,
-            status:STATUS_OPENED
+            itemId:item._id
         },
         {
-            $set:   { status:STATUS_LEFT }
-        }
-        ,
-        function(err,item) {
-            if (err) return callback(err);
-
-            if (!item) return callback("Item not found in your inbox");
-
-            Item.findOneAndUpdate(
-                {_id: itemId, status: STATUS_OPENED},
-                {
-                    $set    : { status: STATUS_UNOPENED },
-                    $unset  : { collectedUserId: "" },
-                    //$inc    : { leftCount: 1},
-                    $push   : { actions: {type:ACTION_LEFT,date:Date.now(),userId:userId} }
-                }
-                ,
-                function (err, item) {
-                    if (err) return callback(err);
-                    if (!item) return callback("Item not found");
-
-                    callback(null);
-            });
+            $push:{dates:Date.now()},
+            $inc:{count:1}
+        },
+        {
+            upsert: true
+        },
+        function(err){
+            if(err) console.log(err);
         }
     );
+
+    Item.findOneAndUpdate(
+        {_id:item._id},
+        {$inc: { viewCount:1 }},
+        function(err){
+            if(err) console.log(err);
+        }
+    );
+
+    //TODO Mark as viewed in inbox too?
+
+    return {
+        message: item.message,
+        templateId: item.templateId,
+        mediaId: item.mediaId,
+        renderParameters: item.renderParameters
+    };
 }
-
-
-function openItem(item,callback){
-    callback(null);//,{type:item.type,mediaId:item.mediaId,message:item.message});
-}
-
-
 
 service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
 
@@ -362,7 +315,9 @@ service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userL
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {to:userId,status:STATUS_UNOPENED};
+    //TODO dissapear from map
+    var query = {to:userId};
+
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
@@ -380,7 +335,7 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLat
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {visibility:VISIBILITY_PUBLIC,status:STATUS_UNOPENED};
+    var query = {visibility:VISIBILITY_PUBLIC};
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
@@ -427,7 +382,7 @@ function transformGeoNearResults(results,longitude,latitude,userId,callback){
 
 service.listSentToMe = function(userId,callback){
     finishItemQuery(
-           Item.find({to:userId,status:STATUS_UNOPENED})
+           Item.find({to:userId})
                .sort({created:-1}
            )
         ,null,null,userId,callback);
@@ -436,24 +391,12 @@ service.listSentToMe = function(userId,callback){
 
 service.listSentByMe = function(userId,callback){
     finishItemQuery(
-        Item.find({ownerUserId:userId})
+        Item.find({userId:userId})
             .sort({created:-1}
         )
         ,null,null,userId,callback);
 }
 
-service.listCollected = function(userId,callback){
-    finishItemQuery(Item.find(
-        {
-            collectedUserId:userId,
-            status:STATUS_OPENED
-        }
-    ),null,null,userId,callback);
-}
-
-service.view = function(itemId,longitude,latitude,userId,callback){
-    finishItemQuery(Item.findOne({_id:itemId}),longitude,latitude,userId,callback);
-}
 function inRange(item,longitude,latitude){
 
 
@@ -475,8 +418,7 @@ function distance(item,longitude,latitude){
 }
 
 function finishItemQuery(query,longitude,latitude,userId,callback){
-    query.populate("ownerUserId",PUBLIC_USER_FIELDS)
-        .populate("collectedUserId",PUBLIC_USER_FIELDS)
+    query.populate("userId",PUBLIC_USER_FIELDS)
         .populate("comments.userId",PUBLIC_USER_FIELDS)
         .populate("actions.userId",PUBLIC_USER_FIELDS)
         .populate("to", PUBLIC_USER_FIELDS )
@@ -507,66 +449,24 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.longitude = item.location[LOCATION_LONGITUDE];
     publicItem.latitude = item.location[LOCATION_LATITUDE];
     publicItem.radius = item.radius;
-    publicItem.ownerUser = item.ownerUserId;
-    publicItem.actions = item.actions;
-    publicItem.comments = item.comments;
-    publicItem.mediaId = item.mediaId;
-    publicItem.message = item.message;
+    publicItem.userId = item.userId;
     publicItem.created = item.created;
-    publicItem.title = item.title;
-    publicItem.status = item.status;
     publicItem.openedDate = item.openedDate;
-    publicItem.address = item.address;
+    publicItem.locationAddress = item.locationAddress;
+    publicItem.locationName = item.locationName;
     publicItem.aliasName = item.aliasName;
     publicItem.aliasId = item.aliasId;
     publicItem.templateId = item.templateId;
-    publicItem.iconId = item.iconId;
+    publicItem.mapIconId = item.mapIconId;
+    publicItem.previewMediaId = item.previewMediaId;
     publicItem.to = item.to;
 
     if(longitude && latitude){
         publicItem.userDistance = distance(item,longitude,latitude);
-        publicItem.canCollect = inRange(item,longitude,latitude);
+        publicItem.canView = inRange(item,longitude,latitude);
     }
-
-    if(allowedToSeeContent(item,longitude,latitude,userId)){
-        return publicItem;
-    }
-    // Not going to delete the media Id since the media API will blur the image anyway
-    // delete publicItem.mediaId;
-    delete publicItem.message;
-
-
-    var containsTo = false;
-
-    for (var i = 0; i < item.to.length && !containsTo; i++) {
-        var toUserId ="" ;
-        var toUserElement = item.to[i];
-        console.log(toUserElement);
-        if(toUserElement instanceof mongoose.Types.ObjectId){
-            toUserId = toUserElement;
-        } else {
-            toUserId = toUserElement._id;
-        }
-
-
-        if (String(toUserId) == String(userId)) {
-            containsTo = true;
-        }
-    }
-
-    if(containsTo){
-        return publicItem;
-    }
-
-    if(item.visibility == VISIBILITY_PRIVATE){
-        return null;
-    }
-
-    delete publicItem.comments;
-    delete publicItem.actions;
 
     return publicItem;
-
 }
 
 
@@ -578,8 +478,7 @@ service.addComment = function(itemId,comment,userId,callback) {
 
             var allowed = false;
 
-            if (String(item.ownerUserId) == String(userId) ||
-                (item.collectedUserId && String(item.collectedUserId) == String(userId))) {
+            if (String(item.userId) == String(userId)) {
                 allowed = true;
             }
 
@@ -588,6 +487,7 @@ service.addComment = function(itemId,comment,userId,callback) {
                     allowed = true;
                 }
             }
+            //TODO check if viewed
 
             if (!allowed) return callback("Not allowed");
 
@@ -599,52 +499,78 @@ service.addComment = function(itemId,comment,userId,callback) {
                 });
         });
 }
+
 service.allowedToSeeContent= function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId},function(err,item) {
-        if (err) {
-            callback(err);
-        } else if (!item) {
-            callback("Entity Not Found");
+        if (err) return callback(err);
+        if (!item) return callback("Entity Not Found");
+
+        var canSee = false;
+        var ownerUserId;
+        var containsTo = false;
+
+        //+++PRE PROCESS
+        //Sometimes it's populated
+        if (item.userId instanceof mongoose.Types.ObjectId) {
+            ownerUserId = item.userId;
+        } else if (item.userId) {
+            ownerUserId = item.userId._id;
+        }
+        for (var i = 0; i < item.to.length && !containsTo; i++) {
+            var toUserId = "";
+            var toUserElement = item.to[i];
+            console.log(toUserElement);
+            if (toUserElement instanceof mongoose.Types.ObjectId) {
+                toUserId = toUserElement;
+            } else {
+                toUserId = toUserElement._id;
+            }
+
+
+            if (String(toUserId) == String(userId)) {
+                containsTo = true;
+            }
+        }
+        //---
+
+        //I am the owner or I have collected the item
+        if (String(ownerUserId) == String(userId)) {
+            canSee = true;
+        }
+
+        //The item is public and I am in range
+        if (item.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item, longitude, latitude)) {
+            canSee = true;
+        }
+
+        if (item.visibility == VISIBILITY_PUBLIC && item.radius == 0) {
+            canSee = true;
+        }
+
+        if (item.visibility == VISIBILITY_PRIVATE && containsTo && item.radius == 0) {
+            canSee = true;
+        }
+
+        if (item.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item, longitude, latitude)) {
+            canSee = true;
+        }
+
+        if (!canSee) {
+            //Lets see if he saw once
+            ViewItem.findOne({userId: userId, itemId: item._id}, 'count', function (err, doc) {
+                if (err) return callback(err);
+                if (!doc || doc.count == 0) return callback(null, false);
+
+                callback(null, true);
+            });
         } else {
-            callback(null,allowedToSeeContent(item,longitude,latitude,userId));
+            callback(null, true);
         }
     });
 }
+/*
+*/
 
-function allowedToSeeContent(item,longitude,latitude,userId){
-    var ownerUserId;
-    var collectedUserId;
-
-
-    //Sometimes it's populated
-    if(item.ownerUserId instanceof mongoose.Types.ObjectId){
-        ownerUserId = item.ownerUserId;
-    } else if(item.ownerUserId) {
-        ownerUserId = item.ownerUserId._id;
-    }
-
-
-    //Sometimes it's populated
-    if(item.collectedUserId instanceof mongoose.Types.ObjectId){
-        collectedUserId = item.collectedUserId;
-    } else if(item.collectedUserId) {
-        collectedUserId = item.collectedUserId._id;
-    }
-
-
-    //I am the owner or I have collected the item
-    if(String(ownerUserId) == String(userId) ||
-        (collectedUserId && String(collectedUserId) == String(userId))){
-        return true;
-    }
-
-    //The item is public and I am in range
-    if(item.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item,longitude,latitude)){
-        return true;
-    }
-
-    return false;
-}
 
 ///Old Stuff
 //return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))

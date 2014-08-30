@@ -3,21 +3,21 @@ var ApiUtils = require('../utils/apiutils');
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
+        //message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId
         var message = req.body.message;
         var mediaId = req.body.mediaId;
+        var templateId = req.body.templateId;
+        var mapIconId = req.body.mapIconId;
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
         var radius = req.body.radius;
         var to = req.body.to;
-        var title = req.body.title;
-        var address = req.body.address;
+        var locationName = req.body.locationName;
+        var locationAddress = req.body.locationAddress;
         var aliasName = req.body.aliasName;
-        var aliasSubname = req.body.aliasSubname;
         var aliasId = req.body.aliasId;
-        var templateId = req.body.templateId;
-        var iconId = req.body.iconId;
 
-        ItemService.create(title,message,mediaId,latitude,longitude,radius,address,aliasName,aliasSubname,aliasId,to,user._id,templateId,iconId,function(err,item){
+        ItemService.create(message,mediaId,templateId, mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,user._id,function(err,item){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -27,21 +27,6 @@ exports.create = function(req, res) {
     });
 };
 
-
-exports.collect = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var itemId = req.body.itemId;
-        var longitude = req.body.longitude;
-        var latitude = req.body.latitude;
-        ItemService.collect(itemId,longitude,latitude,user._id,function(err,data){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,data);
-            }
-        });
-    });
-}
 
 
 
@@ -106,17 +91,6 @@ exports.addComment = function(req,res){
     });
 }
 
-exports.listCollected = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        ItemService.listCollected(user._id,function(err,data){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,data);
-            }
-        });
-    });
-}
 
 exports.listSentToMe = function(req,res){
     ApiUtils.auth(req,res,function(user) {

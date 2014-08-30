@@ -111,12 +111,9 @@ app.post('/api/friends/unblock', friend.unblock);
 app.post('/api/friends/search', friend.search);
 
 app.post('/api/item/create',item.create);
-app.post('/api/item/collect',item.collect);
 app.post('/api/item/search/by/location',item.searchByLocation);
-app.post('/api/item/leave',item.leave);
 app.post('/api/item/view',item.view);
 app.post('/api/item/comment/add',item.addComment);
-app.post('/api/item/find/by/collected',item.listCollected);
 app.post('/api/item/find/by/senttome',item.listSentToMe);
 app.post('/api/item/find/by/sentbyme',item.listSentByMe);
 app.post('/api/template',template.listTemplates);
