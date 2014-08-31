@@ -33,11 +33,11 @@ var commentSchema = new Schema({
 });
 
 var itemSchema = new Schema({
-    userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    created       :   { type: Date	, required: true, default: Date.now },
+    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    created     :   { type: Date	, required: true, default: Date.now },
     //++ Private fields (not viewed)
-    message       :   { type: String, required: false},
-    templateId    :   { type: String, required: false},
+    message     :   { type: String, required: false},
+    templateId  :   { type: String, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     //--
     // A pre rendered image of the message
@@ -57,6 +57,8 @@ var itemSchema = new Schema({
     favouriteCount :   { type: Number, required:true, default:0},
     //
     renderParameters   :   { type: String, required: false}
+    //
+
 
 });
 

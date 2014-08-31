@@ -21,7 +21,7 @@ exports.generatePreviewImage = function(item,callback){
         MediaService.findById(backgroundMediaId,function(err,media){
             MediaService.get(media,"large",function(err,media){
                 image = imageMagick(media.tempPath);
-                image = image.blur(0,50)
+                image = image.resize(500, 500);
                 continueProcess(item,image,callback);
             })
         });
@@ -36,11 +36,12 @@ exports.generatePreviewImage = function(item,callback){
 }
 
 function continueProcess(item,image,callback){
-    var fontDir = process.cwd()+"/public/fonts/blokkneue-regular.ttf";
+    var fontDir = process.cwd()+"/public/fonts/roboto-regular.ttf";
     console.log(fontDir);
-    image = image.font(fontDir, 40)
+    //image = image.font(fontDir, 40);
+    image = image.font(fontDir, 40);
     image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
-
+    image = image.blur(0,50);
     var tempPath = temp.path()+".jpg";
     image.write(tempPath, function (err) {
 
