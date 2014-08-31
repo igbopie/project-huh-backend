@@ -36,7 +36,7 @@ exports.generatePreviewImage = function(item,callback){
 }
 
 function continueProcess(item,image,callback){
-    var fontDir = __dirname+"/../public/fonts/blokkneue-regular.ttf";
+    var fontDir = process.cwd()+"/public/fonts/blokkneue-regular.ttf";
     console.log(fontDir);
     image = image.font(fontDir, 40)
     image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
