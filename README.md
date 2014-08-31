@@ -13,6 +13,9 @@ Need image magick to resize images... (http://aaronheckmann.tumblr.com/post/4894
 brew install imagemagick
 
 
+* Image magick on heroku
+https://github.com/mcollina/heroku-buildpack-imagemagick
+
 * ENV needed:
  - AWS (Required)
  AWS_ACCESS_KEY_ID
