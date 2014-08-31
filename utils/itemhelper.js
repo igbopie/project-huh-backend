@@ -41,7 +41,7 @@ function continueProcess(item,image,callback){
     //image = image.font(fontDir, 40);
     image = image.font(fontDir, 40);
     image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
-    image = image.blur(0,50);
+    image = image.blur(15);
     var tempPath = temp.path()+".jpg";
     image.write(tempPath, function (err) {
 
