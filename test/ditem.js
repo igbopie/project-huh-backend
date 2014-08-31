@@ -40,6 +40,7 @@ describe('Item', function(){
 
     describe('#create(PRIVATE)', function(){
         it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -53,6 +54,7 @@ describe('Item', function(){
 
     describe('#viewNotAllowed()', function(){
         it('shouldnt view',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
@@ -70,6 +72,7 @@ describe('Item', function(){
 
     describe('#viewAllowed()', function(){
         it('should view',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
@@ -89,6 +92,7 @@ describe('Item', function(){
 
     describe('#searchInboxByLocationInRange()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -111,6 +115,7 @@ describe('Item', function(){
 
     describe('#searchByLocationNotMyInbox()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -133,6 +138,7 @@ describe('Item', function(){
 
     describe('#searchInboxByLocationOutOfRange()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].id,users[0].token,function(err) {
                 if (err) return done(err);
                 //LAT       LONG
@@ -155,6 +161,7 @@ describe('Item', function(){
 
     describe('#viewAnonymous()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
@@ -194,6 +201,7 @@ describe('Item', function(){
 
     describe('#addComment()', function(){
         it('should add a comment',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
@@ -213,6 +221,7 @@ describe('Item', function(){
 
     describe('#listInbox()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
                 //LAT       LONG
@@ -234,6 +243,7 @@ describe('Item', function(){
 
     describe('#listSentByMe()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -256,6 +266,7 @@ describe('Item', function(){
 
     describe('#listSentByMeAndOpened()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -277,6 +288,7 @@ describe('Item', function(){
 
     describe('#createAlias()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -298,6 +310,7 @@ describe('Item', function(){
 
     describe('#createAliasAndSearch()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -321,6 +334,7 @@ describe('Item', function(){
 
     describe('#createAliasAndSearchName()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
@@ -343,6 +357,7 @@ describe('Item', function(){
 
     describe('#createAliasAndSearchFull()', function(){
         it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 

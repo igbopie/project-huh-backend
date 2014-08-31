@@ -357,9 +357,11 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLat
 service.searchByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
     var results ={};
     service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data){
+
         if(err) return callback(err);
         results.sentToMe = data;
         service.searchPublicItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data) {
+
             if (err) return callback(err);
             results.public = data;
 
@@ -367,7 +369,7 @@ service.searchByLocation = function(latitude,longitude,radius,userLatitude,userL
         });
     });
 }
-function transformGeoNearResults(results,longitude,latitude,userId,callback){
+function transformGeoNearResults(results,longitude,latitude,userId,transformCallback){
     /*var array = [];
     for(var i=0;i < results.length;i++){
         var mongoGeoNearObject = results[i];
@@ -375,20 +377,34 @@ function transformGeoNearResults(results,longitude,latitude,userId,callback){
 
     }*/
     //mapping each doc into new object and populating distance
-    results = results.map(function(x) {
-        var a = fillItem( x.obj,userId ,longitude,latitude);
-        a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
-        return a;
-    });
+    Utils.map(
+        results,
+        //Map Function
+        function(x,mapCallback){
+            var a = fillItem( x.obj,userId ,longitude,latitude);
+            a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
+            service.allowedToSeeContent(a._id,longitude,latitude,userId,function(err,canView){
+                if(err){
+                    console.err(err);
+                } else{
+                    a.canView = canView;
+                }
+                mapCallback(a);
+            });
+        }
+        ,
+        //Callback
+        function(results){
 
-    // populating user object
-    Item.populate( results, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
-        if (err) return callback(err);
-        callback(null,items);
-    });
-
-
+            // populating user object
+            Item.populate( results, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+                if (err) return callback(err);
+                transformCallback(null,items);
+            });
+        }
+    )
 }
+
 
 service.listSentToMe = function(userId,callback){
     finishItemQuery(

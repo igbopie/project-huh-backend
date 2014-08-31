@@ -83,6 +83,32 @@ utils.joinToUser = function(schema,userProp,userIdPropName,usernamePropName){
         return me;
     });
 }
+/**
+ * This is like a map function but with a callback so it can be used
+ * asynchronous
+ * @param array
+ * @param mapFunction (Item,Callback)
+ * @param callback
+ */
+utils.map = function(array,mapFunction,callback) {
+    if(array.length == 0){
+        callback(array);
+    }else{
+        var callbacked = 0;
+        for (var i = 0; i < array.length; i++) {
+            (function (index) {
+                mapFunction(array[index], function (newArrayItem) {
+                    array[index] = newArrayItem;
+                    callbacked++;
+                    if(callbacked == array.length){
+                        callback(array);
+                    }
+
+                });
+            })(i);
+        }
+    }
+}
 
 // export the class
 module.exports =  utils;
