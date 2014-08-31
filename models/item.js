@@ -54,6 +54,7 @@ var itemSchema = new Schema({
     comments    :   [commentSchema],
     //STATS
     viewCount :   { type: Number, required:true, default:0},
+    favouriteCount :   { type: Number, required:true, default:0},
     //
     renderParameters   :   { type: String, required: false}
 
@@ -467,6 +468,9 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.mapIconId = item.mapIconId;
     publicItem.previewMediaId = item.previewMediaId;
     publicItem.to = item.to;
+    publicItem.viewCount = item.viewCount;
+    publicItem.favouriteCount = item.favouriteCount;
+
 
     if(longitude && latitude){
         publicItem.userDistance = distance(item,longitude,latitude);
