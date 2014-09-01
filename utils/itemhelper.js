@@ -50,7 +50,7 @@ function continueProcess(item,image,callback){
     textImage = textImage.fill("#ffffff");
     textImage = textImage.out("-gravity","center");
     textImage = textImage.out("-stroke","white");
-    textImage = textImage.out("-strokewidth","3");
+    textImage = textImage.out("-strokewidth","4");
     textImage = textImage.out("-draw","text 0,0 '"+(item.message));
 
 
