@@ -39,10 +39,10 @@ function continueProcess(item,image,callback){
     var fontDir = process.cwd()+"/public/fonts/roboto-regular.ttf";
     console.log(fontDir);
     //image = image.font(fontDir, 40);
-    image = image.blur(0,20);
+    image = image.blur(0,40);
     if(item.message) {
         image = image.out("-fill", "black");
-        image = image.out("-colorize", "25%");
+        image = image.out("-colorize", "13%");
     }
 
     var textImage = imageMagick(150, 150,"#00000000");

@@ -21,7 +21,6 @@ var mongoose = require('mongoose')
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-
 ;
 
 
@@ -367,7 +366,12 @@ service.searchByLocation = function(latitude,longitude,radius,userLatitude,userL
             if (err) return callback(err);
             results.public = data;
 
-            callback(null,results);
+            AliasService.search(latitude,longitude,radius,null,userId,function(err,data){
+                if (err) return callback(err);
+                results.aliases = data;
+
+                callback(null,results);
+            });
         });
     });
 }

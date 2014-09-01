@@ -14,6 +14,8 @@ var users = null;
 describe('Item', function(){
 
     beforeEach(function (done) {
+
+        this.timeout(20000);//S3 requires longer timeout
         //Clean and create some test users
         TestUtils.cleanDatabase(function(err){
             if(err) return done(err);
@@ -194,6 +196,7 @@ describe('Item', function(){
 
     describe('#viewAnonymousPrivate()', function(){
         it('shouldnt view',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
             Friend.addFriend(users[1].id,users[0].token,function(err) {
                 if (err) return done(err);
 
