@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
     , s3 = new AWS.S3()
     , S3_BUCKET = process.env.AWS_S3_BUCKET
     , CronJob = require('cron').CronJob
-    , FORMAT_THUMB = {name: "thumb", height: 480, width: 480}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
-    , FORMAT_LARGE = {name: "large", height: 1920, width: 1920}
+    , FORMAT_THUMB = {name: "thumb", height: 250, width: 250}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
+    , FORMAT_LARGE = {name: "large", height: 1080, width: 1080}
     , QUALITY = 50
     , VISIBILITY_PUBLIC = "PUBLIC"
     , VISIBILITY_PRIVATE = "PRIVATE"
@@ -345,7 +345,7 @@ service.createAux = function (originalPath, media, format, callback) {
     var tempPath = temp.path();
 
     imageMagick(originalPath).size(function(err, size){
-
+        /*
         var landscape = true;
         if( size.height > size.width ){
             landscape = false;
@@ -356,14 +356,14 @@ service.createAux = function (originalPath, media, format, callback) {
         if(!landscape){
             widthConstrain  = format.height;
             heightConstrain = format.width;
-        }
+        }*/
 
 
         imageMagick(originalPath)
-            .resize(widthConstrain, heightConstrain+ ">")
+            //.resize(widthConstrain, heightConstrain+ ">")
+
             .autoOrient()
-            .quality(QUALITY)
-            .write(tempPath, function (err) {
+            .thumb(format.width,format.height,tempPath,QUALITY,function (err) {
                 if (err) {
                     callback(err);
                 } else {
