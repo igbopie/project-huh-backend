@@ -52,6 +52,21 @@ describe('Item', function(){
         });
     });
 
+    describe('#createWithImage()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
+                if(err) return done(err);
+                Item.create("Title Test", "I am here in starbucks",null,1, mediaId, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
+                    if (err) return done(err);
+                    done();
+                });
+            });
+
+        });
+    });
+
+
     describe('#viewNotAllowed()', function(){
         it('shouldnt view',function (done) {
             this.timeout(20000);//S3 requires longer timeout

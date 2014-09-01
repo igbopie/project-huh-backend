@@ -39,19 +39,43 @@ function continueProcess(item,image,callback){
     var fontDir = process.cwd()+"/public/fonts/roboto-regular.ttf";
     console.log(fontDir);
     //image = image.font(fontDir, 40);
-    image = image.font(fontDir, 40);
-    image = image.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
-    image = image.blur(15);
-    var tempPath = temp.path()+".jpg";
-    image.write(tempPath, function (err) {
+    image = image.blur(0,15);
 
+    var textImage = imageMagick(500, 500,"#00000000");
+    textImage = textImage.font(fontDir, 40);
+    textImage = textImage.fill("#ffffff");
+    textImage = textImage.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
+    textImage = textImage.blur(0,6);
+
+    var textImageTempPath = temp.path()+".png";
+    textImage.write(textImageTempPath, function (err) {
         console.log(err);
-        MediaService.create(tempPath, "preview", "image/jpg", item.userId, function (err, mId) {
+
+
+        var backgroundTempPath = temp.path() + ".jpg";
+
+        image.write(backgroundTempPath, function (err) {
 
             console.log(err);
-            item.previewMediaId = mId;
-            callback(item);
-        });
 
+            var composition = temp.path() + ".jpg";
+            imageMagick()
+                .in('-page', '+0+0')
+                .in(backgroundTempPath)
+                .in('-page', '+0+0') // location of smallIcon.jpg is x,y -> 10, 20
+                .in(textImageTempPath)
+                .mosaic()
+                .write(composition, function (err) {
+                    if (err) console.log(err);
+                    MediaService.create(composition, "preview", "image/jpg", item.userId, function (err, mId) {
+
+                        console.log(err);
+                        item.previewMediaId = mId;
+                        callback(item);
+                    });
+                });
+
+
+        });
     });
 }
