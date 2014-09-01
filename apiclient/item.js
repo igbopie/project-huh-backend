@@ -8,7 +8,7 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(title,message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,aliasName,aliasId,token,callback){
+exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,aliasName,aliasId,token,callback){
 	var params ={
                 message:message,
                 templateId:templateId,
@@ -18,7 +18,6 @@ exports.create = function(title,message,templateId,mapIconId,mediaId,latitude,lo
                 longitude:longitude,
                 radius:radius,
                 to:to,
-                title:title,
                 locationAddress:locationAddress,
                 locationName:locationName,
                 aliasName:aliasName,
@@ -129,6 +128,47 @@ exports.listSentByMe = function(token,callback){
         token:token
     };
     apiClientBase.post('/api/item/find/by/sentbyme',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
+exports.favourite = function(itemId,token,callback){
+    var params ={
+        itemId:itemId,
+        token:token
+    };
+    apiClientBase.post('/api/item/favourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+exports.unfavourite = function(itemId,token,callback){
+    var params ={
+        itemId:itemId,
+        token:token
+    };
+    apiClientBase.post('/api/item/unfavourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+exports.listFavourite = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/item/favourite/list',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {

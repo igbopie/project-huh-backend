@@ -33,7 +33,7 @@ describe('Item', function(){
     describe('#create(PUBLIC)', function(){
         it('should create an item object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Item.create("Title Test","Test",1,1,null,41.2,41.2,10,[],null,null,null,null,users[0].token,function(err){
+            Item.create("Test",1,1,null,41.2,41.2,10,[],null,null,null,null,users[0].token,function(err){
                 if(err) return done(err);
                 done();
             });
@@ -46,7 +46,7 @@ describe('Item', function(){
             Friend.addFriend(users[1].username,users[0].token,function(err) {
                 if (err) return done(err);
 
-                Item.create("Title Test", "Test",1,1, null, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
+                Item.create( "Test",1,1, null, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
                     if (err) return done(err);
                     done();
                 });
@@ -59,7 +59,7 @@ describe('Item', function(){
             this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
                 if(err) return done(err);
-                Item.create("Title Test", "I am here in starbucks",null,1, mediaId, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
+                Item.create( "I am here in starbucks",null,1, mediaId, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
                     if (err) return done(err);
                     done();
                 });
@@ -76,7 +76,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Title Test","Test",1,1,null,40.665006,-3.779096,10,[],null,null,null,null,users[0].token,function(err,itemId){
+            Item.create("Test",1,1,null,40.665006,-3.779096,10,[],null,null,null,null,users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.view(itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
@@ -94,7 +94,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Title Test","Test",1,1,null,40.665006,-3.779096,50,[],null,null,null,null,users[0].token,function(err,itemId){
+            Item.create("Test",1,1,null,40.665006,-3.779096,50,[],null,null,null,null,users[0].token,function(err,itemId){
                 if(err) return done(err);
                 Item.view(itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
@@ -117,7 +117,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocationUserLocation(40.665350, -3.778955, 41,40.665350, -3.778955, users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -140,7 +140,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test", "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create(  "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocation(40.665350, -3.778955, 50, users[0].token, function (err,data) {
                         if (err) return done(err);
@@ -162,7 +162,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Title Test", "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.searchByLocation(40.665350, -3.778955, 39, users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -183,7 +183,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Title Test", "Test",1,1, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, itemId) {
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, itemId) {
                 if (err) return done(err);
                 Item.view(itemId,40.665350,-3.778955, users[1].token, function (err, data) {
                     if (err) return done(err);
@@ -204,7 +204,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Title Test", "Test",1,1, null, 40.665006, -3.779096, 100, [users[0].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 100, [users[0].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.view(itemId,40.665350,-3.778955, users[1].token, function (err, data) {
                         if (err) return done(err);
@@ -224,7 +224,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Title Test", "Test",1,1, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, itemId) {
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, itemId) {
                 if (err) return done(err);
                 Item.addComment(itemId,"Hello comment", users[0].token, function (err) {
                     if (err) return done(err);
@@ -246,7 +246,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create("Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentToMe(users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -269,7 +269,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create("Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentByMe(users[0].token, function (err,data) {
                         if (err) return done(err);
@@ -292,7 +292,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],null,null,null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentByMe(users[0].token, function (err,data) {
                             if (err) return done(err);
@@ -314,7 +314,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],"Calle badajo","Ete mi casa",null,null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [users[1].id],"Calle badajo","Ete mi casa",null,null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentByMe(users[0].token, function (err,data) {
                             if (err) return done(err);
@@ -336,7 +336,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Alias.search(  40.665006,-3.779096, 2000,null, users[0].token, function(err,results){
 
@@ -360,7 +360,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Alias.search( null,null,null,"fisica", users[0].token, function(err,results){
                         if (err) return done(err);
@@ -383,7 +383,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Title Test","Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Alias.search( 40.665006,-3.779096, 2000,"fisica", users[0].token, function(err,results){
                         if (err) return done(err);
@@ -392,6 +392,92 @@ describe('Item', function(){
                     } )
 
                 });
+            });
+        });
+    });
+
+    describe('#favourite()', function(){
+        it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                if (err) return done(err);
+
+                Item.favourite(itemId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Item.view(itemId,40.665006, -3.779096,users[0].token,function(err,item){
+                        if (err) return done(err);
+
+                        item.should.have.property("favouriteCount");
+                        item.favouriteCount.should.be.equal(1);
+                        item.should.have.property("favourited");
+                        item.favourited.should.be.ok;
+
+                        done()
+                    });;
+                });
+
+            });
+        });
+    });
+
+    describe('#unfavourite()', function(){
+        it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                if (err) return done(err);
+
+                Item.favourite(itemId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Item.unfavourite(itemId,users[0].token,function(err) {
+                        if (err) return done(err);
+
+                        Item.view(itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                            if (err) return done(err);
+
+                            item.should.have.property("favouriteCount");
+                            item.favouriteCount.should.be.equal(0);
+                            item.should.have.property("favourited");
+                            item.favourited.should.be.not.ok;
+
+                            done()
+                        });
+                    });
+                });
+
+            });
+        });
+    });
+
+    describe('#favouriteAndList()', function(){
+        it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                if (err) return done(err);
+
+                Item.favourite(itemId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Item.listFavourite(users[0].token,function(err,results){
+                        if (err) return done(err);
+
+
+                        results.length.should.be.equal(1);
+
+                        done()
+                    });;
+                });
+
             });
         });
     });

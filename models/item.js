@@ -77,6 +77,7 @@ var favouriteItemSchema = new Schema({
 });
 
 favouriteItemSchema.index({userId:1,date:-1});
+favouriteItemSchema.index({userId:1,itemId:1},{unique:true});
 
 var FavouriteItem = mongoose.model('FavouriteItem', favouriteItemSchema);
 ///------------------------
@@ -268,54 +269,55 @@ service.view = function(itemId,longitude,latitude,userId,callback){
             Item.findOne({_id:itemId})
                 .populate("userId",PUBLIC_USER_FIELDS)
                 .populate("comments.userId",PUBLIC_USER_FIELDS)
-                .exec(function(err,doc){
+                .exec(function(err,item){
                 if(err) return callback(err);
-                if(!doc) return callback("Not found");
+                if(!item) return callback("Not found");
 
-                callback(null,viewItem(doc,userId));
+                    ViewItem.update(
+                        {
+                            userId:userId,
+                            itemId:item._id
+                        },
+                        {
+                            $push:{dates:Date.now()},
+                            $inc:{count:1}
+                        },
+                        {
+                            upsert: true
+                        },
+                        function(err){
+                            if(err) console.log(err);
+                        }
+                    );
+
+                    Item.findOneAndUpdate(
+                        {_id:item._id},
+                        {$inc: { viewCount:1 }},
+                        function(err){
+                            if(err) console.log(err);
+                        }
+                    );
+
+                    FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
+                        if(err) return callback(err);
+
+                        var pItem = fillItem(item,userId);
+                        pItem.message = item.message;
+                        pItem.templateId = item.templateId;
+                        pItem.mediaId = item.mediaId,
+                            pItem.renderParameters = item.renderParameters;
+                        pItem.comments = item.comments;
+                        pItem.favourited = (fav?true:false);
+
+                        callback(null,pItem);
+                    })
+
+
             });
         }else{
             callback(null,null);
         }
     })
-}
-function viewItem(item,userId){
-
-    ViewItem.update(
-        {
-            userId:userId,
-            itemId:item._id
-        },
-        {
-            $push:{dates:Date.now()},
-            $inc:{count:1}
-        },
-        {
-            upsert: true
-        },
-        function(err){
-            if(err) console.log(err);
-        }
-    );
-
-    Item.findOneAndUpdate(
-        {_id:item._id},
-        {$inc: { viewCount:1 }},
-        function(err){
-            if(err) console.log(err);
-        }
-    );
-
-    //TODO Mark as viewed in inbox too?
-
-    var pItem = fillItem(item,userId);
-    pItem.message = item.message;
-    pItem.templateId = item.templateId;
-    pItem.mediaId = item.mediaId,
-    pItem.renderParameters = item.renderParameters;
-    pItem.comments = item.comments;
-
-    return pItem;
 }
 
 service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
@@ -524,7 +526,7 @@ service.addComment = function(itemId,comment,userId,callback) {
         });
 }
 
-service.allowedToSeeContent= function(itemId,longitude,latitude,userId,callback){
+service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId},function(err,item) {
         if (err) return callback(err);
         if (!item) return callback("Entity Not Found");
@@ -592,8 +594,60 @@ service.allowedToSeeContent= function(itemId,longitude,latitude,userId,callback)
         }
     });
 }
-/*
-*/
+
+service.favourite = function(itemId,userId,callback){
+
+    var fav = new FavouriteItem();
+    fav.itemId = itemId;
+    fav.userId = userId;
+
+    fav.save(function(err){
+        if(err) return callback(err);
+
+        Item.update({_id:itemId},{$inc:{favouriteCount:1}},function(err){
+            if(err) return callback(err);
+            callback();
+        });
+    });
+}
+
+
+service.unfavourite = function(itemId,userId,callback){
+
+    FavouriteItem.findOne({userId:userId,itemId:itemId},function(err,favDoc){
+        if(err) return callback(err);
+        if(!favDoc) return callback("Not Favourited");
+
+        favDoc.remove(function(err){
+            if(err) return callback(err);
+
+            Item.update({_id:itemId},{$inc:{favouriteCount:-1}},function(err){
+                if(err) return callback(err);
+                callback();
+            });
+        });
+    });
+
+}
+
+service.listFavourites = function(userId,callback){
+
+    FavouriteItem.find({userId:userId})
+        .populate("itemId")
+        .exec(function(err,favs){
+            if(err) return callback(err);
+
+            favs = favs.map(function(favI){
+                if(err) return callback(err);
+
+                return fillItem(favI.itemId);
+            });
+
+            callback(null,favs);
+
+    });
+
+}
 
 
 ///Old Stuff

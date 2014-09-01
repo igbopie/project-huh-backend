@@ -115,3 +115,42 @@ exports.listSentByMe = function(req,res){
         });
     });
 }
+
+exports.favourite = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        ItemService.favourite(itemId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}
+
+
+exports.unfavourite = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        ItemService.unfavourite(itemId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}
+
+exports.listFavourites = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        ItemService.listFavourites(user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}

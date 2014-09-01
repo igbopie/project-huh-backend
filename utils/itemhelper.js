@@ -39,7 +39,9 @@ function continueProcess(item,image,callback){
     var fontDir = process.cwd()+"/public/fonts/roboto-regular.ttf";
     console.log(fontDir);
     //image = image.font(fontDir, 40);
-    image = image.blur(0,40);
+    //image = image.blur(0,40);
+    image = image.resize(25,25);
+    image = image.scale(1080,1080);
     if(item.message) {
         image = image.out("-fill", "black");
         image = image.out("-colorize", "13%");
