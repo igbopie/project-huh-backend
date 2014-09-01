@@ -21,12 +21,12 @@ exports.generatePreviewImage = function(item,callback){
         MediaService.findById(backgroundMediaId,function(err,media){
             MediaService.get(media,"large",function(err,media){
                 image = imageMagick(media.tempPath);
-                image = image.resize(500, 500);
+                image = image.resize(1080, 1080);
                 continueProcess(item,image,callback);
             })
         });
     }else{
-        image = imageMagick(500, 500, "#d3d3d3ff");
+        image = imageMagick(1080, 1080, "#d3d3d3ff");
         continueProcess(item,image,callback);
     }
 
@@ -39,12 +39,23 @@ function continueProcess(item,image,callback){
     var fontDir = process.cwd()+"/public/fonts/roboto-regular.ttf";
     console.log(fontDir);
     //image = image.font(fontDir, 40);
-    image = image.blur(0,15);
+    image = image.blur(0,20);
+    if(item.message) {
+        image = image.out("-fill", "black");
+        image = image.out("-colorize", "25%");
+    }
 
-    var textImage = imageMagick(500, 500,"#00000000");
-    textImage = textImage.font(fontDir, 40);
+    var textImage = imageMagick(150, 150,"#00000000");
+    textImage = textImage.font(fontDir, 10);
     textImage = textImage.fill("#ffffff");
-    textImage = textImage.drawText(10, 250, item.message?item.message:"Paco deberias poner algo");
+    textImage = textImage.out("-gravity","center");
+    textImage = textImage.out("-stroke","white");
+    textImage = textImage.out("-strokewidth","3");
+    textImage = textImage.out("-draw","text 0,0 '"+(item.message));
+
+
+    //textImage = textImage.blur(0,2);
+    textImage = textImage.scale(1080,1080);
     textImage = textImage.blur(0,6);
 
     var textImageTempPath = temp.path()+".png";

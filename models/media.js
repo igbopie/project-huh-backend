@@ -13,7 +13,7 @@ var mongoose = require('mongoose')
     , CronJob = require('cron').CronJob
     , FORMAT_THUMB = {name: "thumb", height: 250, width: 250}//this is to make height 360 in a 4:3 format, 640 if we what 16:9
     , FORMAT_LARGE = {name: "large", height: 1080, width: 1080}
-    , QUALITY = 50
+    , QUALITY = 85
     , VISIBILITY_PUBLIC = "PUBLIC"
     , VISIBILITY_PRIVATE = "PRIVATE"
     , VISIBILITY = [VISIBILITY_PUBLIC,VISIBILITY_PRIVATE]
@@ -363,6 +363,7 @@ service.createAux = function (originalPath, media, format, callback) {
             //.resize(widthConstrain, heightConstrain+ ">")
 
             .autoOrient()
+            .blur(0.05)
             .thumb(format.width,format.height,tempPath,QUALITY,function (err) {
                 if (err) {
                     callback(err);

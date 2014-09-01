@@ -505,27 +505,18 @@ service.addComment = function(itemId,comment,userId,callback) {
             if (err) return callback(err);
             if (!item) return callback("Item not found");
 
-            var allowed = false;
+            service.allowedToSeeContent(itemId,null,null,userId,function(err,canView){
+                if (err) return callback(err);
+                if (!canView) return callback("Not allowed");
 
-            if (String(item.userId) == String(userId)) {
-                allowed = true;
-            }
+                Item.update(
+                    {_id: item},
+                    {$push: {comments: {userId:userId,data:Date.now(),comment:comment}}},
+                    function (err) {
+                        callback(err);
+                    });
+            })
 
-            for (var i = 0; i < item.to.length && !allowed; i++) {
-                if (String(item.to[i]) == String(userId)) {
-                    allowed = true;
-                }
-            }
-            //TODO check if viewed
-
-            if (!allowed) return callback("Not allowed");
-
-            Item.update(
-                {_id: item},
-                {$push: {comments: {userId:userId,data:Date.now(),comment:comment}}},
-                function (err) {
-                    callback(err);
-                });
         });
 }
 
