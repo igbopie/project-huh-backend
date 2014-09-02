@@ -676,7 +676,15 @@ service.listFavourites = function(userId,callback){
                 return fillItem(favI.itemId);
             });
 
-            callback(null,favs);
+            // populating user object
+            Item.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                if (err) return callback(err);
+                Item.populate( favs, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                    if (err) return callback(err);
+                    callback(null,favs);
+                });
+            });
+
 
     });
 
