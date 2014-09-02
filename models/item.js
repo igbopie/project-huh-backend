@@ -433,7 +433,10 @@ function transformGeoNearResults(results,longitude,latitude,userId,transformCall
             // populating user object
             Item.populate( results, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
                 if (err) return callback(err);
-                transformCallback(null,items);
+                Item.populate( items, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+                    if (err) return callback(err);
+                    transformCallback(null, items);
+                });
             });
         }
     )
