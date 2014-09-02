@@ -270,6 +270,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
         if(allowed){
             Item.findOne({_id:itemId})
                 .populate("userId",PUBLIC_USER_FIELDS)
+                .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
                 .populate("comments.userId",PUBLIC_USER_FIELDS)
                 .exec(function(err,item){
                 if(err) return callback(err);
