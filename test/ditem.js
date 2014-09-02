@@ -424,6 +424,38 @@ describe('Item', function(){
         });
     });
 
+    describe('#favouriteTwice()', function(){
+        it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",1,1, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, itemId) {
+                if (err) return done(err);
+
+                Item.favourite(itemId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Item.favourite(itemId,users[0].token,function(err) {
+                        if (err) return done(err);
+                        Item.view(itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                            if (err) return done(err);
+
+                            item.should.have.property("favouriteCount");
+                            item.favouriteCount.should.be.equal(1);
+                            item.should.have.property("favourited");
+                            item.favourited.should.be.ok;
+
+                            done()
+                        });
+                    });
+
+                });
+
+            });
+        });
+    });
+
     describe('#unfavourite()', function(){
         it('should search',function (done) {
             this.timeout(20000);//S3 requires longer timeout

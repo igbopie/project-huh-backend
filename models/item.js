@@ -632,6 +632,9 @@ service.favourite = function(itemId,userId,callback){
     fav.userId = userId;
 
     fav.save(function(err){
+        //Already favourited
+        if(err && err.code == 11000) return callback();
+
         if(err) return callback(err);
 
         Item.update({_id:itemId},{$inc:{favouriteCount:1}},function(err){
