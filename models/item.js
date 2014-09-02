@@ -62,6 +62,8 @@ var itemSchema = new Schema({
 });
 
 itemSchema.index({userId:1});
+itemSchema.index({userId:1,visibility:1});
+itemSchema.index({visibility:1});
 itemSchema.index({created:-1});
 itemSchema.index({radius:-1});
 itemSchema.index({to:1});
@@ -357,6 +359,24 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLat
     });
 
 }
+
+service.searchSentByMeItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
+
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = Number(longitude);
+    locationArray[LOCATION_LATITUDE] = Number(latitude);
+
+    var point = {type: 'Point', coordinates: locationArray};
+
+    var query = {userId:userId,visibility:VISIBILITY_PRIVATE};
+
+    //Radius of earth 6371000 meters
+    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
+        if(err) return callback(err);
+        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
+    });
+
+}
 service.searchByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
     var results ={};
     service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data){
@@ -368,11 +388,17 @@ service.searchByLocation = function(latitude,longitude,radius,userLatitude,userL
             if (err) return callback(err);
             results.public = data;
 
-            AliasService.search(latitude,longitude,radius,null,userId,function(err,data){
-                if (err) return callback(err);
-                results.aliases = data;
+            service.searchSentByMeItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data) {
 
-                callback(null,results);
+                if (err) return callback(err);
+                results.sentByMe = data;
+
+                AliasService.search(latitude, longitude, radius, null, userId, function (err, data) {
+                    if (err) return callback(err);
+                    results.aliases = data;
+
+                    callback(null, results);
+                });
             });
         });
     });
