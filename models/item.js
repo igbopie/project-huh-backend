@@ -310,7 +310,10 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     pItem.templateId = item.templateId;
                     pItem.mediaId = item.mediaId,
                     pItem.renderParameters = item.renderParameters;
-                    pItem.comments = item.comments;
+                    pItem.comments = item.comments.map(function(comment){
+                        //TODO remove userId
+                        return {comment:comment.comment,date:comment.date,user:comment.userId,userId:comment.userId};
+                    });
                     pItem.favourited = (fav?true:false);
 
                     callback(null,pItem);

@@ -229,7 +229,13 @@ describe('Item', function(){
                 if (err) return done(err);
                 Item.addComment(itemId,"Hello comment", users[0].token, function (err) {
                     if (err) return done(err);
-                    done();
+                    Item.view(itemId,null,null,users[0].token, function (err, item) {
+                        if (err) return done(err);
+                        //console.log(item);
+                        item.comments.length.should.be.equal(1);
+                        done();
+                    });
+
                 });
             });
         });
