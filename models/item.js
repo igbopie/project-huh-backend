@@ -266,60 +266,59 @@ service.findById = function(itemId,callback){
     });
 }
 service.view = function(itemId,longitude,latitude,userId,callback){
-    service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
-        if(allowed){
-            Item.findOne({_id:itemId})
-                .populate("userId",PUBLIC_USER_FIELDS)
-                .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
-                .populate("comments.userId",PUBLIC_USER_FIELDS)
-                .exec(function(err,item){
-                if(err) return callback(err);
-                if(!item) return callback("Not found");
+    //TODO check if private or public, if private and not in To should be able to view anything!
+    Item.findOne({_id:itemId})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+        .populate("comments.userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,item){
+        if(err) return callback(err);
+        if(!item) return callback("Not found");
 
-                    ViewItem.update(
-                        {
-                            userId:userId,
-                            itemId:item._id
-                        },
-                        {
-                            $push:{dates:Date.now()},
-                            $inc:{count:1}
-                        },
-                        {
-                            upsert: true
-                        },
-                        function(err){
-                            if(err) console.log(err);
-                        }
-                    );
+        service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
+            if(allowed){
+                ViewItem.update(
+                    {
+                        userId:userId,
+                        itemId:item._id
+                    },
+                    {
+                        $push:{dates:Date.now()},
+                        $inc:{count:1}
+                    },
+                    {
+                        upsert: true
+                    },
+                    function(err){
+                        if(err) console.log(err);
+                    }
+                );
 
-                    Item.findOneAndUpdate(
-                        {_id:item._id},
-                        {$inc: { viewCount:1 }},
-                        function(err){
-                            if(err) console.log(err);
-                        }
-                    );
+                Item.findOneAndUpdate(
+                    {_id:item._id},
+                    {$inc: { viewCount:1 }},
+                    function(err){
+                        if(err) console.log(err);
+                    }
+                );
 
-                    FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
-                        if(err) return callback(err);
+                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
+                    if(err) return callback(err);
 
-                        var pItem = fillItem(item,userId);
-                        pItem.message = item.message;
-                        pItem.templateId = item.templateId;
-                        pItem.mediaId = item.mediaId,
-                            pItem.renderParameters = item.renderParameters;
-                        pItem.comments = item.comments;
-                        pItem.favourited = (fav?true:false);
+                    var pItem = fillItem(item,userId);
+                    pItem.message = item.message;
+                    pItem.templateId = item.templateId;
+                    pItem.mediaId = item.mediaId,
+                    pItem.renderParameters = item.renderParameters;
+                    pItem.comments = item.comments;
+                    pItem.favourited = (fav?true:false);
 
-                        callback(null,pItem);
-                    })
-
-
-            });
-        }else{
-            callback(null,null);
-        }
+                    callback(null,pItem);
+                })
+            }else{
+                callback(null,fillItem(item,userId));
+            }
+        });
     })
 }
 

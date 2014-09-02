@@ -80,7 +80,7 @@ describe('Item', function(){
                 if(err) return done(err);
                 Item.view(itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
-                    if(obj) return done("It shouldn't return anything");
+                    obj.should.not.have.property("message");
                     done();
                 })
             });
@@ -208,7 +208,8 @@ describe('Item', function(){
                     if (err) return done(err);
                     Item.view(itemId,40.665350,-3.778955, users[1].token, function (err, data) {
                         if (err) return done(err);
-                        if (data) return done("Should be null");
+
+                        data.should.not.have.property('message');
 
                         done();
                     })
