@@ -1,0 +1,28 @@
+<div>
+    <div class="container">
+        <div class="row">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Background</th>
+                    <th>-</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="template in templates">
+                        <td>{{template._id}}</td>
+                        <td>{{template.name}}</td>
+                        <td>{{template.price}}</td>
+                        <td>TODO</td>
+                        <td>delete</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <div class="btn btn-primary">Create template</div>
+        </div>
+    </div>
+</div>
