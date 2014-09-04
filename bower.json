@@ -1,0 +1,25 @@
+{
+  "name": "starbucks",
+  "version": "0.0.0",
+  "authors": [
+    "Ignacio Bona <igbopie@gmail.com>"
+  ],
+  "description": "Admin panel for mark",
+  "main": "public/starbucks/",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/starbucks/libs",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.2.0",
+    "angular": "~1.2.23",
+    "angular-route": "~1.2.23",
+    "danialfarid-angular-file-upload": "~1.6.5"
+  }
+}

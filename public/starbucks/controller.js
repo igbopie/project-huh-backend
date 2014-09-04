@@ -30,6 +30,11 @@ markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"Tem
         });
     }]);
 
+markStarbucksControllers.controller('CreateTemplateCtrl', ['$scope', '$routeParams',"TemplateService","AuthService",
+    function($scope, $routeParams,TemplateService,AuthService) {
+
+    }]);
+
 markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthService",
     function($scope, $routeParams,AuthService) {
 

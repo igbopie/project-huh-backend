@@ -32,3 +32,6 @@ https://github.com/mcollina/heroku-buildpack-imagemagick
 
 * To test:
 mocha -R spec
+
+# Starbucks
+npm install -g bower

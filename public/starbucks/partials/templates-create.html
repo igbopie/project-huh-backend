@@ -1,0 +1,31 @@
+<div>
+    <div class="container">
+        <div class="row">
+            <form role="form">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Name</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Name">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Price</label>
+                    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Price">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+
+            <hr />
+            <form role="form" ng-submit="upload(username,password)">
+                <div class="form-group">
+
+                    <label for="exampleInputFile">Background</label>
+                    <input type="file" id="exampleInputFile">
+                    <p class="help-block">Background here</p>
+                    <button  class="btn btn-sm btn-default">Upload</button>
+                </div>
+            </form>
+            <hr />
+        </div>
+    </div>
+</div>

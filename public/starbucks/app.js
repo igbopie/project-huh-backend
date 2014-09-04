@@ -18,6 +18,10 @@ app.config(['$routeProvider',
                 templateUrl: 'partials/templates.html',
                 controller: 'LoggedCtrl'
             }).
+            when('/templates/create', {
+                templateUrl: 'partials/templates-create.html',
+                controller: 'CreateTemplateCtrl'
+            }).
             otherwise({
                 redirectTo: '/login'
             });
