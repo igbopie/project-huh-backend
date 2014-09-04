@@ -16,3 +16,5 @@ build
 
 node_modules
 .idea
+
+public/starbucks/libs
