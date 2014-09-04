@@ -39,6 +39,7 @@ apiUtils.api = function(req,res,code,message,responseObject){
 
 apiUtils.auth = function(req,res,callback){
     var token = req.body.token;
+    //console.log(req);
     if(token) {
         UserService.findUserByToken(token, function (err, user) {
             if (err) {

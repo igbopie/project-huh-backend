@@ -4,7 +4,9 @@
 
 var app = angular.module('markStarbucks', [
     'ngRoute',
+    'angularFileUpload',
     'markStarbucksControllers'
+
 ]);
 
 app.config(['$routeProvider',

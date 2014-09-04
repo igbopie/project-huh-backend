@@ -10,22 +10,26 @@
                     <label for="exampleInputPassword1">Price</label>
                     <input type="text" class="form-control" id="exampleInputPassword1" placeholder="Price">
                 </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Background Image</label>
+                    <div style="border:2px dashed gray;width:500px;height:100px;text-align: center;line-height: 100px" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="optional-css-class-name-or-function"
+                         ng-show="dropSupported  && !imgSrc">Drop files here</div>
+
+                    <div ng-file-drop-available="dropSupported=true"
+                         ng-show="!dropSupported && !imgSrc == ''">
+                        <input type="file" ng-file-select="onFileSelect($files)"></div>
+                    <div>
+                        <img ng-src="{{imgSrc}}">
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>
 
 
-            <hr />
-            <form role="form" ng-submit="upload(username,password)">
-                <div class="form-group">
 
-                    <label for="exampleInputFile">Background</label>
-                    <input type="file" id="exampleInputFile">
-                    <p class="help-block">Background here</p>
-                    <button  class="btn btn-sm btn-default">Upload</button>
-                </div>
-            </form>
-            <hr />
         </div>
+
+
     </div>
 </div>

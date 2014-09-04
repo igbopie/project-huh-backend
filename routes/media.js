@@ -101,7 +101,7 @@ exports.get = function(req, res){
                 ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
             } else if (media == null) {
                 ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, null);
-            } else if(media.uploadStatus != MediaVars.UPLOAD_STATUSES_ASSIGNED){
+            } else if(media.uploadStatus != MediaVars.UPLOAD_STATUSES_ASSIGNED && !media.ownerId.equals(user._id)){
                 ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, null, null);
             } else {
                 //Check permissions
