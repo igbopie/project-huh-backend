@@ -25,7 +25,8 @@
     "mongoose-text-search": "0.0.2",
     "time":"",
     "cron": "^1.0.4",
-    "geolib": "^2.0.14"
+    "geolib": "^2.0.14",
+    "bower": "latest"
   },
     "engines": {
         "node": "0.10.x",
