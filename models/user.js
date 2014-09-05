@@ -43,6 +43,7 @@ var userSchema = new Schema({
     username	    : { type: String, required: true, trim: true, index: { unique: true } }
   ,	password	    : { type: String, required: true }
   , email   	    : { type: String, required: true, index: { unique: true }  }
+  , superadmin   	: { type: Boolean, required: true ,default:false}
   , name           : { type: String, required: false}
   , bio           : { type: String, required: false}
   , created		    : { type: Date	, required: true, default: Date.now }

@@ -1,10 +1,12 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema;
+var MediaService = require('../models/media').Service;
+var MediaVars = require('../models/media');
 
 var templateSchema = new Schema({
-    templateId  :   { type: Number, required:true,  default:1,  unique: true},
     name        :   { type: String, required: true},
-    price       :   { type: Number, required:true}
+    price       :   { type: Number, required:true},
+    mediaId     :   { type: Schema.Types.ObjectId, required: true}
 });
 
 
@@ -13,8 +15,25 @@ var Template = mongoose.model('Template', templateSchema);
 
 var service = {};
 
+service.create = function (name,price,mediaId,callback){
+    var template = new Template();
+    template.name = name;
+    template.price = price;
+    template.mediaId = mediaId;
+    template.save(function(err){
+        if(err) return callback(err,null);
+        MediaService.assign(template.mediaId,[],MediaVars.VISIBILITY_PUBLIC,template._id,"Template#mediaId",function(err){
+            if(err){
+                callback(err,null);
+            } else {
+                callback(null,template);
+            }
+        });
+    });
+}
+
 service.findById = function (id,callback){
-    Template.findOne({templateId:id},function(err,doc){
+    Template.findOne({_id:id},function(err,doc){
        callback(err,doc);
     });
 }
@@ -33,7 +52,7 @@ module.exports = {
     Service:service
 };
 
-
+/*
 
 //check init templates
 function checkTemplates(){
@@ -65,3 +84,5 @@ function checkTemplate(templateData){
     });
 }
 checkTemplates();
+
+*/

@@ -119,7 +119,9 @@ app.post('/api/item/unfavourite',item.unfavourite);
 app.post('/api/item/favourite/list',item.listFavourites);
 app.post('/api/item/find/by/senttome',item.listSentToMe);
 app.post('/api/item/find/by/sentbyme',item.listSentByMe);
+
 app.post('/api/template',template.listTemplates);
+app.post('/api/template/create',template.create);
 
 app.post('/api/alias/search',alias.search);
 
