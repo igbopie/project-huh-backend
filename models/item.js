@@ -130,6 +130,9 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
     if(templateId){
         item.templateId = templateId;
     }
+    if(mapIconId){
+        item.mapIconId = mapIconId;
+    }
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = longitude;
     locationArray[LOCATION_LATITUDE] = latitude;
