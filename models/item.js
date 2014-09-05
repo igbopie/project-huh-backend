@@ -54,6 +54,7 @@ var itemSchema = new Schema({
     //STATS
     viewCount :   { type: Number, required:true, default:0},
     favouriteCount :   { type: Number, required:true, default:0},
+    commentCount :   { type: Number, required:true, default:0},
     //
     renderParameters   :   { type: String, required: false}
     //
@@ -528,6 +529,7 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.to = item.to;
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
+    publicItem.commentCount = item.commentCount;
 
 
     if(longitude && latitude){
@@ -551,7 +553,10 @@ service.addComment = function(itemId,comment,userId,callback) {
 
                 Item.update(
                     {_id: item},
-                    {$push: {comments: {userId:userId,data:Date.now(),comment:comment}}},
+                    {
+                        $push: {comments: {userId:userId,data:Date.now(),comment:comment}},
+                        $inc: {commentCount:1}
+                    },
                     function (err) {
                         callback(err);
                     });
