@@ -449,21 +449,21 @@ function transformGeoNearResults(results,longitude,latitude,userId,transformCall
 }
 
 
-service.listSentToMe = function(userId,callback){
+service.listSentToMe = function(userId,longitude,latitude,callback){
     finishItemQuery(
            Item.find({to:userId})
                .sort({created:-1}
            )
-        ,null,null,userId,callback);
+        ,longitude,latitude,userId,callback);
 
 }
 
-service.listSentByMe = function(userId,callback){
+service.listSentByMe = function(userId,longitude,latitude,callback){
     finishItemQuery(
         Item.find({userId:userId})
             .sort({created:-1}
         )
-        ,null,null,userId,callback);
+        ,longitude,latitude,userId,callback);
 }
 
 function inRange(item,longitude,latitude){

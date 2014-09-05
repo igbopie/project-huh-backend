@@ -94,7 +94,9 @@ exports.addComment = function(req,res){
 
 exports.listSentToMe = function(req,res){
     ApiUtils.auth(req,res,function(user) {
-        ItemService.listSentToMe(user._id,function(err,data){
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listSentToMe(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -106,7 +108,9 @@ exports.listSentToMe = function(req,res){
 
 exports.listSentByMe = function(req,res){
     ApiUtils.auth(req,res,function(user) {
-        ItemService.listSentByMe(user._id,function(err,data){
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listSentByMe(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
