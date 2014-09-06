@@ -4,9 +4,9 @@
 
 var app = angular.module('markStarbucks', [
     'ngRoute',
+    'ngCookies',
     'angularFileUpload',
     'markStarbucksControllers'
-
 ]);
 
 app.config(['$routeProvider',
@@ -29,10 +29,11 @@ app.config(['$routeProvider',
             });
     }]);
 
-app.factory( 'AuthService', ['$http',function($http) {
-    var username;
-    var userId;
-    var token;
+app.factory( 'AuthService', ['$http','$cookieStore',function($http,$cookieStore) {
+
+    var username = $cookieStore.get('username');
+    var userId =  $cookieStore.get('userId');
+    var token = $cookieStore.get('token');
     var loginNotification;
 
     return {
@@ -42,6 +43,11 @@ app.factory( 'AuthService', ['$http',function($http) {
                     username = uname;
                     userId = data.response.userId;
                     token = data.response.token;
+
+                    $cookieStore.put('username',username);
+                    $cookieStore.put('userId',userId);
+                    $cookieStore.put('token',token);
+
                     callback(true);
                     if(loginNotification){
                         loginNotification();
@@ -54,7 +60,20 @@ app.factory( 'AuthService', ['$http',function($http) {
             });
         },
         logout: function() {
-            //todo
+
+            $cookieStore.remove('username');
+            $cookieStore.remove('userId');
+            $cookieStore.remove('token');
+
+            username = null;
+            userId = null;
+            token = null;
+
+            //TODO server invalidate
+
+            if(loginNotification){
+                loginNotification();
+            }
         },
         isLoggedIn: function() {
             //return false;

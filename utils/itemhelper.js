@@ -5,23 +5,49 @@ var MediaService = require('../models/media.js').Service;
 var TemplateService = require('../models/template.js').Service;
 var temp = require('temp').track();
 
-//TODO
+exports.generatePreviewTemplateImage = function(template,userId,callback){
+    MediaService.findById(template.mediaId,function(err,media){
+        if(err) return callback(err);
+
+        MediaService.get(media,"large",function(err,media){
+            if(err) return callback(err);
+
+            var image = imageMagick(media.tempPath);
+            image = obscureImage(image);
+
+            var templateTeaserMediaTempPath = temp.path() + ".jpg";
+            image.write(templateTeaserMediaTempPath, function (err) {
+                if(err) return callback(err);
+
+                MediaService.create(templateTeaserMediaTempPath, "templateTeaserMedia", "image/jpg", userId, function (err, mId) {
+                    if(err) return callback(err);
+
+                    template.teaserMediaId = mId;
+                    callback(null,template);
+                });
+            });
+        });
+    });
+}
+
 exports.generatePreviewImage = function(item,callback){
-
-
     if(item.mediaId){
         MediaService.findById(item.mediaId,function(err,media){
+            if(err) return callback(err);
+
             MediaService.get(media,"large",function(err,media){
+                if(err) return callback(err);
+
                 var image = imageMagick(media.tempPath);
-                image = image.resize(25,25);
-                image = image.scale(1080,1080);
+                image = obscureImage(image);
 
                 var teaserMediaTempPath = temp.path() + ".jpg";
                 image.write(teaserMediaTempPath, function (err) {
-                    //TODO if(err) return callback("There was an error processing the image");
+                    if(err) return callback(err);
 
                     MediaService.create(teaserMediaTempPath, "teaserMedia", "image/jpg", item.userId, function (err, mId) {
-                        //TODO err check
+                        if(err) return callback(err);
+
                         item.teaserMediaId = mId;
                         continueTemplateProcess(item, callback);
                     });
@@ -34,10 +60,17 @@ exports.generatePreviewImage = function(item,callback){
 
 }
 
+function obscureImage(image){
+    image = image.resize(25,25);
+    image = image.scale(1080,1080);
+    return image;
+}
+
 function continueTemplateProcess(item,callback) {
     if(item.templateId){
         TemplateService.findById(item.templateId,function(err,template){
-            //TODO err
+            if(err) return callback(err);
+
             item.teaserTemplateMediaId = template.teaserMediaId;
             continueMessageProcess(item,callback);
         });

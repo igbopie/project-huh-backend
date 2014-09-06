@@ -2,11 +2,13 @@ var mongoose = require('mongoose')
     , Schema = mongoose.Schema;
 var MediaService = require('../models/media').Service;
 var MediaVars = require('../models/media');
+var ItemUtils = require('../utils/itemhelper');
 
 var templateSchema = new Schema({
     name        :   { type: String, required: true},
     price       :   { type: Number, required:true},
-    mediaId     :   { type: Schema.Types.ObjectId, required: true}
+    mediaId     :   { type: Schema.Types.ObjectId, required: true},
+    teaserMediaId:   { type: Schema.Types.ObjectId, required: true}
 });
 
 
@@ -15,20 +17,31 @@ var Template = mongoose.model('Template', templateSchema);
 
 var service = {};
 
-service.create = function (name,price,mediaId,callback){
+service.create = function (name,price,mediaId,userId,callback){
     var template = new Template();
     template.name = name;
     template.price = price;
     template.mediaId = mediaId;
-    template.save(function(err){
-        if(err) return callback(err,null);
-        MediaService.assign(template.mediaId,[],MediaVars.VISIBILITY_PUBLIC,template._id,"Template#mediaId",function(err){
-            if(err){
-                callback(err,null);
-            } else {
-                callback(null,template);
-            }
+    ItemUtils.generatePreviewTemplateImage(template,userId,function(err,template){
+        if(err) return callback(err);
+        template.save(function(err){
+            if(err) return callback(err,null);
+            MediaService.assign(template.teaserMediaId,[],MediaVars.VISIBILITY_PUBLIC,template._id,"Template#teaserMediaId",function(err) {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    MediaService.assign(template.mediaId, [], MediaVars.VISIBILITY_PUBLIC, template._id, "Template#mediaId", function (err) {
+                        if (err) {
+                            callback(err, null);
+                        } else {
+                            callback(null, template);
+                        }
+                    });
+                }
+            })
+
         });
+
     });
 }
 

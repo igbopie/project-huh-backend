@@ -201,37 +201,47 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
 }
 
 function createProcess(item,callback){
-    ItemUtils.generatePreviewImage(item,function(item){
-        //console.log(item);
+    ItemUtils.generatePreviewImage(item,function(err,item){
+        if(err) return callback(err);
+
         item.save(function(err){
             if(err){
                 return callback(err);
             }
 
-            MediaService.assign(item.previewMediaId,[],MediaVars.VISIBILITY_PUBLIC,item._id,"Item#previewMediaId",function(err) {
-                if(err) console.error(err);
-                if (item.mediaId) {
-                    var visibility = MediaVars.VISIBILITY_PRIVATE;
-                    if (item.visibility == VISIBILITY_PUBLIC) {
-                        visibility = MediaVars.VISIBILITY_PUBLIC;
-                    }
-                    MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
-                        if (err) {
-                            //TODO remove item
-                            callback(err);
-                        } else {
-                            callback(null, item);
-                            createBackground(item);
-                        }
-                    });
-                } else {
-                    callback(null, item);
-                    createBackground(item);
-                }
-            });
+            if(item.teaserMediaId){
+                MediaService.assign(item.teaserMediaId,[],MediaVars.VISIBILITY_PUBLIC,item._id,"Item#teaserMediaId",function(err) {
+                    if(err) console.error(err);
+
+                    createProcess2(item);
+                });
+            }else{
+                createProcess2(item);
+            }
         })
     });
 }
+function createProcess2(item){
+    if (item.mediaId) {
+        var visibility = MediaVars.VISIBILITY_PRIVATE;
+        if (item.visibility == VISIBILITY_PUBLIC) {
+            visibility = MediaVars.VISIBILITY_PUBLIC;
+        }
+        MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
+            if (err) {
+                //TODO remove item
+                callback(err);
+            } else {
+                callback(null, item);
+                createBackground(item);
+            }
+        });
+    } else {
+        callback(null, item);
+        createBackground(item);
+    }
+}
+
 
 function createBackground(item){
 

@@ -14,7 +14,7 @@ exports.create = function(req, res){
         var name = req.body.name;
         var price = req.body.price;
         if(user.superadmin) {
-            TemplateService.create(name,price,mediaId,function (err, template) {
+            TemplateService.create(name,price,mediaId,user._id,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {

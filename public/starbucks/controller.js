@@ -35,6 +35,12 @@ markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"Tem
                         template.mediaURL = mediaURL;
                     })
                 })($scope.templates[i]);
+
+                (function(template) {
+                    MediaService.getMedia(template.teaserMediaId, "thumb", function (mediaURL) {
+                        template.teaserMediaURL = mediaURL;
+                    })
+                })($scope.templates[i]);
             }
         });
     }]);
@@ -65,15 +71,32 @@ markStarbucksControllers.controller('CreateTemplateCtrl',[ '$scope',"MediaServic
 }]);
 
 
-markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthService",
-    function($scope, $routeParams,AuthService) {
+markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthService","$location",
+    function($scope, $routeParams,AuthService,$location) {
 
         $scope.isLoggedIn = AuthService.isLoggedIn();
         $scope.username = AuthService.getUsername();
+
+        if(!$scope.isLoggedIn && $location.path() != "/login" ){
+            $location.path('login');
+        }
+        $scope.$on('$routeChangeSuccess', function () {
+            if(!$scope.isLoggedIn && $location.path() != "/login" ){
+                $location.path('login');
+            }
+        })
+
+
+
         AuthService.setLoginNotification(function(){
             $scope.isLoggedIn = AuthService.isLoggedIn();
             $scope.username = AuthService.getUsername();
         })
+
+        $scope.logout = function(){
+            AuthService.logout();
+            $location.path('login');
+        }
 
     }]);
 

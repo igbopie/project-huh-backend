@@ -6,12 +6,15 @@
     <script src="libs/danialfarid-angular-file-upload/dist/angular-file-upload-shim.min.js"></script>
     <script src="libs/angular/angular.min.js"></script>
     <script src="libs/angular-route/angular-route.min.js"></script>
+    <script src="libs/angular-cookies/angular-cookies.min.js"></script>
     <script src="libs/danialfarid-angular-file-upload/dist/angular-file-upload.min.js"></script>
     <script src="app.js"></script>
     <script src="controller.js"></script>
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="libs/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/css/font-awesome.min.css">
+    <link href='http://fonts.googleapis.com/css?family=Patrick+Hand+SC' rel='stylesheet' type='text/css'>
 </head>
 <body>
 <nav class="navbar navbar-default" role="navigation"  ng-controller="NavCtrl" >
@@ -22,24 +25,34 @@
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <a class="navbar-brand" href="#">Mark <i>starbucks</i></a>
+            <a class="navbar-brand" href="#"><i class="fa fa-cog"></i> <span style="font-family: 'Patrick Hand SC', cursive;">Starbucks</span> <small><i>by Mark</i></small></a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-                <li class=""><a href="#/templates">Templates</a></li>
-                <li class=""><a href="#/icons">Map Icons</a></li>
-                <li class=""><a href="#/reports">Reported Marks</a></li>
+
+            <ul class="nav navbar-nav" ng-show="isLoggedIn">
+                <li class=""><a href="#/templates"><i class="fa fa-file-image-o"></i> Templates</a></li>
+                <li class=""><a href="#/icons"><i class="fa fa-map-marker"></i> Map Icons</a></li>
+                <li class=""><a href="#/reports"><i class="fa fa-exclamation-triangle"></i> Reported Marks</a></li>
             </ul>
 
             <form class="navbar-form navbar-right">
 
-                <div ng-show="isLoggedIn">
-                    <div class="btn btn-primary">{{username}}</div>
+
+                <div ng-show="isLoggedIn" class="btn btn-primary" style="position: relative;" >
+                    <div class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> {{username}} <span class="caret"></span>
+                    </div>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a ng-click="logout()"><i class="fa fa-sign-out"></i> Logout</a></li>
+                    </ul>
+
+
                 </div>
                 <div ng-hide="isLoggedIn">
-                    <div ><a href="#/login" class="btn btn-primary" >Login</a></div>
+                    <a href="#/login" class="btn btn-primary" ><i class="fa fa-sign-in"></i> Login</a>
                 </div>
+
             </form>
 
        </div>
@@ -48,7 +61,17 @@
 </nav>
 
     <div ng-view></div>
+    <br /><br /><br />
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
 
+                <hr />
+                Mark&copy; 2014
+            </div>
+        </div>
+
+    </div>
 
 
 
