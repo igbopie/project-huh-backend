@@ -40,7 +40,9 @@ var itemSchema = new Schema({
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     //--
     // A pre rendered image of the message
-    previewMediaId:   { type: Schema.Types.ObjectId, required: false},
+    teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
+    teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
+    teaserMessage:   { type: String, required: false},
     mapIconId   :   { type: String, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     radius      :   { type: Number, required:true},
@@ -420,16 +422,22 @@ function transformGeoNearResults(results,longitude,latitude,userId,transformCall
     Utils.map(
         results,
         //Map Function
-        function(x,mapCallback){
-            var a = fillItem( x.obj,userId ,longitude,latitude);
-            a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
-            service.allowedToSeeContent(a._id,longitude,latitude,userId,function(err,canView){
+        function(geoResultItem,mapCallback){
+            var transformedItem = fillItem( geoResultItem.obj,userId ,longitude,latitude);
+            transformedItem.distance = geoResultItem.dis * AVERAGE_EARTH_RADIUS;//meters
+            service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
                 if(err){
                     console.err(err);
                 } else{
-                    a.canView = canView;
+                    if(canView){
+                        transformedItem.message = geoResultItem.obj.message;
+                        transformedItem.templateId = geoResultItem.obj.templateId;
+                        transformedItem.mediaId = geoResultItem.obj.mediaId,
+                        transformedItem.renderParameters = geoResultItem.obj.renderParameters;
+                    }
+                    transformedItem.canView = canView;
                 }
-                mapCallback(a);
+                mapCallback(transformedItem);
             });
         }
         ,
@@ -518,7 +526,6 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.radius = item.radius;
     publicItem.user = item.userId;
     publicItem.created = item.created;
-    publicItem.openedDate = item.openedDate;
     publicItem.locationAddress = item.locationAddress;
     publicItem.locationName = item.locationName;
     publicItem.aliasName = item.aliasName;
