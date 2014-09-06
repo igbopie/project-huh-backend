@@ -121,7 +121,10 @@ app.post('/api/item/find/by/senttome',item.listSentToMe);
 app.post('/api/item/find/by/sentbyme',item.listSentByMe);
 
 app.post('/api/template',template.listTemplates);
+app.post('/api/template/update',template.update);
+app.post('/api/template/view',template.findById);
 app.post('/api/template/create',template.create);
+app.post('/api/template/remove',template.removeById);
 
 app.post('/api/alias/search',alias.search);
 

@@ -8,6 +8,7 @@ var temp = require('temp').track();
 exports.generatePreviewTemplateImage = function(template,userId,callback){
     MediaService.findById(template.mediaId,function(err,media){
         if(err) return callback(err);
+        if(!media) return callback("could not find media");
 
         MediaService.get(media,"large",function(err,media){
             if(err) return callback(err);

@@ -9,6 +9,21 @@ var app = angular.module('markStarbucks', [
     'markStarbucksControllers'
 ]);
 
+app.directive('ngConfirmClick', [
+    function(){
+        return {
+            link: function (scope, element, attr) {
+                var msg = attr.ngConfirmClick || "Are you sure?";
+                var clickAction = attr.ngConfirmedClick;
+                element.bind('click',function (event) {
+                    if ( window.confirm(msg) ) {
+                        scope.$eval(clickAction)
+                    }
+                });
+            }
+        };
+    }])
+
 app.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider.
@@ -24,8 +39,12 @@ app.config(['$routeProvider',
                 templateUrl: 'partials/templates-create.html',
                 controller: 'CreateTemplateCtrl'
             }).
+            when('/templates/edit/:id', {
+                templateUrl: 'partials/templates-create.html',
+                controller: 'EditTemplateCtrl'
+            }).
             otherwise({
-                redirectTo: '/login'
+                redirectTo: '/templates'
             });
     }]);
 
@@ -101,6 +120,30 @@ app.service('TemplateService', ['$http','AuthService', function ($http,AuthServi
         });
     };
 
+    this.getTemplate = function (id,callback) {
+        $http.post(urlBase+'/view',{id:id,token:AuthService.getToken()}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    };
+
+    this.updateTemplate = function (id,name,price,mediaId,callback) {
+        $http.post(urlBase+'/update',{id:id,name:name,price:price,mediaId:mediaId,token:AuthService.getToken()}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    };
+
     this.createTemplate = function(name,price,mediaId,callback){
         $http.post(urlBase+"/create",{token:AuthService.getToken(),name:name,price:price,mediaId:mediaId}).success(function(data) {
             if(data.response){
@@ -111,9 +154,18 @@ app.service('TemplateService', ['$http','AuthService', function ($http,AuthServi
         }).error(function (error) {
             callback(error);
         });
-
     }
-
+    this.removeTemplate = function(id,callback){
+        $http.post(urlBase+"/remove",{token:AuthService.getToken(),id:id}).success(function(data) {
+            if(data.code == 200){
+                callback(null);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    }
 }]);
 
 app.service('MediaService', ['$http','$upload','AuthService', function ($http,$upload,AuthService) {
