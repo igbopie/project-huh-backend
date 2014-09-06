@@ -25,6 +25,7 @@ markStarbucksControllers.controller('LoginCtrl', ['$scope', '$http',"$location",
 
 markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"TemplateService","MediaService",
     function($scope, $routeParams,TemplateService,MediaService) {
+        $scope.loading = true;
         TemplateService.getTemplates(function(err,data){
 
             $scope.templates = data;
@@ -42,11 +43,14 @@ markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"Tem
                     })
                 })($scope.templates[i]);
             }
+            $scope.loading = false;
         });
     }]);
 
 markStarbucksControllers.controller('CreateTemplateCtrl',[ '$scope',"MediaService","TemplateService","$location", function($scope,MediaService,TemplateService,$location) {
+    $scope.loading = false;
     $scope.onFileSelect = function($files) {
+        $scope.loading = true;
         MediaService.createMedia(
             $files,
             function(progress){
@@ -56,14 +60,17 @@ markStarbucksControllers.controller('CreateTemplateCtrl',[ '$scope',"MediaServic
                 $scope.mediaId = mediaId;
                 MediaService.getMedia(mediaId,"thumb",function(url){
                     $scope.imgSrc = url;
+                    $scope.loading = false;
                 });
 
             }
         );
     };
     $scope.createTemplate = function(name,price,mediaId){
+        $scope.loading = true;
         TemplateService.createTemplate(name,price,mediaId,function(err,templateId){
             if(!err){
+                $scope.loading = false;
                 $location.path('templates');
             }
         });

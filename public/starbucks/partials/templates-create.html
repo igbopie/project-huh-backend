@@ -14,13 +14,16 @@
                     <label for="mediaId">Background Image</label>
                     <input type="hidden" name="mediaId" id="mediaId" ng-model="mediaId" />
                     <div style="border:2px dashed gray;width:500px;height:100px;text-align: center;line-height: 100px" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="optional-css-class-name-or-function"
-                         ng-show="dropSupported  && !imgSrc">Drop files here</div>
+                         ng-show="dropSupported  && !imgSrc && !loading">Drop files here</div>
 
                     <div ng-file-drop-available="dropSupported=true"
-                         ng-show="!dropSupported && !imgSrc == ''">
+                         ng-show="!dropSupported && !imgSrc == '' && !loading">
                         <input type="file" ng-file-select="onFileSelect($files)"></div>
                     <div>
                         <img ng-src="{{imgSrc}}">
+                    </div>
+                    <div ng-show="loading" style="text-align: center">
+                        <i class="fa fa-refresh fa-spin fa-2x"></i>
                     </div>
                 </div>
 
