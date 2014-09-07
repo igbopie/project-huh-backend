@@ -331,12 +331,22 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     pItem.comments = item.comments.map(function(comment){
                         return {comment:comment.comment,date:comment.date,user:comment.userId};
                     });
+                    pItem.canView = true;
                     pItem.favourited = (fav?true:false);
 
                     callback(null,pItem);
                 })
             }else{
-                callback(null,fillItem(item,userId));
+                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
+                    if(err) return callback(err);
+
+                    var pItem = fillItem(item,userId);
+                    pItem.canView = false;
+                    pItem.favourited = (fav?true:false);
+
+                    callback(null,pItem);
+                })
+
             }
         });
     })
