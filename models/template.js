@@ -107,10 +107,9 @@ service.findTemplates = function(callback){
         });
 }
 
-
 module.exports = {
     Template: Template,
-    Service:service
+    Service: service
 };
 
 /*

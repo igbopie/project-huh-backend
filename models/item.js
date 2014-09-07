@@ -36,7 +36,8 @@ var itemSchema = new Schema({
     created     :   { type: Date	, required: true, default: Date.now },
     //++ Private fields (not viewed)
     message     :   { type: String, required: false},
-    templateId  :   { type: String, required: false},
+    templateId  :   { type: Schema.Types.ObjectId, required: false},
+    templateMediaId:   { type: Schema.Types.ObjectId, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     //--
     // A pre rendered image of the message
@@ -213,15 +214,15 @@ function createProcess(item,callback){
                 MediaService.assign(item.teaserMediaId,[],MediaVars.VISIBILITY_PUBLIC,item._id,"Item#teaserMediaId",function(err) {
                     if(err) console.error(err);
 
-                    createProcess2(item);
+                    createProcess2(item,callback);
                 });
             }else{
-                createProcess2(item);
+                createProcess2(item,callback);
             }
         })
     });
 }
-function createProcess2(item){
+function createProcess2(item,callback){
     if (item.mediaId) {
         var visibility = MediaVars.VISIBILITY_PRIVATE;
         if (item.visibility == VISIBILITY_PUBLIC) {
@@ -324,6 +325,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     var pItem = fillItem(item,userId);
                     pItem.message = item.message;
                     pItem.templateId = item.templateId;
+                    pItem.templateMediaId = item.templateMediaId;
                     pItem.mediaId = item.mediaId,
                     pItem.renderParameters = item.renderParameters;
                     pItem.comments = item.comments.map(function(comment){
@@ -447,7 +449,13 @@ function transformGeoNearResults(results,longitude,latitude,userId,transformCall
                     }
                     transformedItem.canView = canView;
                 }
-                mapCallback(transformedItem);
+                FavouriteItem.findOne({userId:userId,itemId:geoResultItem.obj._id},function(err,fav){
+                    if(err) console.err(err);
+
+                    transformedItem.favourited = (fav?true:false);
+
+                    mapCallback(transformedItem);
+                });
             });
         }
         ,
@@ -519,12 +527,39 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
                     return callback("Not permitted");
                 }
             }else{
-                //Collection
-                item = item.map(function(x) {
-                    var a = fillItem(x, userId,longitude,latitude);
-                    return a;
-                });
-                callback(null, item);
+                Utils.map(
+                    item,
+                    //Map Function
+                    function(dbItem,mapCallback){
+
+                        var transformedItem = fillItem(dbItem,userId ,longitude,latitude);
+                        service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+                            if(err){
+                                console.err(err);
+                            } else{
+                                if(canView){
+                                    transformedItem.message = dbItem.message;
+                                    transformedItem.templateId = dbItem.templateId;
+                                    transformedItem.mediaId = dbItem.mediaId,
+                                    transformedItem.renderParameters = dbItem.renderParameters;
+                                }
+                                transformedItem.canView = canView;
+                            }
+                            FavouriteItem.findOne({userId:userId,itemId:dbItem._id},function(err,fav){
+                                if(err) console.err(err);
+
+                                transformedItem.favourited = (fav?true:false);
+
+                                mapCallback(transformedItem);
+                            });
+                        });
+                    }
+                    ,
+                    //Callback
+                    function(results){
+                        callback(null, results);
+                    }
+                )
             }
 
         });
@@ -542,11 +577,16 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.aliasId = item.aliasId;
     publicItem.templateId = item.templateId;
     publicItem.mapIconId = item.mapIconId;
-    publicItem.previewMediaId = item.previewMediaId;
     publicItem.to = item.to;
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
     publicItem.commentCount = item.commentCount;
+
+
+    publicItem.teaserMediaId = item.teaserMediaId;
+    publicItem.teaserMessage = item.teaserMessage;
+    publicItem.teaserTemplateMediaId = item.teaserTemplateMediaId;
+    publicItem.renderParameters = item.renderParameters;
 
 
     if(longitude && latitude){

@@ -1,9 +1,10 @@
 
 var gm = require('gm')
-var imageMagick = gm.subClass({ imageMagick: true })
+var imageMagick = gm.subClass({ imageMagick: true });
 var MediaService = require('../models/media.js').Service;
-var TemplateService = require('../models/template.js').Service;
 var temp = require('temp').track();
+
+
 
 exports.generatePreviewTemplateImage = function(template,userId,callback){
     MediaService.findById(template.mediaId,function(err,media){
@@ -69,9 +70,12 @@ function obscureImage(image){
 
 function continueTemplateProcess(item,callback) {
     if(item.templateId){
+        //WOOT I had to this here....
+        var TemplateService = require('../models/template.js').Service;
         TemplateService.findById(item.templateId,function(err,template){
             if(err) return callback(err);
 
+            item.templateMediaId = template.mediaId;
             item.teaserTemplateMediaId = template.teaserMediaId;
             continueMessageProcess(item,callback);
         });
@@ -99,6 +103,6 @@ function continueMessageProcess(item,callback) {
         item.teaserMessage = tempString;
     }
 
-    callback(item);
+    callback(null,item);
 
 }

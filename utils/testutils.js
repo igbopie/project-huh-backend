@@ -138,6 +138,27 @@ function loginUsersAux(array,i,callback){
 	}
 
 }
+exports.makeSuperAdmin = function(user,callback){
+    var db = mongoose.createConnection();
+    db.open('mongodb://localhost/seem',function(err) {
+        if(err) return callback(err);
+        db.collection('users').update({_id: mongoose.Types.ObjectId(user.id)},{$set: {superadmin:true}},function(err){
+            if(err){
+                callback(err);
+            }else{
+                db.close(function(err){
+                    if(err) {
+                        console.log(err);
+                        callback(err);
+                        return;
+                    }
+                    callback(null);
+                });
+            }
+
+        });
+    });
+}
 
 exports.createUsers = function(array,callback){
 	var i = 0;
