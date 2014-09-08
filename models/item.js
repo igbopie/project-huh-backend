@@ -616,7 +616,7 @@ service.addComment = function(itemId,comment,userId,callback) {
 
             service.allowedToSeeContent(itemId,null,null,userId,function(err,canView){
                 if (err) return callback(err);
-                if (!canView) return callback("Not allowed");
+                if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not allowed to post comment"));
 
                 Item.update(
                     {_id: item},

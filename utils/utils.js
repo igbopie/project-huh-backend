@@ -109,6 +109,17 @@ utils.map = function(array,mapFunction,callback) {
         }
     }
 }
+//ERROR HANDLING
+function MarkError(code,message){
+    this.code = code;
+    this.message = message;
+}
+utils.MarkError = MarkError;
+utils.error = function(code,message){
+    return new MarkError(code,message);
+}
+
+utils.ERROR_CODE_UNAUTHORIZED = 400100;
 
 // export the class
 module.exports =  utils;

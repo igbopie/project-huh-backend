@@ -258,6 +258,25 @@ describe('Item', function(){
         });
     });
 
+    describe('#addCommentUnAuth()', function(){
+        it('should add a comment',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,1, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, itemId) {
+                if (err) return done(err);
+                Item.addComment(itemId,"Hello comment", users[1].token, function (err,code) {
+                    if (err && code == 401) return done();
+                    done("Should return 401 error");
+
+                });
+            });
+        });
+    });
+
+
 
 
 

@@ -1,5 +1,6 @@
 var ItemService = require('../models/item').Service;
 var ApiUtils = require('../utils/apiutils');
+var Utils = require('../utils/utils');
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
@@ -82,7 +83,9 @@ exports.addComment = function(req,res){
         var itemId = req.body.itemId;
         var comment = req.body.comment;
         ItemService.addComment(itemId,comment,user._id,function(err){
-            if(err){
+            if(err && err instanceof Utils.MarkError && err.code == Utils.ERROR_CODE_UNAUTHORIZED){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            } else if (err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,null);
