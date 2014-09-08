@@ -79,6 +79,11 @@ markStarbucksControllers.controller('CreateTemplateCtrl',[ '$scope',"MediaServic
             }
         );
     };
+    $scope.removeImage = function(){
+        $scope.mediaId = undefined;
+        $scope.imgSrc = undefined;
+    }
+
     $scope.save = function(name,price,mediaId){
         $scope.loading = true;
         TemplateService.createTemplate(name,price,mediaId,function(err,templateId){
@@ -106,6 +111,12 @@ markStarbucksControllers.controller('EditTemplateCtrl',[ '$scope',"MediaService"
         });
 
     });
+
+    $scope.removeImage = function(){
+        $scope.mediaId = undefined;
+        $scope.imgSrc = undefined;
+
+    }
 
     $scope.onFileSelect = function($files) {
         $scope.loading = true;
@@ -136,8 +147,12 @@ markStarbucksControllers.controller('EditTemplateCtrl',[ '$scope',"MediaService"
 }]);
 
 
-markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthService","$location",
-    function($scope, $routeParams,AuthService,$location) {
+markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthService","$location","$window",
+    function($scope, $routeParams,AuthService,$location,$window) {
+
+        if ($location.protocol() != 'https' && location.hostname != "localhost") {
+            $window.location.href = $location.absUrl().replace('http', 'https');
+        }
 
         $scope.isLoggedIn = AuthService.isLoggedIn();
         $scope.username = AuthService.getUsername();

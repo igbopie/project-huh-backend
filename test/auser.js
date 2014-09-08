@@ -12,11 +12,32 @@ describe('User', function(){
         TestUtils.cleanDatabase(done);
     });
 
+    describe('#createSuperadmin()', function(){
+        it('should create a user',function (done) {
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    TestUtils.makeSuperAdmin(users[0],function(err){
+                        if (err) return done(err);
+
+                        console.log(users[0]);
+                        done();
+                    })
+                });
+            });
+
+        });
+    });
+
     describe('#create()', function(){
         it('should create a user',function (done) {
 	        User.create("igbopie@gmail.com","igbopie","123456",function(err){
                 if (err) return done(err);
+
                 done();
+
             });
 	    });
     });
