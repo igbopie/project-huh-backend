@@ -739,28 +739,48 @@ service.unfavourite = function(itemId,userId,callback){
 
 }
 
-service.listFavourites = function(userId,callback){
+service.listFavourites = function(longitude,latitude,userId,callback){
 
     FavouriteItem.find({userId:userId})
         .populate("itemId")
         .exec(function(err,favs){
             if(err) return callback(err);
 
-            favs = favs.map(function(favI){
-                if(err) return callback(err);
+            Utils.map(
+                favs,
+                //Map Function
+                function(dbFavItem,mapCallback){
 
-                return fillItem(favI.itemId);
-            });
-
-            // populating user object
-            Item.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
-                if (err) return callback(err);
-                Item.populate( favs, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
-                    if (err) return callback(err);
-                    callback(null,favs);
-                });
-            });
-
+                    var transformedItem = fillItem(dbFavItem.itemId,userId ,longitude,latitude);
+                    service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+                        if(err){
+                            console.err(err);
+                        } else{
+                            if(canView){
+                                transformedItem.message = dbFavItem.itemId.message;
+                                transformedItem.templateId = dbFavItem.itemId.templateId;
+                                transformedItem.mediaId = dbFavItem.itemId.mediaId,
+                                    transformedItem.renderParameters = dbFavItem.itemId.renderParameters;
+                            }
+                            transformedItem.canView = canView;
+                        }
+                        transformedItem.favourited = true;
+                        mapCallback(transformedItem);
+                    });
+                }
+                ,
+                //Callback
+                function(favs){
+                    // populating user object
+                    Item.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                        if (err) return callback(err);
+                        Item.populate( favs, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                            if (err) return callback(err);
+                            callback(null,favs);
+                        });
+                    });
+                }
+            )
 
     });
 

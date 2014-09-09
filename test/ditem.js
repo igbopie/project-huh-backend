@@ -545,7 +545,6 @@ describe('Item', function(){
 
                     Item.listFavourite(users[0].token,function(err,results){
                         if (err) return done(err);
-
                         //console.log(results);
                         results.length.should.be.equal(1);
 

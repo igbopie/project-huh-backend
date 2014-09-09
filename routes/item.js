@@ -152,7 +152,9 @@ exports.unfavourite = function(req,res){
 
 exports.listFavourites = function(req,res){
     ApiUtils.auth(req,res,function(user) {
-        ItemService.listFavourites(user._id,function(err,data){
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listFavourites(longitude,latitude,user._id,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
