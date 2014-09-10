@@ -6,7 +6,12 @@ block content
       div.col-xs-12.col-md-4.col-md-offset-4
         img.mark-teaser-logo(src="/images/marklogo.png")
         div.mark-teaser
-            img.seem-item(src="/api/media/get/thumb/#{item.teaserMediaId}")
+            if item.userId.teaserMediaId
+                img.seem-item(src="/api/media/get/thumb/#{item.teaserMediaId}")
+            else if
+                img.seem-item(src="/api/media/get/thumb/#{item.teaserTemplateMediaId}")
+            else
+                img.seem-item
             div.mark-teaser-text.redacted #{item.teaserMessage}
         div.seem-item-caption
           div.username.pull-left
