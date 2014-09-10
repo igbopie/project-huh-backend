@@ -18,10 +18,13 @@
   ],
   "dependencies": {
     "bootstrap": "~3.2.0",
-    "angular": "~1.2.23",
-    "angular-route": "~1.2.23",
-    "angular-cookies": "~1.2.23",
+    "angular": "~1.2.24",
+    "angular-route": "~1.2.24",
+    "angular-cookies": "~1.2.24",
     "danialfarid-angular-file-upload": "~1.6.5",
     "fontawesome": "~4.2.0"
+  },
+  "resolutions": {
+    "angular": "1.2.24"
   }
 }
