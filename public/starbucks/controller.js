@@ -160,11 +160,17 @@ markStarbucksControllers.controller('NavCtrl', ['$scope', '$routeParams',"AuthSe
         if(!$scope.isLoggedIn && $location.path() != "/login" ){
             $location.path('login');
         }
+        if($scope.isLoggedIn && $location.path() == "/login" ){
+            $location.path('templates');
+        }
         $scope.location =  $location.path();
 
         $scope.$on('$routeChangeSuccess', function () {
             if(!$scope.isLoggedIn && $location.path() != "/login" ){
                 $location.path('login');
+            }
+            if($scope.isLoggedIn && $location.path() == "/login" ){
+                $location.path('templates');
             }
             $scope.location =  $location.path();
         })
