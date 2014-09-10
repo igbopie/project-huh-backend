@@ -126,6 +126,7 @@ function loginUsersAux(array,i,callback){
 		
 			if(err) return callback(err);
 
+            //console.log(object);
 		    user.err = err;
 		    user.token = object.token;
 		    user.id = object.userId;

@@ -68,7 +68,18 @@ exports.login = function(req, res) {
 	        			if (err){ 
 							ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
 						}else{
-							ApiUtils.api(req,res,ApiUtils.OK,null,{token:token,userId:doc._id});
+							ApiUtils.api(req,res,ApiUtils.OK,null,
+                                {
+                                    token:token,
+                                    userId:doc._id,
+                                    user:{
+                                        _id:doc._id,
+                                        username:doc.username,
+                                        mediaId:doc.mediaId,
+                                        bio:doc.bio,
+                                        name:doc.name
+                                    }
+                                });
 						}
 	        		});
 				}
