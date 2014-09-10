@@ -555,4 +555,23 @@ describe('Item', function(){
             });
         });
     });
+
+
+    describe('#createWithImageTwoSteps()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create( "I am here in starbucks",null,1, null, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err,itemId) {
+                if (err) return done(err);
+                Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
+                    if(err) return done(err);
+                    Item.addMedia(mediaId,itemId,users[0].token,function(err){
+                        if(err) return done(err);
+                        done()
+                    });
+                });
+            });
+
+
+        });
+    });
 });

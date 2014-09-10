@@ -20,6 +20,9 @@ var mongoose = require('mongoose')
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
+    , STATUS = [STATUS_PENDING,STATUS_OK]
+    , STATUS_PENDING = 0
+    , STATUS_OK = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
 ;
 
@@ -52,6 +55,7 @@ var itemSchema = new Schema({
     aliasName   :   { type: String, required: false},
     aliasId     :   { type: Schema.Types.ObjectId, required: false, ref:"Alias"},
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
+    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
     //STATS
@@ -65,12 +69,12 @@ var itemSchema = new Schema({
 
 });
 
-itemSchema.index({userId:1});
-itemSchema.index({userId:1,visibility:1});
-itemSchema.index({visibility:1});
+itemSchema.index({userId:1,status:1});
+itemSchema.index({userId:1,visibility:1,status:1});
+itemSchema.index({visibility:1,status:1});
 itemSchema.index({created:-1});
 itemSchema.index({radius:-1});
-itemSchema.index({to:1});
+itemSchema.index({to:1,status:1});
 
 var Item = mongoose.model('Item', itemSchema);
 ///------------------------
@@ -205,6 +209,10 @@ function createProcess(item,callback){
     ItemUtils.generatePreviewImage(item,function(err,item){
         if(err) return callback(err);
 
+        if(item.mediaId || item.templateMediaId ){
+            item.status = STATUS_OK;
+        }
+
         item.save(function(err){
             if(err){
                 return callback(err);
@@ -248,7 +256,7 @@ function createBackground(item){
 
     //We return to the user but we keep working on the "background"
     //Send and notify users
-    if(item.to){
+    if(item.to && item.status == STATUS_OK){
         item.to.forEach(function(userId){
             //Check friendship!
             //FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
@@ -277,6 +285,19 @@ function createBackground(item){
         })
     }
 }
+
+service.addMedia = function(itemId,mediaId,userId,callback){
+    Item.findOne({_id:itemId,status:STATUS_PENDING},function(err,item){
+        if(err) return callback(err);
+        if(!item) return callback("Not found");
+        if(!userId.equals(item.userId)) return callback("Not allowed");
+
+        item.mediaId = mediaId;
+
+        createProcess(item,callback);
+    });
+}
+
 service.findById = function(itemId,callback){
     Item.findOne({_id:itemId},function(err,item){
         callback(err,item);
@@ -361,7 +382,7 @@ service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userL
     var point = {type: 'Point', coordinates: locationArray};
 
     //TODO dissapear from map
-    var query = {to:userId};
+    var query = {to:userId,status:STATUS_OK};
 
 
     //Radius of earth 6371000 meters
@@ -380,7 +401,7 @@ service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLat
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {visibility:VISIBILITY_PUBLIC};
+    var query = {visibility:VISIBILITY_PUBLIC,status:STATUS_OK};
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
@@ -398,7 +419,7 @@ service.searchSentByMeItemsByLocation = function(latitude,longitude,radius,userL
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var query = {userId:userId,visibility:VISIBILITY_PRIVATE};
+    var query = {userId:userId,visibility:VISIBILITY_PRIVATE,status:STATUS_OK};
 
     //Radius of earth 6371000 meters
     Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
@@ -487,7 +508,7 @@ function transformGeoNearResults(results,longitude,latitude,userId,transformCall
 
 service.listSentToMe = function(userId,longitude,latitude,callback){
     finishItemQuery(
-           Item.find({to:userId})
+           Item.find({to:userId,status:STATUS_OK})
                .sort({created:-1}
            )
         ,longitude,latitude,userId,callback);
@@ -496,7 +517,7 @@ service.listSentToMe = function(userId,longitude,latitude,callback){
 
 service.listSentByMe = function(userId,longitude,latitude,callback){
     finishItemQuery(
-        Item.find({userId:userId})
+        Item.find({userId:userId,status:STATUS_OK})
             .sort({created:-1}
         )
         ,longitude,latitude,userId,callback);
@@ -633,7 +654,7 @@ service.addComment = function(itemId,comment,userId,callback) {
 }
 
 service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback){
-    Item.findOne({_id:itemId},function(err,item) {
+    Item.findOne({_id:itemId,status:STATUS_OK},function(err,item) {
         if (err) return callback(err);
         if (!item) return callback("Entity Not Found");
 

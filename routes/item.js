@@ -28,6 +28,23 @@ exports.create = function(req, res) {
     });
 };
 
+exports.addMedia = function(req, res) {
+    ApiUtils.auth(req,res,function(user) {
+        //message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId
+        var itemId = req.body.itemId;
+        var mediaId = req.body.mediaId;
+
+        ItemService.addMedia(itemId,mediaId,user._id,function(err,item){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,item._id);
+            }
+        });
+    });
+};
+
+
 
 
 

@@ -33,6 +33,20 @@ exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitud
     });
 }
 
+exports.addMedia = function(mediaId,itemId,token,callback){
+    var params ={
+        mediaId:mediaId,
+        itemId:itemId,
+        token:token};
+
+    apiClientBase.post('/api/item/addmedia',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 
 
 
