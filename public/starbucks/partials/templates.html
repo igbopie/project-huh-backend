@@ -21,7 +21,7 @@
                             <td>{{template._id}}</td>
                             <td>{{template.name}}</td>
                             <td>{{template.price}}</td>
-                            <td><img class="template-image" ng-src="{{template.mediaURL}}" /><img class="template-image" ng-src="{{template.teaserMediaURL}}" /></td>
+                            <td><img class="template-image" load-media-id="template.mediaId"/><img class="template-image" load-media-id="template.teaserMediaId"/></td>
                             <td>
                                 <a class="btn btn-warning" href="#/templates/edit/{{template._id}}"><i class="fa fa-pencil"></i> Edit</a>
                                 <a class="btn btn-danger" ng-confirm-click="Are you sure you want to delete?" ng-confirmed-click="remove(template._id)" ><i class="fa fa-trash"></i> Delete</a>

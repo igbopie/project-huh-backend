@@ -31,7 +31,7 @@ markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"Tem
             TemplateService.getTemplates(function (err, data) {
 
                 $scope.templates = data;
-
+                /*
                 for (var i = 0; i < $scope.templates.length; i++) {
                     (function (template) {
                         MediaService.getMedia(template.mediaId, "thumb", function (mediaURL) {
@@ -44,7 +44,7 @@ markStarbucksControllers.controller('LoggedCtrl', ['$scope', '$routeParams',"Tem
                             template.teaserMediaURL = mediaURL;
                         })
                     })($scope.templates[i]);
-                }
+                }*/
                 $scope.loading = false;
             });
         }
