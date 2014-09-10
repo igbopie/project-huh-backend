@@ -303,6 +303,13 @@ service.findById = function(itemId,callback){
         callback(err,item);
     });
 }
+service.findByIdForWeb = function(itemId,callback){
+    Item.findOne({_id:itemId})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,item){
+        callback(err,item);
+    });
+}
 service.view = function(itemId,longitude,latitude,userId,callback){
     //TODO check if private or public, if private and not in To should be able to view anything!
     Item.findOne({_id:itemId})

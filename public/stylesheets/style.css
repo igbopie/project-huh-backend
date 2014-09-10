@@ -1,5 +1,5 @@
 body{
-    background: #54b4d0;
+    background: #13c79b;
     color:white;
     text-align: center;
 }
@@ -15,13 +15,19 @@ img.seem-item{
 
 }
 .seem-item-caption{
-    background: #465961;
+    background: #434041;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     padding:10px;
     font-size: 20px;
 
 }
+.userimage{
+    border-radius: 40px;
+    width: 40px;
+    height: 40px;
+}
+
 .seem-item-info{
     font-size: 30px;
 }
@@ -31,6 +37,10 @@ img.seem-item{
 }
 .username,.date{
     font-size: 14px;
+}
+.date{
+    color:#ddd;
+    font-size: 10px;
 }
 .open-in-the-app{
     display: block;
@@ -42,7 +52,7 @@ img.seem-item{
     cursor: pointer;
 }
 .open-in-the-app:hover{
-    background: #f9c466;
+    background: #fbc700;
     color:white;
 }
 .open-in-the-app img{
@@ -169,4 +179,27 @@ html,body{
     0 5px 10px rgba(0,0,0,.25),
     0 10px 10px rgba(0,0,0,.2),
     0 20px 20px rgba(0,0,0,.15);
+}
+
+.mark-teaser{
+    position: relative
+}
+.mark-teaser-text{
+    position: absolute;
+    top:50%;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 10px;
+    text-align: center;
+width:100%;
+}
+
+
+.redacted{
+    font-family: 'redacted_scriptregular';
+    font-size: 20px;
+}
+.mark-teaser-logo{
+    height:100px;
+    width:auto;
 }

@@ -22,9 +22,9 @@
     "angular-route": "~1.2.24",
     "angular-cookies": "~1.2.24",
     "danialfarid-angular-file-upload": "~1.6.5",
-    "fontawesome": "~4.2.0"
-  },
-  "resolutions": {
-    "angular": "1.2.24"
+    "fontawesome": "~4.2.0",
+    "blokk": "http://blokkfont.com/download.php?src=site",
+    "redacted":"christiannaths/Redacted-Font",
+    "jquery-timeago":"~1.4.1"
   }
 }
