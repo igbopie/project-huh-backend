@@ -11,7 +11,7 @@ block content
             else if item.teaserTemplateMediaId
                 img.seem-item(src="/api/media/get/thumb/#{item.teaserTemplateMediaId}")
             else
-                img.seem-item
+                div.mark-fake-image
             div.mark-teaser-text.redacted #{item.teaserMessage}
         div.seem-item-caption
           div.username.pull-left
