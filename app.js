@@ -78,9 +78,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/upload', routes.imageupload);
 app.get('/item/:itemId', routes.item);
-app.get('/template/preview', routes.template);
 
 
 //USER

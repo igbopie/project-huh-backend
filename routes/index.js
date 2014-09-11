@@ -12,9 +12,6 @@ exports.index = function(req, res){
 };
 
 
-exports.imageupload = function(req, res){
-    res.render('imageupload', { title: 'Express' });
-};
 
 exports.item = function(req, res){
 
@@ -32,7 +29,3 @@ exports.item = function(req, res){
         }
     });
 };
-
-exports.template = function(req, res) {
-    res.render('template', {});
-}
