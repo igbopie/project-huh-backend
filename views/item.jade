@@ -5,6 +5,7 @@ block content
     div.row
       div.col-xs-12.col-md-4.col-md-offset-4
         img.mark-teaser-logo(src="/images/marklogo.png")
+
         div.mark-teaser
             if item.teaserMediaId
                 img.seem-item(src="/api/media/get/thumb/#{item.teaserMediaId}")
@@ -13,6 +14,7 @@ block content
             else
                 div.mark-fake-image
             div.mark-teaser-text.redacted #{item.teaserMessage}
+
         div.seem-item-caption
           div.username.pull-left
             if item.userId.mediaId
@@ -20,12 +22,12 @@ block content
             else
               img.userimage(src="/images/anonymous_user.png")
 
-            span &nbsp;@#{item.userId.username}
+            span &nbsp;#{item.userId.username}
           div
             span.date.pull-right
               time.timeago(datetime="#{ iso8601.fromDate(item.created) }")
           div.clearfix
-
+        div#map_canvas(data-longitude="#{item.location[0]}",data-latitude="#{item.location[1]}")
         div.seem-item-info
           i.fa.fa-eye.seem-item-info-thing  #{item.viewCount}
           i.fa.fa-heart.seem-item-info-thing  #{item.favouriteCount}
@@ -34,5 +36,8 @@ block content
         a.open-in-the-app(href="mark://itemId/#{item._id}")
           img(src="/images/markapplogo.png")
           span Open in the app
+
+        script(src="https://maps.googleapis.com/maps/api/js")
+        script(src="/javascripts/map.js")
 
 

@@ -16,8 +16,6 @@ img.seem-item{
 }
 .seem-item-caption{
     background: #434041;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
     padding:10px;
     font-size: 20px;
 
@@ -65,121 +63,7 @@ html,body{
     height: 100%;
 }
 
-.template_message{
-    font-size: 40px;
-}
 
-
-.template_message {
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-}
-
-
-
-.effect1{
-    text-shadow: 0px 2px 3px #555;
-}
-.effect2{
-
-    -webkit-text-stroke: 1px black;
-    text-shadow:
-    3px 3px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
-}
-
-.template div.template_message.effect3 {
-
-    color: #464646;
-    font: bold 330%/100% "Lucida Grande";
-    position: relative;
-}
-.template div.template_message.effect3::before
-{
-    content:"";
-    background: url("/images/templates/1/gradient-white.png") repeat-x;
-    position: absolute;
-    display: block;
-    width: 100%;
-    height: 31px;
-}
-
-
-.template div.template_message.effect5 {
-    background: #222 -webkit-gradient(linear, left top, right top, from(#222), to(#222), color-stop(0.5, #fff)) 0 0 no-repeat;
-    -webkit-background-size: 125px;
-    color: rgba(255, 255, 255, 0.1);
-    -webkit-background-clip: text;
-    -webkit-animation-name: shine;
-    -webkit-animation-duration: 2s;
-    -webkit-animation-iteration-count: infinite;
-}
-
-@-webkit-keyframes shine
-{
-    0%
-    {
-        background-position: 0%;
-    }
-    100%
-    {
-        background-position: 100%;
-    }
-}
-
-[contenteditable=true]:empty:before {
-    content: attr(placeholder);
-}
-
-/* TEMPLATES */
-
-.template1{
-    min-height: 100%;
-    background:  url("/images/templates/1/bg.jpg") no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-}
-.template1 .template_message{
-    color:white;
-    text-shadow: 0 1px 0 #ccc,
-    0 2px 0 #c9c9c9,
-    0 3px 0 #bbb,
-    0 4px 0 #b9b9b9,
-    0 5px 0 #aaa,
-    0 6px 1px rgba(0,0,0,.1),
-    0 0 5px rgba(0,0,0,.1),
-    0 1px 3px rgba(0,0,0,.3),
-    0 3px 5px rgba(0,0,0,.2),
-    0 5px 10px rgba(0,0,0,.25),
-    0 10px 10px rgba(0,0,0,.2),
-    0 20px 20px rgba(0,0,0,.15);
-}
-
-.template2{
-    min-height: 100%;
-    background:  url("/images/templates/2/bg.gif") repeat;
-}
-.template2 .template_message{
-    font-family: 'Indie Flower', cursive;
-    color: #C20404;
-    text-shadow: 0 1px 0 #ffffff,
-
-    0 6px 1px rgba(0,0,0,.1),
-    0 0 5px rgba(0,0,0,.1),
-    0 1px 3px rgba(0,0,0,.3),
-    0 3px 5px rgba(0,0,0,.2),
-    0 5px 10px rgba(0,0,0,.25),
-    0 10px 10px rgba(0,0,0,.2),
-    0 20px 20px rgba(0,0,0,.15);
-}
 
 .mark-teaser{
     position: relative
@@ -205,4 +89,13 @@ width:100%;
 }
 .mark-fake-image{
     height:200px;
+}
+
+#map_canvas {
+
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    width: 100%;
+    height: 100px;
+    background-color: #CCC;
 }
