@@ -56,6 +56,7 @@ var media = require('./routes/media');
 var item = require('./routes/item');
 var template = require('./routes/template');
 var alias = require('./routes/alias');
+var mapicon = require('./routes/mapicon');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -124,6 +125,13 @@ app.post('/api/template/update',template.update);
 app.post('/api/template/view',template.findById);
 app.post('/api/template/create',template.create);
 app.post('/api/template/remove',template.removeById);
+
+
+app.post('/api/mapicon',mapicon.findIcons);
+app.post('/api/mapicon/update',mapicon.update);
+app.post('/api/mapicon/view',mapicon.findById);
+app.post('/api/mapicon/create',mapicon.create);
+app.post('/api/mapicon/remove',mapicon.removeById);
 
 app.post('/api/alias/search',alias.search);
 
