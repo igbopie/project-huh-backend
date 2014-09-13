@@ -22,7 +22,7 @@ exports.create = function(req, res) {
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,shortlink:item.shortlink});
+                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
             }
         });
     });
@@ -38,7 +38,7 @@ exports.addMedia = function(req, res) {
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,shortlink:item.shortlink});
+                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
             }
         });
     });
