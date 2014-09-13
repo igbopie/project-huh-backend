@@ -26,6 +26,9 @@ var mongoose = require('mongoose')
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
 ;
 
+var Bitly = require('bitly');
+var bitly = new Bitly('markdevs', 'R_8257fb6304b5410d9420ceefd11048b0');
+
 
 
 var commentSchema = new Schema({
@@ -63,8 +66,9 @@ var itemSchema = new Schema({
     favouriteCount :   { type: Number, required:true, default:0},
     commentCount :   { type: Number, required:true, default:0},
     //
-    renderParameters   :   { type: String, required: false}
+    renderParameters   :   { type: String, required: false},
     //
+    shortlink   :   { type: String, required: false}
 
 
 });
@@ -212,21 +216,32 @@ function createProcess(item,callback){
         if(item.mediaId || item.templateMediaId ){
             item.status = STATUS_OK;
         }
-
         item.save(function(err){
             if(err){
                 return callback(err);
             }
+            //TODO param domain and short domain
+            bitly.shorten("http://www.mark.as/m/"+item._id,"mark.as",function(err,response){
+                if(err){
+                    return callback(err);
+                }
+                item.shortlink =  response.data.url;
+                item.save(function(err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    if (item.teaserMediaId) {
+                        MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
+                            if (err) console.error(err);
 
-            if(item.teaserMediaId){
-                MediaService.assign(item.teaserMediaId,[],MediaVars.VISIBILITY_PUBLIC,item._id,"Item#teaserMediaId",function(err) {
-                    if(err) console.error(err);
-
-                    createProcess2(item,callback);
+                            createProcess2(item, callback);
+                        });
+                    } else {
+                        createProcess2(item, callback);
+                    }
                 });
-            }else{
-                createProcess2(item,callback);
-            }
+            })
+
         })
     });
 }
