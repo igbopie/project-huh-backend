@@ -71,7 +71,7 @@ service.removeById = function (id,callback){
 }
 
 
-service.findIcons = function(callback){
+service.find = function(callback){
     MapIcon.find()
         .exec(function(err,docs){
             callback(err,docs);

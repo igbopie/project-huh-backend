@@ -358,13 +358,23 @@ service.createAux = function (originalPath, media, format, callback) {
             heightConstrain = format.width;
         }*/
 
+        var pixels = size.height*size.width;
+        console.log(pixels);
+        var blur = 0.05;
+        if(pixels < 100000){
+            //small image!
+            blur = 0;
+        }
+        var image = imageMagick(originalPath).autoOrient();
 
-        imageMagick(originalPath)
-            //.resize(widthConstrain, heightConstrain+ ">")
+        if(blur > 0) {
+            image = image.blur(blur)
+        }
 
-            .autoOrient()
-            .blur(0.05)
-            .thumb(format.width,format.height,tempPath,QUALITY,function (err) {
+        image.quality(QUALITY)
+            .out("-thumbnail",format.width+"x"+format.height+"^>")
+            .out("-gravity","center")
+            .write(tempPath,function (err) {
                 if (err) {
                     callback(err);
                 } else {
