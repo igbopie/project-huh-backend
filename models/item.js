@@ -24,10 +24,17 @@ var mongoose = require('mongoose')
     , STATUS_PENDING = 0
     , STATUS_OK = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
+    , BITLY_USERNAME = process.env.BITLY_USERNAME
+    , BITLY_TOKEN = process.env.BITLY_TOKEN
+    , BITLY_DOMAIN = process.env.BITLY_DOMAIN
+    , BITLY_DOMAIN_ITEM_REDIRECT = process.env.BITLY_DOMAIN_ITEM_REDIRECT
+    , Bitly = require('bitly')
 ;
-
-var Bitly = require('bitly');
-var bitly = new Bitly('markdevs', 'R_8257fb6304b5410d9420ceefd11048b0');
+var bitly;
+if(BITLY_TOKEN){
+    bitly = new Bitly(BITLY_USERNAME,BITLY_TOKEN);
+    console.log("BITLY initialized");
+}
 
 
 
@@ -220,32 +227,40 @@ function createProcess(item,callback){
             if(err){
                 return callback(err);
             }
-            //TODO param domain and short domain
-            bitly.shorten("http://www.mark.as/m/"+item._id,"mark.as",function(err,response){
-                if(err){
-                    return callback(err);
-                }
-                item.shortlink =  response.data.url;
-                item.save(function(err) {
-                    if (err) {
+            if(bitly){
+                bitly.shorten(BITLY_DOMAIN_ITEM_REDIRECT+item._id,BITLY_DOMAIN,function(err,response){
+                    if(err){
                         return callback(err);
                     }
-                    if (item.teaserMediaId) {
-                        MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
-                            if (err) console.error(err);
+                    //console.log(response);
+                    item.shortlink =  response.data.url;
+                    item.save(function(err) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        createProcess2(item,callback);
+                    });
+                })
+            } else {
+                createProcess2(item,callback);
+            }
 
-                            createProcess2(item, callback);
-                        });
-                    } else {
-                        createProcess2(item, callback);
-                    }
-                });
-            })
 
         })
     });
 }
 function createProcess2(item,callback){
+    if (item.teaserMediaId) {
+        MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
+            if (err) console.error(err);
+
+            createProcess3(item, callback);
+        });
+    } else {
+        createProcess3(item, callback);
+    }
+}
+function createProcess3(item,callback){
     if (item.mediaId) {
         var visibility = MediaVars.VISIBILITY_PRIVATE;
         if (item.visibility == VISIBILITY_PUBLIC) {
@@ -634,7 +649,7 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
     publicItem.commentCount = item.commentCount;
-
+    publicItem.shortlink = item.shortlink;
 
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
