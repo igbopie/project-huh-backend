@@ -217,7 +217,7 @@ markStarbucksControllers.controller('MapIconEdit',[ '$scope',"MediaService","Map
     $scope.loading = true;
     MapIconService.view($routeParams.id,function(err,template){
         $scope.name = template.name;
-        $scope.price = template.price;
+        $scope.tag = template.tag;
         $scope.mediaId = template.mediaId;
         MediaService.getMedia(template.mediaId,"thumb",function(url){
             $scope.imgSrc = url;
