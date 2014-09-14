@@ -5,5 +5,16 @@ block content
     div.row
       div.col-xs-12.col-md-8.col-md-offset-2
         img(src="/images/marklogo.png")
-        p.lead coming soon
+        p.lead Interested?
+        form.form-inline#interested(target="_self",action="javascript: postIndexForm()",role="form")
+            div.form-group
+                input.input-lg.form-control#email(type="email",name="email",placeholder="Email",required="required")
+            button.btn.btn-warning.btn-lg(type="submit")  Let us know!
+        div#spinner.lead.invisible
+            i.fa.fa-refresh.fa-spin
+        div#thanks.lead.invisible
+            i.fa.fa-check-circle
+            span Thank You!
+        br
+
 
