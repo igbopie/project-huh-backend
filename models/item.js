@@ -663,6 +663,7 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.aliasId = item.aliasId;
     publicItem.templateId = item.templateId;
     publicItem.mapIconId = item.mapIconId;
+    publicItem.mapIconMediaId = item.mapIconMediaId;
     publicItem.to = item.to;
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
