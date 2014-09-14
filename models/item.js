@@ -7,6 +7,7 @@ var mongoose = require('mongoose')
     , AliasService = require("../models/alias").Service
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
+    , MapIconService = require("../models/mapicon").Service
     , EventService = require("../models/eventdispatcher").Service
     , ItemUtils = require('../utils/itemhelper')
     , Geolib = require('geolib')
@@ -57,7 +58,8 @@ var itemSchema = new Schema({
     teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserMessage:   { type: String, required: false},
-    mapIconId   :   { type: String, required: false},
+    mapIconId   :   { type: Schema.Types.ObjectId, required: false},
+    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: false},
     location    :   { type: [Number], required:true,index: '2dsphere'},
     radius      :   { type: Number, required:true},
     locationName:   { type: String, required: false},
@@ -191,7 +193,7 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
             item.locationName = alias.locationName;
             item.location = alias.location;
 
-            createProcess(item,callback);
+            createProcess0(item,callback);
         });
 
     } else if(aliasName){
@@ -202,7 +204,7 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
             item.aliasId = alias._id;
             item.aliasName = alias.name;
 
-            createProcess(item,callback);
+            createProcess0(item,callback);
         });
 
     } else{
@@ -211,12 +213,27 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
         delete item.aliasId;
         delete item.aliasName;
 
-        createProcess(item,callback);
+        createProcess0(item,callback);
     }
 
 }
 
-function createProcess(item,callback){
+function createProcess0(item,callback){
+    if(item.mapIconId){
+        MapIconService.findById(item.mapIconId,function(err,mapIcon){
+            if(err) return callback(err);
+            if(!mapIcon) return callback("Map Icon not found");
+
+            item.mapIconMediaId = mapIcon.mediaId;
+
+            createProcess1(item,callback);
+        })
+    }else{
+        createProcess1(item,callback);
+    }
+}
+
+function createProcess1(item,callback){
     ItemUtils.generatePreviewImage(item,function(err,item){
         if(err) return callback(err);
 
@@ -324,7 +341,7 @@ service.addMedia = function(itemId,mediaId,userId,callback){
 
         item.mediaId = mediaId;
 
-        createProcess(item,callback);
+        createProcess1(item,callback);
     });
 }
 
@@ -342,6 +359,7 @@ service.findByIdForWeb = function(itemId,callback){
 }
 service.view = function(itemId,longitude,latitude,userId,callback){
     //TODO check if private or public, if private and not in To should be able to view anything!
+
     Item.findOne({_id:itemId})
         .populate("userId",PUBLIC_USER_FIELDS)
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
