@@ -1,6 +1,7 @@
 function initialize() {
     var longitude = $("#map_canvas").data("longitude");
     var latitude = $("#map_canvas").data("latitude");
+    var mapIconMediaId = $("#map_canvas").data("map-icon-media-id");
 
     var mapCanvas = document.getElementById('map_canvas');
     var mapOptions = {
@@ -20,23 +21,32 @@ function initialize() {
 
     var map = new google.maps.Map(mapCanvas, mapOptions);
 
-    var iconBase = '/images/';
+    var iconBase = '/api/media/get/large/';
 
-    var image = {
-        url: iconBase + 'mapicon_alien.png',
-        size: new google.maps.Size(71, 71),
-        origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(17, 34),
-        scaledSize: new google.maps.Size(25, 25)
-    };
 
-    var marker = new google.maps.Marker({
-        position: new google.maps.LatLng(latitude, longitude),
-        map: map,
-        //icon: iconBase + 'mapicon_alien.png'
-        icon:image
-    });
+    console.log(mapIconMediaId);
+    if(mapIconMediaId){
+        var image = {
+            url: iconBase + mapIconMediaId,
+            size: new google.maps.Size(71, 71),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(17, 34),
+            scaledSize: new google.maps.Size(25, 25)
+        };
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(latitude, longitude),
+            map: map,
+            icon: image
 
+        });
+    }else{
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(latitude, longitude),
+            map: map
+            //icon: iconBase + 'mapicon_alien.png'
+
+        });
+    }
 }
 
 

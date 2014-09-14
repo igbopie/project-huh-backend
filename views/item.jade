@@ -27,7 +27,7 @@ block content
             span.date.pull-right
               time.timeago(datetime="#{ iso8601.fromDate(item.created) }")
           div.clearfix
-        div#map_canvas(data-longitude="#{item.location[0]}",data-latitude="#{item.location[1]}")
+        div#map_canvas(data-longitude="#{item.location[0]}",data-latitude="#{item.location[1]}",data-map-icon-media-id="#{item.mapIconMediaId}")
         div.seem-item-info
           i.fa.fa-eye.seem-item-info-thing  #{item.viewCount}
           i.fa.fa-heart.seem-item-info-thing  #{item.favouriteCount}
