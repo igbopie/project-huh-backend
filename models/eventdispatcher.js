@@ -16,7 +16,7 @@ service.onItemInboxCreated = function(inbox){
             console.error("Couldn't find owner: "+inbox.ownerUserId);
             return;
         }
-        sendNotification(owner._id,""+owner.username+" has left you a message");
+        sendNotification(inbox.userId,""+owner.username+" has left you a message");
     });
 }
 
