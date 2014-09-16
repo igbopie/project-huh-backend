@@ -1,6 +1,8 @@
 
-var AWS = require('aws-sdk')
-    , SES = new AWS.SES();
+var AWS = require('aws-sdk');
+
+AWS.config.update({ region: 'us-west-1' });
+var  SES = new AWS.SES();
 
 exports.send = function(email,message){
 
