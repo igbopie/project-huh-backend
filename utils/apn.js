@@ -127,14 +127,15 @@ exports.send = function(token,message,data){
         .expires(0);
 
     if(data){
-        for (var prop in data) {
+        message.set(data);
+        /*for (var prop in data) {
             // important check that this is objects own property
             // not from prototype prop inherited
             if(data.hasOwnProperty(prop)){
                 message.set(prop,data[prop]);
                 console.log(prop+"="+data[prop]);
             }
-        }
+        }*/
     }
 
     message.send(function (err) {
