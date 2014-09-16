@@ -16,7 +16,7 @@ service.onItemInboxCreated = function(inbox){
             console.error("Couldn't find owner: "+inbox.ownerUserId);
             return;
         }
-        sendNotification(inbox.userId,""+owner.username+" has left you a message");
+        sendNotification(inbox.userId,""+owner.username+" has left you a Mark",{itemId:inbox.itemId});
     });
 }
 
@@ -26,7 +26,7 @@ module.exports = {
     Service:service
 };
 
-function sendNotification(userId,message){
+function sendNotification(userId,message,data){
 
     UserService.findUserById(userId,function(err,user){
         if(err){
@@ -38,10 +38,10 @@ function sendNotification(userId,message){
             return;
         }
         if(user.apnToken){
-            Apn.send(user.apnToken,message);
+            Apn.send(user.apnToken,message,data);
         }
         if(user.gcmToken){
-            Gcm.send(user.gcmToken,message);
+            Gcm.send(user.gcmToken,message,data);
         }
         console.log("Notification To:"+userId+" Msg:"+message);
     });
