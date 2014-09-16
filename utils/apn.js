@@ -132,6 +132,7 @@ exports.send = function(token,message,data){
             // not from prototype prop inherited
             if(data.hasOwnProperty(prop)){
                 message.set(data,data[prop]);
+                console.log(data+"="+data[prop]);
             }
         }
     }
