@@ -411,6 +411,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     pItem.favourited = (fav?true:false);
 
                     callback(null,pItem);
+                    EventService.onItemViewed(itemId,userId);
                 })
             }else{
                 FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){

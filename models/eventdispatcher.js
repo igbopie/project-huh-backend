@@ -21,6 +21,30 @@ service.onItemInboxCreated = function(inbox){
     });
 }
 
+service.onItemViewed = function(itemId,userId) {
+    var ItemService = require("../models/item").Service;
+    ItemService.findById(itemId, function (err, item) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        if (!item) {
+            console.error("No item found");
+            return;
+        }
+        UserService.findUserById({_id:userId},function(err,userViewed) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            if (!userViewed) {
+                console.error("No user found");
+                return;
+            }
+            sendNotification(item.userId, "" + userViewed.username + " viewed your Mark", {itemId: item._id});
+        });
+    });
+}
 service.onCommentAdded = function(itemId,userId){
     var ItemService = require("../models/item").Service;
     ItemService.findById(itemId,function(err,item){
