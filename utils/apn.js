@@ -131,8 +131,8 @@ exports.send = function(token,message,data){
             // important check that this is objects own property
             // not from prototype prop inherited
             if(data.hasOwnProperty(prop)){
-                message.set(data,data[prop]);
-                console.log(data+"="+data[prop]);
+                message.set(prop,data[prop]);
+                console.log(prop+"="+data[prop]);
             }
         }
     }
