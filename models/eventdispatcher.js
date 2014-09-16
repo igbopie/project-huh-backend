@@ -1,5 +1,6 @@
 var Apn = require("../utils/apn")
     , Gcm = require("../utils/gcm")
+    , Email = require("../utils/email")
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
     , UserService = require("../models/user").Service;
 
@@ -107,6 +108,9 @@ function sendNotification(userId,message,data){
         }
         if(user.gcmToken){
             Gcm.send(user.gcmToken,message,data);
+        }
+        if(user.email){
+            Email.send(user.email,message);
         }
         console.log("Notification To:"+userId+" Msg:"+message);
     });
