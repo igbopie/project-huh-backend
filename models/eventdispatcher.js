@@ -74,7 +74,7 @@ service.onCommentAdded = function(itemId,userId){
                     if(String(item.userId) != String(comment.userId) && //It is not the owner
                         String(userCommented._id) != String(comment.userId) ) //it is not the same user
                     {
-                        sendNotification(comment.userId._id,""+userCommented.username+" commented on a Mark you commented",{itemId:item._id});
+                        sendNotification(comment.userId,""+userCommented.username+" commented on a Mark you commented",{itemId:item._id});
                     }
                 });
 
