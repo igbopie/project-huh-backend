@@ -703,6 +703,7 @@ service.addComment = function(itemId,comment,userId,callback) {
                     },
                     function (err) {
                         callback(err);
+                        EventService.onCommentAdded(itemId,userId);
                     });
             })
 
