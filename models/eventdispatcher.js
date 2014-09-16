@@ -70,6 +70,7 @@ service.onCommentAdded = function(itemId,userId){
                 sendNotification(item.userId,""+userCommented.username+" commented on your Mark",{itemId:item._id});
 
                 item.comments.forEach(function(comment){
+                    console.log(comment);
                     if(String(item.userId) != String(comment.userId) && //It is not the owner
                         String(userCommented._id) != String(comment.userId) ) //it is not the same user
                     {
