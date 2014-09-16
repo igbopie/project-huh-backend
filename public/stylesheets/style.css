@@ -100,3 +100,8 @@ width:100%;
     background-color: #CCC;
 }
 
+.btn-warning {
+    color: #fff;
+    background-color: #fad800;
+    border-color: #fad800;
+}
