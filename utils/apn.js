@@ -6,7 +6,7 @@ var join = require('path').join;
 // Create a new agent
 var apnagent = require('apnagent');
 var feedback = new apnagent.Feedback();
-var pfx = join(__dirname, '../_certs/aps_production.p12');
+var pfx = join(__dirname, '../_certs/markprodapn.p12');
 var agent = new apnagent.Agent();
 var User = require('../models/user').User;
 
