@@ -109,12 +109,21 @@ var FavouriteItem = mongoose.model('FavouriteItem', favouriteItemSchema);
 var viewItemSchema = new Schema({
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    dates   :   { type: [Date], required: true, default: [] },
+    lastViewed:  { type: Date, required: true, default: Date.now },
     count   :   { type: Number , required:true, default:0}
 });
 
 viewItemSchema.index({userId:1,itemId:1});
 var ViewItem = mongoose.model('ViewItem', viewItemSchema);
+
+var viewItemStatsSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
+    date:  { type: Date, required: true, default: Date.now }
+});
+
+var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
+
 ///------------------------
 ///------------------------
 ///------------------------
@@ -370,28 +379,43 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
         service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
             if(allowed){
-                ViewItem.update(
+                ViewItem.findOneAndUpdate(
                     {
                         userId:userId,
                         itemId:item._id
                     },
                     {
-                        $push:{dates:Date.now()},
+                        $set:{lastViewed:Date.now()},
                         $inc:{count:1}
                     },
                     {
                         upsert: true
                     },
-                    function(err){
+                    function(err,view){
                         if(err) console.log(err);
+                        if(view){
+                            if(view.count == 1){
+                                EventService.onItemViewed(itemId,userId);
+                            }
+                        }
+                        var stat = new ViewItemStats();
+                        stat.userId = userId;
+                        stat.itemId = item._id;
+                        stat.date = Date.now();
+                        stat.save(
+                            function(err) {
+                                if(err) console.log(err);
+                            }
+                        );
                     }
                 );
 
                 Item.findOneAndUpdate(
                     {_id:item._id},
                     {$inc: { viewCount:1 }},
-                    function(err){
+                    function(err,item){
                         if(err) console.log(err);
+
                     }
                 );
 
@@ -411,7 +435,6 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     pItem.favourited = (fav?true:false);
 
                     callback(null,pItem);
-                    EventService.onItemViewed(itemId,userId);
                 })
             }else{
                 FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
