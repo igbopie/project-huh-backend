@@ -3,14 +3,15 @@ extends layout
 block content
   div.container
     br
-    img(src="/images/markindexlogo.png",title="mark",style="width:290px;margin-left:-5px;")
+    img(src="/images/markwoodlogo.png",title="mark",style="width:290px;")
     div.row
       div.col-xs-12.col-md-6.col-md-offset-3
+        br
         p.lead Interested?
         form.form-inline#interested(target="_self",action="javascript: postIndexForm()",role="form")
             div.form-group
                 input.input-lg.form-control#email(type="email",name="email",placeholder="Email",required="required")
-            button.btn.btn-warning.btn-lg(type="submit")  Let us know!
+            button.btn.btn-primary.btn-lg(type="submit")  Let us know!
         div#spinner.lead.invisible
             i.fa.fa-refresh.fa-spin
         div#thanks.lead.invisible
@@ -18,6 +19,6 @@ block content
             span Thank You!
         br
   style(type='text/css')
-      |body { background: url('/images/bg.jpg') top center repeat; }
+      |body { background: url('/images/bg.jpg') top center fixed #414141;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover; }
 
 

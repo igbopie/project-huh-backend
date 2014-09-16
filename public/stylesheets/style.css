@@ -105,3 +105,15 @@ width:100%;
     background-color: #fad800;
     border-color: #fad800;
 }
+
+
+.btn-primary {
+    color: #fff;
+    background-color: #14c89b;
+    border-color: #14c89b;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    color: #fff;
+    background-color: #009068;
+    border-color: #00623d;
+}
