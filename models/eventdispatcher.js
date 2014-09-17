@@ -71,15 +71,22 @@ service.onCommentAdded = function(itemId,userId){
                 if(String(item.userId) != String(userId)){
                     sendNotification(item.userId,""+userCommented.username+" commented on your Mark",{itemId:item._id});
                 }
+                var uniqueUsers = [];
+                for(var i = 0;i<item.comments.length;i++){
+                    var comment = item.comments[i];
+                    uniqueUsers[String(comment.userId)]=true;
+                }
 
-                item.comments.forEach(function(comment){
-                    console.log(comment);
-                    if(String(item.userId) != String(comment.userId) && //It is not the owner
-                        String(userCommented._id) != String(comment.userId) ) //it is not the same user
+                for(var commentAuthorUserId in uniqueUsers) {
+                    console.log(commentAuthorUserId);
+
+                    if(String(item.userId) != String(commentAuthorUserId) && //It is not the owner
+                        String(userCommented._id) != String(commentAuthorUserId) ) //it is not the same user
                     {
-                        sendNotification(comment.userId,""+userCommented.username+" commented on a Mark you commented",{itemId:item._id});
+                        sendNotification(commentAuthorUserId,""+userCommented.username+" commented on a Mark you commented",{itemId:item._id});
                     }
-                });
+                }
+
 
             });
 
