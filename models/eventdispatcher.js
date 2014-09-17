@@ -67,8 +67,10 @@ service.onCommentAdded = function(itemId,userId){
                     console.error("No user found");
                     return;
                 }
-
-                sendNotification(item.userId,""+userCommented.username+" commented on your Mark",{itemId:item._id});
+                //If I am not commenting on my post
+                if(String(item.userId) != String(userId)){
+                    sendNotification(item.userId,""+userCommented.username+" commented on your Mark",{itemId:item._id});
+                }
 
                 item.comments.forEach(function(comment){
                     console.log(comment);
