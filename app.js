@@ -55,7 +55,7 @@ var friend = require('./routes/friend');
 var media = require('./routes/media');
 var item = require('./routes/item');
 var template = require('./routes/template');
-var alias = require('./routes/alias');
+var mark = require('./routes/mark');
 var mapicon = require('./routes/mapicon');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
@@ -135,7 +135,7 @@ app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
-app.post('/api/alias/search',alias.search);
+app.post('/api/mark/search',mark.search);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

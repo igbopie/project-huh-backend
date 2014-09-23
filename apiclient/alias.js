@@ -10,7 +10,7 @@ exports.search = function(latitude,longitude,radius,text,token,callback){
                 text:text,
                 token:token};
 
-	apiClientBase.post('/api/alias/search',params,function(code,headers,data){
+	apiClientBase.post('/api/mark/search',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);
 		} else {

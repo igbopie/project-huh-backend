@@ -9,28 +9,33 @@ var mongoose = require('mongoose')
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
     ;
 
-var aliasSchema = new Schema({
+var markSchema = new Schema({
     name:   { type: String, required: true},
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     date    :   { type: Date	, required: true, default: Date.now },
     location    :   { type: [Number], required:true,index: '2dsphere'},
     locationName:   { type: String, required: false},
     locationAddress:   { type: String, required: false},
-    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE }
+    radius      :   { type: Number, required:true},
+    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
+    mapIconId   :   { type: Schema.Types.ObjectId, required: false},
+    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: false},
+    to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
+    shortlink   :   { type: String, required: false}
 });
 
 
-aliasSchema.index({visibility:1,userId:1});
-aliasSchema.index({name:1});
+markSchema.index({visibility:1,userId:1});
+markSchema.index({name:1});
 
 
-var Alias = mongoose.model('Alias', aliasSchema);
+var Mark = mongoose.model('Mark', markSchema);
 
 //Service?
 var service = {};
 
 service.create = function(userId,latitude,longitude,visibility,name,locationName,locationAddress,callback){
-    var alias = new Alias();
+    var alias = new Mark();
     alias.userId = userId;
     alias.visibility = visibility;
     var locationArray = [];
@@ -49,7 +54,7 @@ service.create = function(userId,latitude,longitude,visibility,name,locationName
 }
 
 service.findById = function(id,callback){
-    Alias.findOne({_id:id},function(err,doc){
+    Mark.findOne({_id:id},function(err,doc){
         callback(err,doc);
     });
 }
@@ -70,12 +75,12 @@ service.search = function(latitude,longitude,radius,text,userId,callback){
         query = {name: { $regex: text, $options: 'i' } }
     }
     if(!radius || !latitude || !longitude){
-        Alias.find(query,function(err,results){
+        Mark.find(query,function(err,results){
             callback(err,results);
         });
     }else{
         //Radius of earth 6371000 meters
-        Alias.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
+        Mark.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
             if(err) return callback(err);
 
             results = results.map(function(x) {
@@ -101,6 +106,6 @@ service.search = function(latitude,longitude,radius,text,userId,callback){
 
 
 module.exports = {
-    Alias: Alias,
+    Alias: Mark,
     Service:service
 };

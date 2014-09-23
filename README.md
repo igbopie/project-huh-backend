@@ -35,6 +35,9 @@ https://github.com/mcollina/heroku-buildpack-imagemagick
  BITLY_TOKEN
  BITLY_DOMAIN
 
+ - EMAIL (require amazon)
+ SEND_EMAIL = true
+
 
 * To test:
 mocha -R spec

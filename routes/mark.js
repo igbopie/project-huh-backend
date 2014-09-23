@@ -1,4 +1,4 @@
-var AliasService = require('../models/alias').Service;
+var MarkService = require('../models/mark').Service;
 var ApiUtils = require('../utils/apiutils');
 
 exports.search = function(req, res) {
@@ -8,7 +8,7 @@ exports.search = function(req, res) {
         var longitude = req.body.longitude;
         var radius = req.body.radius;
 
-        AliasService.search(latitude,longitude,radius,text,user._id,function(err,results){
+        MarkService.search(latitude,longitude,radius,text,user._id,function(err,results){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

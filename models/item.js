@@ -4,7 +4,7 @@ var mongoose = require('mongoose')
     , Media = require("../models/media").Media
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
-    , AliasService = require("../models/alias").Service
+    , MarkService = require("../models/mark").Service
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
     , MapIconService = require("../models/mapicon").Service
@@ -58,17 +58,9 @@ var itemSchema = new Schema({
     teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserMessage:   { type: String, required: false},
-    mapIconId   :   { type: Schema.Types.ObjectId, required: false},
-    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: false},
-    location    :   { type: [Number], required:true,index: '2dsphere'},
-    radius      :   { type: Number, required:true},
-    locationName:   { type: String, required: false},
-    locationAddress:   { type: String, required: false},
-    aliasName   :   { type: String, required: false},
-    aliasId     :   { type: Schema.Types.ObjectId, required: false, ref:"Alias"},
-    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
+
+    markId     :   { type: Schema.Types.ObjectId, required: false, ref:"Mark"},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
-    to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     comments    :   [commentSchema],
     //STATS
     viewCount :   { type: Number, required:true, default:0},
@@ -189,11 +181,11 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
     //TODO check iconId
     //TODO check templateId
 
-    //find Alias
+    //find Mark
     if(aliasId && aliasId != ""){
         //if found, bring data
         //TODO check visibility and permissions
-        AliasService.findById(aliasId,function(err, alias){
+        MarkService.findById(aliasId,function(err, alias){
             if(err) return callback(err);
 
             item.aliasId = alias._id;
@@ -206,8 +198,8 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
         });
 
     } else if(aliasName){
-        //if no Id and Create Alias -> create a new one
-        AliasService.create(userId,latitude,longitude,item.visibility,aliasName,locationName,locationAddress,function(err,alias){
+        //if no Id and Create Mark -> create a new one
+        MarkService.create(userId,latitude,longitude,item.visibility,aliasName,locationName,locationAddress,function(err,alias){
             if(err) return callback(err);
 
             item.aliasId = alias._id;
@@ -217,7 +209,7 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
         });
 
     } else{
-        //no alias
+        //no mark
 
         delete item.aliasId;
         delete item.aliasName;
@@ -523,7 +515,7 @@ service.searchByLocation = function(latitude,longitude,radius,userLatitude,userL
                 if (err) return callback(err);
                 results.sentByMe = data;
 
-                AliasService.search(latitude, longitude, radius, null, userId, function (err, data) {
+                MarkService.search(latitude, longitude, radius, null, userId, function (err, data) {
                     if (err) return callback(err);
                     results.aliases = data;
 
