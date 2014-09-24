@@ -5,7 +5,8 @@
 var BITLY_USERNAME = process.env.BITLY_USERNAME
     , BITLY_TOKEN = process.env.BITLY_TOKEN
     , BITLY_DOMAIN = process.env.BITLY_DOMAIN
-    , BITLY_DOMAIN_ITEM_REDIRECT = process.env.BITLY_DOMAIN_ITEM_REDIRECT;
+    , BITLY_DOMAIN_ITEM_REDIRECT = process.env.BITLY_DOMAIN_ITEM_REDIRECT
+    , Bitly = require("bitly");
 
 var bitly;
 if(BITLY_TOKEN){
