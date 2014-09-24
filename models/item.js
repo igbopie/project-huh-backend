@@ -4,38 +4,26 @@ var mongoose = require('mongoose')
     , Media = require("../models/media").Media
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
-    , MarkService = require("../models/mark").Service
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
     , MapIconService = require("../models/mapicon").Service
     , EventService = require("../models/eventdispatcher").Service
     , ItemUtils = require('../utils/itemhelper')
+    , Mark = require("../models/mark").Mark
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
-    , VISIBILITY_PRIVATE = 0
-    , VISIBILITY_PUBLIC = 1
-    , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , STATUS = [STATUS_PENDING,STATUS_OK]
     , STATUS_PENDING = 0
     , STATUS_OK = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-    , BITLY_USERNAME = process.env.BITLY_USERNAME
-    , BITLY_TOKEN = process.env.BITLY_TOKEN
-    , BITLY_DOMAIN = process.env.BITLY_DOMAIN
-    , BITLY_DOMAIN_ITEM_REDIRECT = process.env.BITLY_DOMAIN_ITEM_REDIRECT
-    , Bitly = require('bitly')
-;
-var bitly;
-if(BITLY_TOKEN){
-    bitly = new Bitly(BITLY_USERNAME,BITLY_TOKEN);
-    console.log("BITLY initialized");
-}
+    , UrlShortener = require('../utils/urlshortener')
+    , Q = require("q");
 
 
 
@@ -48,26 +36,25 @@ var commentSchema = new Schema({
 var itemSchema = new Schema({
     userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     created     :   { type: Date	, required: true, default: Date.now },
-    //++ Private fields (not viewed)
+    // Private fields (not viewed)
     message     :   { type: String, required: false},
     templateId  :   { type: Schema.Types.ObjectId, required: false},
     templateMediaId:   { type: Schema.Types.ObjectId, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
-    //--
     // A pre rendered image of the message
     teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserMessage:   { type: String, required: false},
-
-    markId     :   { type: Schema.Types.ObjectId, required: false, ref:"Mark"},
+    //Additional parameters
+    renderParameters   :   { type: String, required: false},
+    //
+    markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
     comments    :   [commentSchema],
     //STATS
     viewCount :   { type: Number, required:true, default:0},
     favouriteCount :   { type: Number, required:true, default:0},
     commentCount :   { type: Number, required:true, default:0},
-    //
-    renderParameters   :   { type: String, required: false},
     //
     shortlink   :   { type: String, required: false}
 
@@ -143,7 +130,9 @@ var ItemInbox = mongoose.model('ItemInbox', itemInboxSchema);
 ///------------------------
 var service = {};
 
-service.create = function(message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId,callback){
+service.create = function(message,mediaId,templateId,markId,userId){
+    var promise = Q.defer();
+
     var item = new Item();
     item.message = message;
     if(mediaId){
@@ -152,133 +141,106 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
     if(templateId){
         item.templateId = templateId;
     }
-    if(mapIconId){
-        item.mapIconId = mapIconId;
-    }
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = longitude;
-    locationArray[LOCATION_LATITUDE] = latitude;
-    item.location = locationArray;
-    item.radius = radius;
-    item.to = to;
+
     item.userId = userId;
+    item.markId = markId;
 
-    item.locationName = locationName;
-    item.locationAddress = locationAddress;
-
-    item.visibility = VISIBILITY_PRIVATE;
-
-    if(!item.to || to.length == 0){
-        delete item.to; //PUBLIC!
-        item.visibility = VISIBILITY_PUBLIC;
-        //We use this to reduce the index size, because if we use an index on item.to will grow faster
-        // for the kind of information we want.
-    } else {
-        //TODO check users exists!
-    }
 
     //TODO check owner exists!
-    //TODO check iconId
     //TODO check templateId
 
-    //find Mark
-    if(aliasId && aliasId != ""){
-        //if found, bring data
-        //TODO check visibility and permissions
-        MarkService.findById(aliasId,function(err, alias){
-            if(err) return callback(err);
+    createItemGeneratePreviewImage(item)
+    .then(createItemSave)
+    .then(createItemShortenUrl)
+    .then(createItemSave)
+    .then(createItemAssignTeaserMedia)
+    .then(createItemAssignMedia)
+    .then(createItemCount1ItemInMark)
+    .then(function(item){
+            promise.resolve(item);
+            createBackground(item);
+    })
+    .catch(function (err) {
+        promise.reject(err);
+    })
+    .done();
 
-            item.aliasId = alias._id;
-            item.aliasName = alias.name;
-            item.locationAddress = alias.locationAddress;
-            item.locationName = alias.locationName;
-            item.location = alias.location;
-
-            createProcess0(item,callback);
-        });
-
-    } else if(aliasName){
-        //if no Id and Create Mark -> create a new one
-        MarkService.create(userId,latitude,longitude,item.visibility,aliasName,locationName,locationAddress,function(err,alias){
-            if(err) return callback(err);
-
-            item.aliasId = alias._id;
-            item.aliasName = alias.name;
-
-            createProcess0(item,callback);
-        });
-
-    } else{
-        //no mark
-
-        delete item.aliasId;
-        delete item.aliasName;
-
-        createProcess0(item,callback);
-    }
-
+    return promise.promise;
 }
 
-function createProcess0(item,callback){
-    if(item.mapIconId){
-        MapIconService.findById(item.mapIconId,function(err,mapIcon){
-            if(err) return callback(err);
-            if(!mapIcon) return callback("Map Icon not found");
 
-            item.mapIconMediaId = mapIcon.mediaId;
 
-            createProcess1(item,callback);
-        })
-    }else{
-        createProcess1(item,callback);
-    }
-}
+function createItemGeneratePreviewImage(item){
+    var promise = Q.defer();
 
-function createProcess1(item,callback){
     ItemUtils.generatePreviewImage(item,function(err,item){
-        if(err) return callback(err);
-
-        if(item.mediaId || item.templateMediaId ){
-            item.status = STATUS_OK;
+        if(err) {
+            promise.reject(err);
+        } else {
+            promise.resolve(item);
         }
-        item.save(function(err){
-            if(err){
-                return callback(err);
-            }
-            if(bitly){
-                bitly.shorten(BITLY_DOMAIN_ITEM_REDIRECT+item._id,BITLY_DOMAIN,function(err,response){
-                    if(err){
-                        return callback(err);
-                    }
-                    //console.log(response);
-                    item.shortlink =  response.data.url;
-                    item.save(function(err) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        createProcess2(item,callback);
-                    });
-                })
-            } else {
-                createProcess2(item,callback);
-            }
-
-
-        })
     });
+
+    return promise.promise;
 }
-function createProcess2(item,callback){
+
+function createItemSave(item) {
+    var promise = Q.defer();
+
+    if (item.mediaId || item.templateMediaId) {
+        item.status = STATUS_OK;
+    }
+    item.save(function (err) {
+        if(err) {
+            promise.reject(err);
+        } else {
+            promise.resolve(item);
+        }
+    });
+
+    return promise.promise;
+}
+
+function createItemShortenUrl(item) {
+    var promise = Q.defer();
+
+    UrlShortener.shortenItem(item._id, function (err, shortlink) {
+        if (err) {
+            promise.reject(err);
+        } else {
+            if(shortlink){
+                item.shortlink = shortlink;
+            }
+            promise.resolve(item);
+        }
+    })
+
+    return promise.promise;
+
+}
+//Save Again
+function createItemAssignTeaserMedia(item) {
+    var promise = Q.defer();
+
     if (item.teaserMediaId) {
         MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
-            if (err) console.error(err);
-
-            createProcess3(item, callback);
+            if (err) {
+                promise.reject(err);
+            } else {
+                promise.resolve(item);
+            }
         });
     } else {
-        createProcess3(item, callback);
+        promise.resolve(item);
     }
+
+    return promise.promise;
 }
-function createProcess3(item,callback){
+
+
+function createItemAssignMedia(item) {
+    var promise = Q.defer();
+
     if (item.mediaId) {
         var visibility = MediaVars.VISIBILITY_PRIVATE;
         if (item.visibility == VISIBILITY_PUBLIC) {
@@ -286,17 +248,30 @@ function createProcess3(item,callback){
         }
         MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
             if (err) {
-                //TODO remove item
-                callback(err);
+                promise.reject(err);
             } else {
-                callback(null, item);
-                createBackground(item);
+                promise.resolve(item);
             }
         });
     } else {
-        callback(null, item);
-        createBackground(item);
+        promise.resolve(item);
     }
+
+    return promise.promise;
+}
+
+function createItemCount1ItemInMark(item) {
+    var promise = Q.defer();
+
+    Mark.findOneAndUpdate({_id:item.markId},{$inc:{itemCount:1}},function(err){
+        if (err) {
+            promise.reject(err);
+        } else {
+            promise.resolve(item);
+        }
+    });
+
+    return promise.promise;
 }
 
 

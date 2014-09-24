@@ -8,7 +8,7 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,aliasName,aliasId,token,callback){
+exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,markName,markId,token,callback){
 	var params ={
                 message:message,
                 templateId:templateId,
@@ -20,8 +20,8 @@ exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitud
                 to:to,
                 locationAddress:locationAddress,
                 locationName:locationName,
-                aliasName:aliasName,
-                aliasId:aliasId,
+                markName:markName,
+                markId:markId,
                 token:token};
 
 	apiClientBase.post('/api/item/create',params,function(code,headers,data){

@@ -55,9 +55,12 @@ describe('Item', function(){
     describe('#create(PUBLIC)', function(){
         it('should create an item object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,null,users[0].token,function(err){
-                if(err) return done(err);
-                done();
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                if (err) return done(err);
+                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err) {
+                    if (err) return done(err);
+                    done();
+                });
             });
 		});
 	});

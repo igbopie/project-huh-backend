@@ -1,12 +1,13 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-
+    , MapIconService = require("../models/mapicon").Service
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
+    , Q = require("q");
     ;
 
 var markSchema = new Schema({
@@ -18,10 +19,11 @@ var markSchema = new Schema({
     locationAddress:   { type: String, required: false},
     radius      :   { type: Number, required:true},
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    mapIconId   :   { type: Schema.Types.ObjectId, required: false},
-    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: false},
+    mapIconId   :   { type: Schema.Types.ObjectId, required: true},
+    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: true},
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
-    shortlink   :   { type: String, required: false}
+    shortlink   :   { type: String, required: false},
+    itemCount :   { type: Number, required:true, default:0}
 });
 
 
@@ -34,23 +36,48 @@ var Mark = mongoose.model('Mark', markSchema);
 //Service?
 var service = {};
 
-service.create = function(userId,latitude,longitude,visibility,name,locationName,locationAddress,callback){
+service.create = function(userId,latitude,longitude,radius,to,name,locationName,locationAddress,mapIconId){
+    var promise = Q.defer();
+
     var alias = new Mark();
     alias.userId = userId;
-    alias.visibility = visibility;
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = longitude;
     locationArray[LOCATION_LATITUDE] = latitude;
+    alias.location = locationArray;
+    alias.radius = radius;
     alias.name = name;
     alias.locationAddress = locationAddress;
     alias.locationName = locationName;
-    alias.location = locationArray;
-    alias.save(function(err){
+    alias.mapIconId = mapIconId;
+    alias.to = to;
+    alias.visibility = VISIBILITY_PRIVATE;
+
+    if(!alias.to || to.length == 0){
+        delete alias.to; //PUBLIC!
+        alias.visibility = VISIBILITY_PUBLIC;
+        //We use this to reduce the index size, because if we use an index on item.to will grow faster
+        // for the kind of information we want.
+    } else {
+        //TODO check users exists!
+    }
+
+    MapIconService.findById(mapIconId,function(err,mapIcon){
         if(err){
-            return callback(err);
+            promise.reject(err);
+        } else {
+            alias.mapIconMediaId = mapIcon.mediaId;
+            alias.save(function (err) {
+                if (err) {
+                    promise.reject(err);
+                } else {
+                    promise.resolve(alias._id);
+                }
+            });
         }
-        callback(null,alias);
     });
+
+    return promise.promise;
 }
 
 service.findById = function(id,callback){
@@ -106,6 +133,6 @@ service.search = function(latitude,longitude,radius,text,userId,callback){
 
 
 module.exports = {
-    Alias: Mark,
+    Mark: Mark,
     Service:service
 };

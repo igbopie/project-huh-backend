@@ -1,13 +1,22 @@
 var ItemService = require('../models/item').Service;
 var ApiUtils = require('../utils/apiutils');
 var Utils = require('../utils/utils');
+var MarkService = require("../models/mark").Service;
+var Q = require("q");
+
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
         //message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId
+
+        //ITEM
+
+        var markId = req.body.markId;
         var message = req.body.message;
         var mediaId = req.body.mediaId;
         var templateId = req.body.templateId;
+
+        //MARK
         var mapIconId = req.body.mapIconId;
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
@@ -15,16 +24,29 @@ exports.create = function(req, res) {
         var to = req.body.to;
         var locationName = req.body.locationName;
         var locationAddress = req.body.locationAddress;
-        var aliasName = req.body.aliasName;
-        var aliasId = req.body.aliasId;
+        var markName = req.body.markName;
 
-        ItemService.create(message,mediaId,templateId, mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,user._id,function(err,item){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
-            }
-        });
+
+        var promise
+        if(!markId){
+            promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,locationName,locationAddress,mapIconId);
+        } else {
+            promise = Q.when(markId);
+        }
+
+        promise.then(function(markId){
+
+            console.log("CREATE ITEM "+message+" "+mediaId+" "+templateId+" "+markId+" "+user._id);
+            return ItemService.create(message,mediaId,templateId,markId,user._id);
+        })
+        .then(function(item){
+            console.log(item);
+            ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink,markId:item.markId});
+        }).catch(function(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }).done();
+
+
     });
 };
 

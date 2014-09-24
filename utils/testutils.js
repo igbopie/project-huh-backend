@@ -41,7 +41,7 @@ exports.cleanDatabase = function(callback){
                                 callback(err);
                                 return;
                             }
-                            db.collection('aliases').remove(	function(err) {
+                            db.collection('marks').remove(	function(err) {
                                 if (err) {
                                     console.log(err);
                                     callback(err);
