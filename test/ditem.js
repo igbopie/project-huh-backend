@@ -5,7 +5,7 @@ var Media = require('../apiclient/media');
 var User = require('../apiclient/user');
 var Item = require('../apiclient/item');
 var Friend = require('../apiclient/friend');
-var Alias = require('../apiclient/alias');
+var Mark = require('../apiclient/mark');
 var Template = require('../apiclient/template');
 var MapIcon = require('../apiclient/mapicon');
 var nUsers = 2;
@@ -52,7 +52,7 @@ describe('Item', function(){
         });
     });
 
-    describe('#create(PUBLIC)', function(){
+    describe('#createPublic', function(){
         it('should create an item object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
@@ -64,6 +64,47 @@ describe('Item', function(){
             });
 		});
 	});
+
+    describe('#createPublicAndSearchMark', function(){
+        it('should create an item object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                if (err) return done(err);
+                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err) {
+                    if (err) return done(err);
+                    Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
+                        if (err) return done(err);
+
+                        results.length.should.be.equal(1);
+
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#createPrivateAndSearchMark', function(){
+        it('should create an item object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                if (err) return done(err);
+                Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
+                    if (err) return done(err);
+
+                    results.length.should.be.equal(1);
+
+                    Mark.search(41.2,41.2,100,null,41.2,41.2,users[1].token,function(err,results){
+                        if (err) return done(err);
+
+                        results.length.should.be.equal(1);
+
+                        done();
+                    });
+                });
+            });
+        });
+    });
 
     describe('#create(PRIVATE)', function(){
         it('should create a media object',function (done) {

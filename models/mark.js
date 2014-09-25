@@ -7,7 +7,10 @@ var mongoose = require('mongoose')
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-    , Q = require("q");
+    , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
+    , Q = require("q")
+    , Geolib = require('geolib')
+    , Utils = require('../utils/utils')
     ;
 
 var markSchema = new Schema({
@@ -27,6 +30,7 @@ var markSchema = new Schema({
 });
 
 
+markSchema.index({visibility:1,to:1});
 markSchema.index({visibility:1,userId:1});
 markSchema.index({name:1});
 
@@ -86,7 +90,9 @@ service.findById = function(id,callback){
     });
 }
 
-service.search = function(latitude,longitude,radius,text,userId,callback){
+
+
+service.search = function(latitude,longitude,radius,text,userLatitude,userLongitude,userId,callback){
 
     var locationArray = [];
     locationArray[LOCATION_LONGITUDE] = Number(longitude);
@@ -94,16 +100,21 @@ service.search = function(latitude,longitude,radius,text,userId,callback){
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    //TODO private and public
-    //TODO indexes
+    var queryPrivateOwnMarks = {visibility:VISIBILITY_PRIVATE,userId:userId};
+    var querySentToMeMarks = {visibility:VISIBILITY_PRIVATE,to:userId};
+    var queryPublicMarks = {visibility:VISIBILITY_PUBLIC};
 
-    var query = {};
+    var query = { $or: [queryPrivateOwnMarks,querySentToMeMarks,queryPublicMarks]}
+
     if(text){
-        query = {name: { $regex: text, $options: 'i' } }
+        query.name ={ $regex: text, $options: 'i' };
     }
+
     if(!radius || !latitude || !longitude){
         Mark.find(query,function(err,results){
-            callback(err,results);
+            if(err) return callback(err);
+
+            processResults(results,callback);
         });
     }else{
         //Radius of earth 6371000 meters
@@ -115,16 +126,71 @@ service.search = function(latitude,longitude,radius,text,userId,callback){
                 //a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
                 return a;
             });
-            callback(null,results);
-            /*
-            // populating user object
-            Item.populate( results, { path: 'ownerUser', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
-                if (err) return callback(err);
 
-            });*/
+            processResults(results,userLatitude,userLongitude,callback);
         });
     }
 
+}
+
+function processResults(results,userLatitude,userLongitude,transformCallback){
+    //mapping each doc into new object and populating distance
+    // populating user object
+    Mark.populate( results, { path: 'userId', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+        if (err) return callback(err);
+        Mark.populate( items, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+            if (err) return callback(err);
+            Utils.map(
+                results,
+                //Map Function
+                function(geoResultMark,mapCallback){
+
+                    var transformedMark = {
+                        longitude: geoResultMark.location[LOCATION_LONGITUDE],
+                        latitude: geoResultMark.location[LOCATION_LATITUDE],
+                        radius: geoResultMark.radius,
+                        name: geoResultMark.name,
+                        userDistance: distance(geoResultMark,userLongitude,userLatitude),
+                        canView: inRange(geoResultMark,userLongitude,userLatitude),
+                        user: geoResultMark.userId,
+                        to: geoResultMark.to,
+                        mapIconMediaId: geoResultMark.mapIconMediaId
+                        //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
+                    }
+
+                    mapCallback(transformedMark);
+
+                }
+                ,
+                //Callback
+                function(results){
+                    transformCallback(null, results);
+                }
+            )
+        });
+    });
+
+}
+
+function inRange(mark,longitude,latitude){
+    if(mark.radius == 0){
+        return true;
+    }
+    if(distance(mark,longitude,latitude) > mark.radius){
+        return false;
+    }else{
+        return true;
+    }
+
+}
+
+function distance(mark,longitude,latitude){
+    //Check location
+    //distance in meters
+    var distance = Geolib.getDistance(
+        {latitude: mark.location[LOCATION_LATITUDE], longitude: mark.location[LOCATION_LONGITUDE] },
+        {latitude: latitude, longitude: longitude});
+    return distance;
 }
 
 

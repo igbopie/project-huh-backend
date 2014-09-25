@@ -113,7 +113,6 @@ app.post('/api/friends/search', friend.search);
 
 app.post('/api/item/create',item.create);
 app.post('/api/item/addmedia',item.addMedia);
-app.post('/api/item/search/by/location',item.searchByLocation);
 app.post('/api/item/view',item.view);
 app.post('/api/item/comment/add',item.addComment);
 app.post('/api/item/favourite',item.favourite);
