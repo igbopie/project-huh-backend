@@ -7,19 +7,25 @@ var Apn = require("../utils/apn")
 
 var service = {};
 
-service.onItemInboxCreated = function(inbox){
+service.onItemCreated = function(item){
 
-    UserService.findUserById({_id:inbox.ownerUserId},function(err,owner){
-        if(err){
-            console.error(err);
-            return;
-        }
-        if(!owner){
-            console.error("Couldn't find owner: "+inbox.ownerUserId);
-            return;
-        }
-        sendNotification(inbox.userId,""+owner.username+" has left you a Mark",{itemId:inbox.itemId});
+    item.to.forEach(function(toUserId){
+
+        UserService.findUserById({_id:item.userId},function(err,owner){
+            if(err){
+                console.error(err);
+                return;
+            }
+            if(!owner){
+                console.error("Couldn't find owner: "+item.userId);
+                return;
+            }
+            sendNotification(item.userId,""+owner.username+" has left you a Mark",{itemId:item._id});
+        });
+
     });
+
+
 }
 
 service.onItemViewed = function(itemId,userId) {

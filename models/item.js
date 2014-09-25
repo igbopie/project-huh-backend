@@ -23,7 +23,9 @@ var mongoose = require('mongoose')
     , STATUS_OK = 1
     , AVERAGE_EARTH_RADIUS = 6371000 //In meters
     , UrlShortener = require('../utils/urlshortener')
-    , Q = require("q");
+    , Q = require("q")
+    , VISIBILITY_PRIVATE = 0
+    , VISIBILITY_PUBLIC = 1;
 
 
 
@@ -36,14 +38,12 @@ var commentSchema = new Schema({
 var itemSchema = new Schema({
     userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     created     :   { type: Date	, required: true, default: Date.now },
+    templateId  :   { type: Schema.Types.ObjectId, required: false},
     // Private fields (not viewed)
     message     :   { type: String, required: false},
-    templateId  :   { type: Schema.Types.ObjectId, required: false},
-    templateMediaId:   { type: Schema.Types.ObjectId, required: false},
     mediaId     :   { type: Schema.Types.ObjectId, required: false},
     // A pre rendered image of the message
     teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
-    teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
     teaserMessage:   { type: String, required: false},
     //Additional parameters
     renderParameters   :   { type: String, required: false},
@@ -64,9 +64,8 @@ var itemSchema = new Schema({
 itemSchema.index({userId:1,status:1});
 itemSchema.index({userId:1,visibility:1,status:1});
 itemSchema.index({visibility:1,status:1});
-itemSchema.index({created:-1});
-itemSchema.index({radius:-1});
-itemSchema.index({to:1,status:1});
+itemSchema.index({created:-1,markId:1});
+itemSchema.index({status:1});
 
 var Item = mongoose.model('Item', itemSchema);
 ///------------------------
@@ -103,24 +102,6 @@ var viewItemStatsSchema = new Schema({
 
 var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 
-///------------------------
-///------------------------
-///------------------------
-var itemInboxSchema = new Schema({
-    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    itemId      :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    created     :   { type: Date	, required: true, default: Date.now },
-    location    :   { type: [Number], required:true,index: '2dsphere'},
-    radius      :   { type: Number, required:true}
-});
-
-itemInboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
-itemInboxSchema.index({itemId:1});
-itemInboxSchema.index({status:1});
-itemInboxSchema.index({radius:-1});
-
-var ItemInbox = mongoose.model('ItemInbox', itemInboxSchema);
 ///------------------------
 ///------------------------
 ///------------------------
@@ -187,7 +168,7 @@ function createItemGeneratePreviewImage(item){
 function createItemSave(item) {
     var promise = Q.defer();
 
-    if (item.mediaId || item.templateMediaId) {
+    if (item.mediaId) {
         item.status = STATUS_OK;
     }
     item.save(function (err) {
@@ -222,7 +203,7 @@ function createItemShortenUrl(item) {
 function createItemAssignTeaserMedia(item) {
     var promise = Q.defer();
 
-    if (item.teaserMediaId) {
+    if (item.teaserMediaId && !item.templateId) {
         MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
             if (err) {
                 promise.reject(err);
@@ -241,16 +222,23 @@ function createItemAssignTeaserMedia(item) {
 function createItemAssignMedia(item) {
     var promise = Q.defer();
 
-    if (item.mediaId) {
-        var visibility = MediaVars.VISIBILITY_PRIVATE;
-        if (item.visibility == VISIBILITY_PUBLIC) {
-            visibility = MediaVars.VISIBILITY_PUBLIC;
-        }
-        MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
+    if (item.mediaId && !item.templateId) {
+
+        Mark.findOne({_id:item.markId},function(err,mark){
             if (err) {
                 promise.reject(err);
-            } else {
-                promise.resolve(item);
+            }else {
+                var visibility = MediaVars.VISIBILITY_PRIVATE;
+                if (mark.visibility == VISIBILITY_PUBLIC) { //See mark!
+                    visibility = MediaVars.VISIBILITY_PUBLIC;
+                }
+                MediaService.assign(item.mediaId, mark.to, visibility, item._id, "Item#mediaId", function (err) {
+                    if (err) {
+                        promise.reject(err);
+                    } else {
+                        promise.resolve(item);
+                    }
+                });
             }
         });
     } else {
@@ -280,32 +268,7 @@ function createBackground(item){
     //We return to the user but we keep working on the "background"
     //Send and notify users
     if(item.to && item.status == STATUS_OK){
-        item.to.forEach(function(userId){
-            //Check friendship!
-            //FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
-            //    if(err){
-            //        console.error(err);
-            //    }else if(isFriend){
-            var itemInbox = new ItemInbox();
-            itemInbox.userId = userId;
-            itemInbox.itemId = item._id;
-            itemInbox.location = item.location;
-            itemInbox.radius = item.radius;
-            itemInbox.ownerUserId = item.userId;
-            itemInbox.save(function(err){
-                if(err){
-                    console.error(err);
-                }else{
-                    EventService.onItemInboxCreated(itemInbox);
-                }
-            });
-            //    } else {
-            //        //TODO maybe send friend request?
-            //    }
-            //});
-
-
-        })
+        EventService.onItemCreated(item);
     }
 }
 
@@ -391,8 +354,6 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
                     var pItem = fillItem(item,userId);
                     pItem.message = item.message;
-                    pItem.templateId = item.templateId;
-                    pItem.templateMediaId = item.templateMediaId;
                     pItem.mediaId = item.mediaId,
                     pItem.renderParameters = item.renderParameters;
                     pItem.comments = item.comments.map(function(comment){
@@ -486,7 +447,6 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
                             } else{
                                 if(canView){
                                     transformedItem.message = dbItem.message;
-                                    transformedItem.templateId = dbItem.templateId;
                                     transformedItem.mediaId = dbItem.mediaId,
                                     transformedItem.renderParameters = dbItem.renderParameters;
                                 }
@@ -513,19 +473,8 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
 }
 function fillItem(item,userId,longitude,latitude){
     var publicItem = {_id:item._id};
-    publicItem.longitude = item.location[LOCATION_LONGITUDE];
-    publicItem.latitude = item.location[LOCATION_LATITUDE];
-    publicItem.radius = item.radius;
     publicItem.user = item.userId;
     publicItem.created = item.created;
-    publicItem.locationAddress = item.locationAddress;
-    publicItem.locationName = item.locationName;
-    publicItem.aliasName = item.aliasName;
-    publicItem.aliasId = item.aliasId;
-    publicItem.templateId = item.templateId;
-    publicItem.mapIconId = item.mapIconId;
-    publicItem.mapIconMediaId = item.mapIconMediaId;
-    publicItem.to = item.to;
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
     publicItem.commentCount = item.commentCount;
@@ -533,7 +482,6 @@ function fillItem(item,userId,longitude,latitude){
 
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
-    publicItem.teaserTemplateMediaId = item.teaserTemplateMediaId;
     publicItem.renderParameters = item.renderParameters;
 
 
@@ -725,16 +673,6 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 
 }
 
-
-///Old Stuff
-//return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
-/*function EndedSeemError(message) {
-    this.name = 'ExpiredSeem';
-    this.message = message;
-    this.stack = (new Error()).stack;
-}
-EndedSeemError.prototype = new Error;
-*/
 
 module.exports = {
     Item: Item,

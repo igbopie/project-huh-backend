@@ -75,8 +75,8 @@ function continueTemplateProcess(item,callback) {
         TemplateService.findById(item.templateId,function(err,template){
             if(err) return callback(err);
 
-            item.templateMediaId = template.mediaId;
-            item.teaserTemplateMediaId = template.teaserMediaId;
+            item.mediaId = template.mediaId;
+            item.teaserMediaId = template.teaserMediaId;
             continueMessageProcess(item,callback);
         });
     }else{
