@@ -9,7 +9,6 @@ var mongoose = require('mongoose')
     , MapIconService = require("../models/mapicon").Service
     , EventService = require("../models/eventdispatcher").Service
     , ItemUtils = require('../utils/itemhelper')
-    , Mark = require("../models/mark").Mark
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
     , textSearch = require('mongoose-text-search')
@@ -67,7 +66,18 @@ itemSchema.index({visibility:1,status:1});
 itemSchema.index({created:-1,markId:1});
 itemSchema.index({status:1});
 
+
 var Item = mongoose.model('Item', itemSchema);
+//Dependency problem
+var service = {};
+module.exports = {
+    Item: Item,
+    Service:service
+};
+
+//
+var Mark = require("../models/mark").Mark
+
 ///------------------------
 ///------------------------
 ///------------------------
@@ -109,7 +119,7 @@ var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 ///------------------------
 ///------------------------
 ///------------------------
-var service = {};
+
 
 service.create = function(message,mediaId,templateId,markId,userId){
     var promise = Q.defer();
@@ -368,7 +378,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                 FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
                     if(err) return callback(err);
 
-                    var pItem = fillItem(item,userId);
+                    var pItem = service.fillItem(item,userId);
                     pItem.canView = false;
                     pItem.favourited = (fav?true:false);
 
@@ -428,7 +438,7 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
             if(!item) return callback("Item not found");
 
             if(item instanceof Item) {
-                var publicItem = fillItem(item, userId,longitude,latitude);
+                var publicItem = service.fillItem(item, userId,longitude,latitude);
                 if (publicItem) {
                     return callback(null, publicItem);
                 } else {
@@ -440,7 +450,7 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
                     //Map Function
                     function(dbItem,mapCallback){
 
-                        var transformedItem = fillItem(dbItem,userId ,longitude,latitude);
+                        var transformedItem = service.fillItem(dbItem,userId ,longitude,latitude);
                         service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
                             if(err){
                                 console.err(err);
@@ -471,7 +481,7 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
 
         });
 }
-function fillItem(item,userId,longitude,latitude){
+service.fillItem = function(item){
     var publicItem = {_id:item._id};
     publicItem.user = item.userId;
     publicItem.created = item.created;
@@ -483,12 +493,6 @@ function fillItem(item,userId,longitude,latitude){
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
     publicItem.renderParameters = item.renderParameters;
-
-
-    if(longitude && latitude){
-        publicItem.userDistance = distance(item,longitude,latitude);
-        publicItem.canView = inRange(item,longitude,latitude);
-    }
 
     return publicItem;
 }
@@ -638,7 +642,7 @@ service.listFavourites = function(longitude,latitude,userId,callback){
                 //Map Function
                 function(dbFavItem,mapCallback){
 
-                    var transformedItem = fillItem(dbFavItem.itemId,userId ,longitude,latitude);
+                    var transformedItem = service.fillItem(dbFavItem.itemId,userId ,longitude,latitude);
                     service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
                         if(err){
                             console.err(err);
@@ -673,8 +677,3 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 
 }
 
-
-module.exports = {
-    Item: Item,
-    Service:service
-};

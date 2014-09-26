@@ -19,3 +19,18 @@ exports.search = function(req, res) {
     });
 };
 
+exports.view = function(req, res) {
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        MarkService.view(markId,user._id,function(err,results){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,results);
+            }
+        });
+    });
+};
+
+
+

@@ -13,6 +13,8 @@ var mongoose = require('mongoose')
     , Utils = require('../utils/utils')
     ;
 
+
+
 var markSchema = new Schema({
     name:   { type: String, required: true},
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
@@ -36,9 +38,18 @@ markSchema.index({name:1});
 
 
 var Mark = mongoose.model('Mark', markSchema);
-
 //Service?
 var service = {};
+
+// The exports is here to avoid cyclic dependency problem
+module.exports = {
+    Mark: Mark,
+    Service:service
+};
+
+// Now we can import
+var Item = require ('../models/item').Item
+    , ItemService = require ('../models/item').Service;
 
 service.create = function(userId,latitude,longitude,radius,to,name,locationName,locationAddress,mapIconId){
     var promise = Q.defer();
@@ -133,7 +144,19 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
 
 }
 
+service.view = function(markId,userId,callback){
+    Mark.findOne({_id:markId},function(err,mark){
+        if(err) return callback(err);
+        if(!mark) return callback("Not found");
+        if(mark.userId.equals(userId))
+
+        callback(null,fillMark(mark));
+
+    });
+}
+
 function processResults(results,userLatitude,userLongitude,transformCallback){
+
     //mapping each doc into new object and populating distance
     // populating user object
     Mark.populate( results, { path: 'userId', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
@@ -144,21 +167,19 @@ function processResults(results,userLatitude,userLongitude,transformCallback){
                 results,
                 //Map Function
                 function(geoResultMark,mapCallback){
+                    Item.findOne({markId:geoResultMark._id},null,{sort: {created: -1 }},function(err,latestItem){
+                        if(err) console.error(err);
 
-                    var transformedMark = {
-                        longitude: geoResultMark.location[LOCATION_LONGITUDE],
-                        latitude: geoResultMark.location[LOCATION_LATITUDE],
-                        radius: geoResultMark.radius,
-                        name: geoResultMark.name,
-                        userDistance: distance(geoResultMark,userLongitude,userLatitude),
-                        canView: inRange(geoResultMark,userLongitude,userLatitude),
-                        user: geoResultMark.userId,
-                        to: geoResultMark.to,
-                        mapIconMediaId: geoResultMark.mapIconMediaId
-                        //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
-                    }
+                        var transformedMark = fillMark(geoResultMark,userLongitude,userLatitude);
+                        if(latestItem) {
+                            transformedMark.items.push(ItemService.fillItem(latestItem));
+                        }
 
-                    mapCallback(transformedMark);
+                        mapCallback(transformedMark);
+
+                    });
+
+
 
                 }
                 ,
@@ -194,11 +215,24 @@ function distance(mark,longitude,latitude){
 }
 
 
+function fillMark(dbMark,userLongitude,userLatitude){
+    var transformedMark = {
+        longitude: dbMark.location[LOCATION_LONGITUDE],
+        latitude: dbMark.location[LOCATION_LATITUDE],
+        radius: dbMark.radius,
+        name: dbMark.name,
+        userDistance: distance(dbMark,userLongitude,userLatitude),
+        canView: inRange(dbMark,userLongitude,userLatitude),
+        user: dbMark.userId,
+        to: dbMark.to,
+        mapIconMediaId: dbMark.mapIconMediaId,
+        items:[]
+        //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
+    }
+
+    return transformedMark;
+}
+
 //search by location and radius or/and text
 //pipeline aggregation framework with geonear & text
 
-
-module.exports = {
-    Mark: Mark,
-    Service:service
-};

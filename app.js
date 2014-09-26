@@ -111,15 +111,20 @@ app.post('/api/friends/block', friend.block);
 app.post('/api/friends/unblock', friend.unblock);
 app.post('/api/friends/search', friend.search);
 
-app.post('/api/item/create',item.create);
-app.post('/api/item/addmedia',item.addMedia);
-app.post('/api/item/view',item.view);
-app.post('/api/item/comment/add',item.addComment);
-app.post('/api/item/favourite',item.favourite);
-app.post('/api/item/unfavourite',item.unfavourite);
-app.post('/api/item/favourite/list',item.listFavourites);
-app.post('/api/item/find/by/senttome',item.listSentToMe);
-app.post('/api/item/find/by/sentbyme',item.listSentByMe);
+
+app.post('/api/mark/search',mark.search);
+app.post('/api/mark/view',item.view);
+app.post('/api/mark/item',item.view);
+
+app.post('/api/mark/item/create',item.create);
+app.post('/api/mark/item/addmedia',item.addMedia);
+app.post('/api/mark/item/view',item.view);
+app.post('/api/mark/item/comment/add',item.addComment);
+app.post('/api/mark/item/favourite',item.favourite);
+app.post('/api/mark/item/unfavourite',item.unfavourite);
+app.post('/api/mark/item/favourite/list',item.listFavourites);
+app.post('/api/mark/item/find/by/senttome',item.listSentToMe);
+app.post('/api/mark/item/find/by/sentbyme',item.listSentByMe);
 
 app.post('/api/template',template.listTemplates);
 app.post('/api/template/update',template.update);
@@ -134,7 +139,6 @@ app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
-app.post('/api/mark/search',mark.search);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

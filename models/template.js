@@ -2,7 +2,6 @@ var mongoose = require('mongoose')
     , Schema = mongoose.Schema;
 var MediaService = require('../models/media').Service;
 var MediaVars = require('../models/media');
-var ItemUtils = require('../utils/itemhelper');
 
 var templateSchema = new Schema({
     name        :   { type: String, required: true},
@@ -16,6 +15,14 @@ var Template = mongoose.model('Template', templateSchema);
 
 
 var service = {};
+
+module.exports = {
+    Template: Template,
+    Service: service
+};
+
+// Avoid cyclic dependency after exports
+var ItemUtils = require('../utils/itemhelper');
 
 service.create = function (name,price,mediaId,userId,callback){
     var template = new Template();
@@ -107,10 +114,7 @@ service.findTemplates = function(callback){
         });
 }
 
-module.exports = {
-    Template: Template,
-    Service: service
-};
+
 
 /*
 

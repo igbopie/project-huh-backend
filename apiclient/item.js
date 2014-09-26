@@ -24,7 +24,7 @@ exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitud
                 markId:markId,
                 token:token};
 
-	apiClientBase.post('/api/item/create',params,function(code,headers,data){
+	apiClientBase.post('/api/mark/item/create',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);
 		} else {
@@ -39,7 +39,7 @@ exports.addMedia = function(mediaId,itemId,token,callback){
         itemId:itemId,
         token:token};
 
-    apiClientBase.post('/api/item/addmedia',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/addmedia',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -57,7 +57,7 @@ exports.searchByLocation = function(latitude,longitude,radius,token,callback){
         latitude:latitude,
         radius:radius,
         token:token};
-    apiClientBase.post('/api/item/search/by/location',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/search/by/location',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -73,7 +73,7 @@ exports.searchByLocationUserLocation = function(latitude,longitude,radius,userLa
         userLatitude:userLatitude,
         userLongitude:userLongitude,
         token:token};
-    apiClientBase.post('/api/item/search/by/location',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/search/by/location',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -88,7 +88,7 @@ exports.view = function(itemId,latitude,longitude,token,callback){
             longitude:longitude,
             latitude:latitude,
             token:token};
-    apiClientBase.post('/api/item/view',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/view',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -103,7 +103,7 @@ exports.addComment = function(itemId,comment,token,callback){
         comment:comment,
         token:token
     };
-    apiClientBase.post('/api/item/comment/add',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/comment/add',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -116,7 +116,7 @@ exports.listCollected = function(token,callback){
     var params ={
         token:token
     };
-    apiClientBase.post('/api/item/find/by/collected',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/find/by/collected',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -128,7 +128,7 @@ exports.listSentToMe = function(token,callback){
     var params ={
         token:token
     };
-    apiClientBase.post('/api/item/find/by/senttome',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/find/by/senttome',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -141,7 +141,7 @@ exports.listSentByMe = function(token,callback){
     var params ={
         token:token
     };
-    apiClientBase.post('/api/item/find/by/sentbyme',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/find/by/sentbyme',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -155,7 +155,7 @@ exports.favourite = function(itemId,token,callback){
         itemId:itemId,
         token:token
     };
-    apiClientBase.post('/api/item/favourite',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/favourite',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -169,7 +169,7 @@ exports.unfavourite = function(itemId,token,callback){
         itemId:itemId,
         token:token
     };
-    apiClientBase.post('/api/item/unfavourite',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/unfavourite',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -182,7 +182,7 @@ exports.listFavourite = function(token,callback){
     var params ={
         token:token
     };
-    apiClientBase.post('/api/item/favourite/list',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item/favourite/list',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {

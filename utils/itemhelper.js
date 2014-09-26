@@ -62,6 +62,10 @@ exports.generatePreviewImage = function(item,callback){
 
 }
 
+//WOOT I had to this here.... after exports
+var TemplateService = require('../models/template.js').Service;
+
+
 function obscureImage(image){
     image = image.resize(25,25);
     image = image.scale(1080,1080);
@@ -70,8 +74,6 @@ function obscureImage(image){
 
 function continueTemplateProcess(item,callback) {
     if(item.templateId){
-        //WOOT I had to this here....
-        var TemplateService = require('../models/template.js').Service;
         TemplateService.findById(item.templateId,function(err,template){
             if(err) return callback(err);
 

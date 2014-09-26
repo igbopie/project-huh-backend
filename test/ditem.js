@@ -106,6 +106,26 @@ describe('Item', function(){
         });
     });
 
+    describe('#createMixedAndSearchMark', function(){
+        it('should create an item object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                if (err) return done(err);
+                Item.create("Test2",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                    if (err) return done(err);
+                    Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
+                        if (err) return done(err);
+
+                        results.length.should.be.equal(2);
+                        console.log(require('util').inspect(results, true, 10));
+
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('#create(PRIVATE)', function(){
         it('should create a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
