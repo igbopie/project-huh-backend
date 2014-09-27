@@ -176,12 +176,8 @@ describe('Item', function(){
                             if(err && data == 401) return done();
                             if(!err) return done("Should return unauthorized")
                             done(err);
-
                         });
-
                     });
-
-
                 });
             });
         });
