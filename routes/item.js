@@ -25,11 +25,12 @@ exports.create = function(req, res) {
         var locationName = req.body.locationName;
         var locationAddress = req.body.locationAddress;
         var markName = req.body.markName;
+        var markDescription = req.body.markDescription;
 
 
         var promise
         if(!markId){
-            promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,locationName,locationAddress,mapIconId);
+            promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,markDescription,locationName,locationAddress,mapIconId);
         } else {
             promise = Q.when(markId);
         }

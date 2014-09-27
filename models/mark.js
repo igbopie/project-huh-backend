@@ -17,6 +17,7 @@ var mongoose = require('mongoose')
 
 var markSchema = new Schema({
     name:   { type: String, required: true},
+    description:   { type: String, required: false},
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     date    :   { type: Date	, required: true, default: Date.now },
     location    :   { type: [Number], required:true,index: '2dsphere'},
@@ -52,7 +53,7 @@ module.exports = {
 var Item = require ('../models/item').Item
     , ItemService = require ('../models/item').Service;
 
-service.create = function(userId,latitude,longitude,radius,to,name,locationName,locationAddress,mapIconId){
+service.create = function(userId,latitude,longitude,radius,to,name,description,locationName,locationAddress,mapIconId){
     var promise = Q.defer();
 
     var alias = new Mark();
@@ -68,6 +69,7 @@ service.create = function(userId,latitude,longitude,radius,to,name,locationName,
     alias.mapIconId = mapIconId;
     alias.to = to;
     alias.visibility = VISIBILITY_PRIVATE;
+    alias.description = description;
 
     if(!alias.to || to.length == 0){
         delete alias.to; //PUBLIC!
