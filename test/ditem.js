@@ -8,7 +8,7 @@ var Friend = require('../apiclient/friend');
 var Mark = require('../apiclient/mark');
 var Template = require('../apiclient/template');
 var MapIcon = require('../apiclient/mapicon');
-var nUsers = 2;
+var nUsers = 3;
 var users = null;
 var templateId = null;
 var mapIconId = null;
@@ -54,11 +54,19 @@ describe('Item', function(){
 
     describe('#createPublic', function(){
         it('should create an item object',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err) {
-                    if (err) return done(err);
+
+                data.should.have.property("markId");
+                data.should.have.property("shortlink");
+                data.should.have.property("itemId");
+
+                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err,data) {
+                    if (err) return done(err)
+
+                    data.should.have.property("itemId");
+                    data.should.have.property("shortlink");
+
                     done();
                 });
             });
@@ -67,7 +75,6 @@ describe('Item', function(){
 
     describe('#createPublicAndSearchMark', function(){
         it('should create an item object',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
                 Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err) {
@@ -86,7 +93,6 @@ describe('Item', function(){
 
     describe('#createPrivateAndSearchMark', function(){
         it('should create an item object',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
                 Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
@@ -108,7 +114,6 @@ describe('Item', function(){
 
     describe('#createMixedAndSearchMark', function(){
         it('should create an item object',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
             Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
                 Item.create("Test2",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
@@ -138,6 +143,47 @@ describe('Item', function(){
                 });
             });
 
+        });
+    });
+
+    describe('#viewPublicMark', function(){
+        it('should create an item object',function (done) {
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                if (err) return done(err);
+                Item.viewMark(data.markId,41.2,41.2,users[0].token,function(err,data){
+                    if(err) return done(err);
+
+                    data.should.have.property("_id");
+                    data.should.have.property("items");
+                    data.items.length.should.be.equal(1);
+
+                    done();
+
+                });
+            });
+        });
+    });
+
+    describe('#viewPrivateMark', function(){
+        it('should create an item object',function (done) {
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
+                if (err) return done(err);
+                Item.viewMark(createResponse.markId,41.2,41.2,users[0].token,function(err,data){
+                    if(err) return done(err);
+                    Item.viewMark(createResponse.markId,41.2,41.2,users[1].token,function(err,data){
+                        if(err) return done(err);
+                        Item.viewMark(createResponse.markId,41.2,41.2,users[2].token,function(err,data){
+                            if(err && data == 401) return done();
+                            if(!err) return done("Should return unauthorized")
+                            done(err);
+
+                        });
+
+                    });
+
+
+                });
+            });
         });
     });
 

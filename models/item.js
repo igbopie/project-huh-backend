@@ -4,7 +4,8 @@ var mongoose = require('mongoose')
     , LOCATION_LATITUDE = 1
     , STATUS = [STATUS_PENDING,STATUS_OK]
     , STATUS_PENDING = 0
-    , STATUS_OK = 1;
+    , STATUS_OK = 1
+    , NUM_MARK_ITEM_CACHE = 1;
 
 
 
@@ -268,13 +269,24 @@ function createItemAssignMedia(item) {
 function createItemCount1ItemInMark(item) {
     var promise = Q.defer();
 
-    Mark.findOneAndUpdate({_id:item.markId},{$inc:{itemCount:1}},function(err){
-        if (err) {
-            promise.reject(err);
-        } else {
-            promise.resolve(item);
+    Mark.findOneAndUpdate(
+        {_id:item.markId},
+        {
+            $inc:{itemCount:1},
+            $push: {
+                items:  JSON.parse(JSON.stringify(item)) //a mongoose object has problems...
+                    //$slice: NUM_MARK_ITEM_CACHE
+
+            }
+        },
+        function(err){
+            if (err) {
+                promise.reject(err);
+            } else {
+                promise.resolve(item);
+            }
         }
-    });
+    );
 
     return promise.promise;
 }

@@ -38,7 +38,7 @@ exports.create = function(req, res) {
             return ItemService.create(message,mediaId,templateId,markId,user._id);
         })
         .then(function(item){
-            ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink,markId:item.markId});
+            ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,shortlink:item.shortlink,markId:item.markId});
         }).catch(function(err){
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
         }).done();
@@ -70,7 +70,9 @@ exports.view = function(req,res){
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
         ItemService.view(itemId,longitude,latitude,user._id,function(err,data){
-            if(err){
+            if(err && err.code == Utils.ERROR_CODE_UNAUTHORIZED) {
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            }else if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,data);

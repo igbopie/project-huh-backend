@@ -81,9 +81,21 @@ exports.searchByLocationUserLocation = function(latitude,longitude,radius,userLa
         }
     });
 }
+exports.viewMark = function(markId,latitude,longitude,token,callback){
+    var params ={markId:markId,
+        longitude:longitude,
+        latitude:latitude,
+        token:token};
+    apiClientBase.post('/api/mark/view',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 
-
-exports.view = function(itemId,latitude,longitude,token,callback){
+exports.viewItem = function(itemId,latitude,longitude,token,callback){
     var params ={itemId:itemId,
             longitude:longitude,
             latitude:latitude,

@@ -28,7 +28,8 @@ var markSchema = new Schema({
     mapIconMediaId   :   { type: Schema.Types.ObjectId, required: true},
     to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     shortlink   :   { type: String, required: false},
-    itemCount :   { type: Number, required:true, default:0}
+    itemCount :   { type: Number, required:true, default:0},
+    items: []
 });
 
 
@@ -145,12 +146,40 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
 }
 
 service.view = function(markId,userId,callback){
-    Mark.findOne({_id:markId},function(err,mark){
-        if(err) return callback(err);
-        if(!mark) return callback("Not found");
-        if(mark.userId.equals(userId))
+    Mark.findOne({_id:markId})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+        .exec(function(err,mark){
+            if(err) return callback(err);
+            if(!mark) return callback("Not found");
 
-        callback(null,fillMark(mark));
+            var containsTo = false;
+            //Sometimes it's populated
+            for (var i = 0; i < mark.to.length && !containsTo; i++) {
+                var toUserId = "";
+                var toUserElement = mark.to[i];
+                if (toUserElement instanceof mongoose.Types.ObjectId) {
+                    toUserId = toUserElement;
+                } else {
+                    toUserId = toUserElement._id;
+                }
+
+
+                if (String(toUserId) == String(userId)) {
+                    containsTo = true;
+                }
+            }
+
+            if(mark.userId._id.equals(userId) ||
+                containsTo == true ||
+                mark.visibility == VISIBILITY_PUBLIC
+                ){
+                callback(null,fillMark(mark));
+            }else {
+                callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not permitted"));
+            }
+
+
 
     });
 }
@@ -217,17 +246,28 @@ function distance(mark,longitude,latitude){
 
 function fillMark(dbMark,userLongitude,userLatitude){
     var transformedMark = {
+        _id:dbMark._id,
         longitude: dbMark.location[LOCATION_LONGITUDE],
         latitude: dbMark.location[LOCATION_LATITUDE],
         radius: dbMark.radius,
         name: dbMark.name,
-        userDistance: distance(dbMark,userLongitude,userLatitude),
-        canView: inRange(dbMark,userLongitude,userLatitude),
         user: dbMark.userId,
         to: dbMark.to,
         mapIconMediaId: dbMark.mapIconMediaId,
-        items:[]
+        mapIconId: dbMark.mapIconId
         //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
+    }
+
+    if(userLongitude && userLatitude){
+        transformedMark.userDistance = distance(dbMark,userLongitude,userLatitude);
+        transformedMark.canView = inRange(dbMark,userLongitude,userLatitude);
+    }
+
+    if(dbMark.items){
+        transformedMark.items = [];
+        for(var i = 0; i < dbMark.items.length;i++){
+            transformedMark.items[i] = ItemService.fillItem(dbMark.items[i]);
+        }
     }
 
     return transformedMark;

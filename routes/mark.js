@@ -1,5 +1,6 @@
 var MarkService = require('../models/mark').Service;
 var ApiUtils = require('../utils/apiutils');
+var Utils = require('../utils/utils');
 
 exports.search = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
@@ -23,7 +24,9 @@ exports.view = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
         var markId = req.body.markId;
         MarkService.view(markId,user._id,function(err,results){
-            if(err){
+            if(err && err.code == Utils.ERROR_CODE_UNAUTHORIZED) {
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            }else if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,results);
