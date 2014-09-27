@@ -192,9 +192,9 @@ describe('Item', function(){
             // 40 m
             Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
                 if (err) return done(err);
-                Item.addComment(item._id,"Hello comment", users[0].token, function (err) {
+                Item.addComment(item.itemId,"Hello comment", users[0].token, function (err) {
                     if (err) return done(err);
-                    Item.listComments(item._id,users[0].token, function (err, comments) {
+                    Item.listComments(item.itemId,users[0].token, function (err, comments) {
                         if (err) return done(err);
                         //console.log(item);
                         comments.length.should.be.equal(1);
