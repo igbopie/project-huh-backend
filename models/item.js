@@ -336,6 +336,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
         if(!item) return callback("Not found");
 
         service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
+            if(err) return callback(err);
             if(allowed){
                 ViewItem.findOneAndUpdate(
                     {
@@ -577,7 +578,7 @@ service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback
             }
             for (var i = 0; i < item.markId.to.length && !containsTo; i++) {
                 var toUserId = "";
-                var toUserElement = item.to[i];
+                var toUserElement = item.markId.to[i];
                 console.log(toUserElement);
                 if (toUserElement instanceof mongoose.Types.ObjectId) {
                     toUserId = toUserElement;
@@ -612,6 +613,10 @@ service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback
 
             if (item.markId.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item.markId, longitude, latitude)) {
                 canSee = true;
+            }
+
+            if(item.markId.visibility == VISIBILITY_PRIVATE && !containsTo && String(item.markId.userId) != String(userId)){
+                return callback(new Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not authorized"));
             }
 
             if (!canSee) {

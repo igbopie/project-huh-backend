@@ -183,6 +183,25 @@ describe('Item', function(){
         });
     });
 
+    describe('#viewItemMark', function(){
+        it('should create an item object',function (done) {
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
+                if (err) return done(err);
+                Item.viewItem(createResponse.itemId,41.2,41.2,users[0].token,function(err,data){
+                    if(err) return done(err);
+                    Item.viewItem(createResponse.itemId,41.2,41.2,users[1].token,function(err,data){
+                        if(err) return done(err);
+                        Item.viewItem(createResponse.itemId,41.2,41.2,users[2].token,function(err,data){
+                            if(err && data == 401) return done();
+                            if(!err) return done("Should return unauthorized")
+                            done(err);
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('#addComment()', function(){
         it('should add a comment',function (done) {
             this.timeout(20000);//S3 requires longer timeout
