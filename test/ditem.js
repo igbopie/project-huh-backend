@@ -117,7 +117,7 @@ describe('Item', function(){
                         if (err) return done(err);
 
                         results.length.should.be.equal(2);
-                        console.log(require('util').inspect(results, true, 10));
+                        //console.log(require('util').inspect(results, true, 10));
 
                         done();
                     });
@@ -126,26 +126,13 @@ describe('Item', function(){
         });
     });
 
-    describe('#create(PRIVATE)', function(){
-        it('should create a media object',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
-            Friend.addFriend(users[1].username,users[0].token,function(err) {
-                if (err) return done(err);
-
-                Item.create( "Test",templateId,mapIconId, null, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
-                    if (err) return done(err);
-                    done();
-                });
-            });
-        });
-    });
 
     describe('#createWithImage()', function(){
         it('should create a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
                 if(err) return done(err);
-                Item.create( "I am here in starbucks",null,mapIconId, mediaId, 41.2, 41.2, 10, [users[1].id],null,null,null,null, users[0].token, function (err) {
+                Item.create("Test2",null,mapIconId,mediaId,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                     if (err) return done(err);
                     done();
                 });
@@ -154,6 +141,30 @@ describe('Item', function(){
         });
     });
 
+    describe('#addComment()', function(){
+        it('should add a comment',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //LAT       LONG
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
+                if (err) return done(err);
+                Item.addComment(item._id,"Hello comment", users[0].token, function (err) {
+                    if (err) return done(err);
+                    Item.listComments(item._id,users[0].token, function (err, comments) {
+                        if (err) return done(err);
+                        //console.log(item);
+                        comments.length.should.be.equal(1);
+                        done();
+                    });
+
+                });
+            });
+        });
+    });
+
+    /*
 
     describe('#viewNotAllowed()', function(){
         it('shouldnt view',function (done) {
@@ -304,28 +315,7 @@ describe('Item', function(){
         });
     });
 
-    describe('#addComment()', function(){
-        it('should add a comment',function (done) {
-            this.timeout(20000);//S3 requires longer timeout
-            //LAT       LONG
-            //40.665006, -3.779096
-            //40.665350, -3.778955
-            // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,null,null, users[0].token, function (err, item) {
-                if (err) return done(err);
-                Item.addComment(item._id,"Hello comment", users[0].token, function (err) {
-                    if (err) return done(err);
-                    Item.view(item._id,null,null,users[0].token, function (err, item) {
-                        if (err) return done(err);
-                        //console.log(item);
-                        item.comments.length.should.be.equal(1);
-                        done();
-                    });
 
-                });
-            });
-        });
-    });
 
     describe('#addCommentUnAuth()', function(){
         it('should add a comment',function (done) {
@@ -642,5 +632,5 @@ describe('Item', function(){
 
 
         });
-    });
+    });*/
 });

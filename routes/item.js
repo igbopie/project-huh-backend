@@ -35,12 +35,9 @@ exports.create = function(req, res) {
         }
 
         promise.then(function(markId){
-
-            console.log("CREATE ITEM "+message+" "+mediaId+" "+templateId+" "+markId+" "+user._id);
             return ItemService.create(message,mediaId,templateId,markId,user._id);
         })
         .then(function(item){
-            console.log(item);
             ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink,markId:item.markId});
         }).catch(function(err){
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
@@ -160,6 +157,32 @@ exports.listFavourites = function(req,res){
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
         ItemService.listFavourites(longitude,latitude,user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.listByMark = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        ItemService.listByMark(markId,user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.listComments = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        ItemService.listComments(itemId,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

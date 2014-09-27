@@ -110,22 +110,26 @@ app.post('/api/friends/blocked', friend.listBlocked);
 app.post('/api/friends/block', friend.block);
 app.post('/api/friends/unblock', friend.unblock);
 app.post('/api/friends/search', friend.search);
-
-
-app.post('/api/mark/search',mark.search);
-app.post('/api/mark/view',item.view);
-app.post('/api/mark/item',item.view);
-
+//----
 app.post('/api/mark/item/create',item.create);
 app.post('/api/mark/item/addmedia',item.addMedia);
+
+app.post('/api/mark/view',mark.view);
+app.post('/api/mark/item',item.listByMark);
+
 app.post('/api/mark/item/view',item.view);
+
+app.post('/api/mark/item/comment',item.listComments);
 app.post('/api/mark/item/comment/add',item.addComment);
+
 app.post('/api/mark/item/favourite',item.favourite);
 app.post('/api/mark/item/unfavourite',item.unfavourite);
 app.post('/api/mark/item/favourite/list',item.listFavourites);
+
+app.post('/api/mark/search',mark.search);
 app.post('/api/mark/item/find/by/senttome',item.listSentToMe);
 app.post('/api/mark/item/find/by/sentbyme',item.listSentByMe);
-
+//----
 app.post('/api/template',template.listTemplates);
 app.post('/api/template/update',template.update);
 app.post('/api/template/view',template.findById);

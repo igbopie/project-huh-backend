@@ -112,6 +112,20 @@ exports.addComment = function(itemId,comment,token,callback){
     });
 }
 
+exports.listComments = function(itemId,token,callback){
+    var params ={
+        itemId:itemId,
+        token:token
+    };
+    apiClientBase.post('/api/mark/item/comment',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 exports.listCollected = function(token,callback){
     var params ={
         token:token

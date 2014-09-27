@@ -1,38 +1,12 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-    , User = require("../models/user").User
-    , Media = require("../models/media").Media
-    , MediaService = require("../models/media").Service
-    , MediaVars = require('../models/media')
-    , FriendService = require("../models/friend").Service
-    , TemplateService = require("../models/template").Service
-    , MapIconService = require("../models/mapicon").Service
-    , EventService = require("../models/eventdispatcher").Service
-    , ItemUtils = require('../utils/itemhelper')
-    , Geolib = require('geolib')
-    , Utils = require('../utils/utils')
-    , textSearch = require('mongoose-text-search')
-    , CronJob = require('cron').CronJob
-    , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
-    , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
     , LOCATION_LONGITUDE = 0
     , LOCATION_LATITUDE = 1
     , STATUS = [STATUS_PENDING,STATUS_OK]
     , STATUS_PENDING = 0
-    , STATUS_OK = 1
-    , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-    , UrlShortener = require('../utils/urlshortener')
-    , Q = require("q")
-    , VISIBILITY_PRIVATE = 0
-    , VISIBILITY_PUBLIC = 1;
+    , STATUS_OK = 1;
 
 
-
-var commentSchema = new Schema({
-    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    comment :   { type: String  , required: true },
-    date    :   { type: Date	, required: true, default: Date.now }
-});
 
 var itemSchema = new Schema({
     userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
@@ -49,7 +23,6 @@ var itemSchema = new Schema({
     //
     markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
-    comments    :   [commentSchema],
     //STATS
     viewCount :   { type: Number, required:true, default:0},
     favouriteCount :   { type: Number, required:true, default:0},
@@ -60,6 +33,7 @@ var itemSchema = new Schema({
 
 });
 
+itemSchema.index({markId:1,created:-1});
 itemSchema.index({userId:1,status:1});
 itemSchema.index({userId:1,visibility:1,status:1});
 itemSchema.index({visibility:1,status:1});
@@ -68,15 +42,48 @@ itemSchema.index({status:1});
 
 
 var Item = mongoose.model('Item', itemSchema);
+
+var commentSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
+    comment :   { type: String  , required: true },
+    date    :   { type: Date	, required: true, default: Date.now }
+});
+
+itemSchema.index({itemId:1,date:-1});
+
+var Comment = mongoose.model('Comment', commentSchema);
+
 //Dependency problem
 var service = {};
 module.exports = {
     Item: Item,
+    Comment: Comment,
     Service:service
 };
 
-//
-var Mark = require("../models/mark").Mark
+
+var User = require("../models/user").User
+    , Media = require("../models/media").Media
+    , MediaService = require("../models/media").Service
+    , MediaVars = require('../models/media')
+    , FriendService = require("../models/friend").Service
+    , TemplateService = require("../models/template").Service
+    , MapIconService = require("../models/mapicon").Service
+    , EventService = require("../models/eventdispatcher").Service
+    , ItemUtils = require('../utils/itemhelper')
+    , Geolib = require('geolib')
+    , Utils = require('../utils/utils')
+    , textSearch = require('mongoose-text-search')
+    , CronJob = require('cron').CronJob
+    , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
+    , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
+    , AVERAGE_EARTH_RADIUS = 6371000 //In meters
+    , UrlShortener = require('../utils/urlshortener')
+    , Q = require("q")
+    , VISIBILITY_PRIVATE = 0
+    , VISIBILITY_PUBLIC = 1
+    , Mark = require("../models/mark").Mark
 
 ///------------------------
 ///------------------------
@@ -312,7 +319,6 @@ service.view = function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId})
         .populate("userId",PUBLIC_USER_FIELDS)
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
-        .populate("comments.userId",PUBLIC_USER_FIELDS)
         .exec(function(err,item){
         if(err) return callback(err);
         if(!item) return callback("Not found");
@@ -362,13 +368,10 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                 FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
                     if(err) return callback(err);
 
-                    var pItem = fillItem(item,userId);
+                    var pItem = service.fillItem(item,userId);
                     pItem.message = item.message;
                     pItem.mediaId = item.mediaId,
                     pItem.renderParameters = item.renderParameters;
-                    pItem.comments = item.comments.map(function(comment){
-                        return {comment:comment.comment,date:comment.date,user:comment.userId};
-                    });
                     pItem.canView = true;
                     pItem.favourited = (fav?true:false);
 
@@ -410,10 +413,10 @@ service.listSentByMe = function(userId,longitude,latitude,callback){
         ,longitude,latitude,userId,callback);
 }
 
-function inRange(item,longitude,latitude){
+function inRange(mark,longitude,latitude){
 
 
-    if(distance(item,longitude,latitude) > item.radius){
+    if(distance(mark,longitude,latitude) > mark.radius){
         return false;
     }else{
         return true;
@@ -421,11 +424,11 @@ function inRange(item,longitude,latitude){
 
 }
 
-function distance(item,longitude,latitude){
+function distance(mark,longitude,latitude){
     //Check location
     //distance in meters
     var distance = Geolib.getDistance(
-        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
+        {latitude: mark.location[LOCATION_LATITUDE], longitude: mark.location[LOCATION_LONGITUDE] },
         {latitude: latitude, longitude: longitude});
     return distance;
 }
@@ -497,8 +500,19 @@ service.fillItem = function(item){
     return publicItem;
 }
 
-
-service.addComment = function(itemId,comment,userId,callback) {
+service.listComments = function(itemId,callback){
+    Comment.find({itemId:itemId})
+        .sort({date:-1})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,comments){
+            if(err) return callback(err);
+            comments = comments.map(function(comment){
+                return {comment:comment.comment,date:comment.date,user:comment.userId};
+            });
+            callback(null,comments);
+        });
+}
+service.addComment = function(itemId,textComment,userId,callback) {
     Item.findOne({_id: itemId})
         .exec(function (err, item) {
             if (err) return callback(err);
@@ -508,16 +522,24 @@ service.addComment = function(itemId,comment,userId,callback) {
                 if (err) return callback(err);
                 if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not allowed to post comment"));
 
-                Item.update(
-                    {_id: item},
-                    {
-                        $push: {comments: {userId:userId,data:Date.now(),comment:comment}},
-                        $inc: {commentCount:1}
-                    },
-                    function (err) {
-                        callback(err);
-                        EventService.onCommentAdded(itemId,userId);
-                    });
+                var comment = new Comment();
+
+                comment.userId = userId;
+                comment.itemId = itemId;
+                comment.comment= textComment;
+                comment.save(function(err){
+                    if(err) return callback(err);
+                    Item.update(
+                        {_id: item},
+                        {
+                            $inc: {commentCount:1}
+                        },
+                        function (err) {
+                            callback(err);
+                            EventService.onCommentAdded(itemId,userId);
+                        });
+                });
+
             })
 
         });
@@ -526,69 +548,72 @@ service.addComment = function(itemId,comment,userId,callback) {
 service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId,status:STATUS_OK},function(err,item) {
         if (err) return callback(err);
-        if (!item) return callback("Entity Not Found");
+        Item.populate( item, { path: 'markId', model: 'Mark'}, function(err,item) {
+            if (err) return callback(err);
+            if (!item) return callback("Entity Not Found");
 
-        var canSee = false;
-        var ownerUserId;
-        var containsTo = false;
+            var canSee = false;
+            var ownerUserId;
+            var containsTo = false;
 
-        //+++PRE PROCESS
-        //Sometimes it's populated
-        if (item.userId instanceof mongoose.Types.ObjectId) {
-            ownerUserId = item.userId;
-        } else if (item.userId) {
-            ownerUserId = item.userId._id;
-        }
-        for (var i = 0; i < item.to.length && !containsTo; i++) {
-            var toUserId = "";
-            var toUserElement = item.to[i];
-            console.log(toUserElement);
-            if (toUserElement instanceof mongoose.Types.ObjectId) {
-                toUserId = toUserElement;
+            //+++PRE PROCESS
+            //Sometimes it's populated
+            if (item.userId instanceof mongoose.Types.ObjectId) {
+                ownerUserId = item.userId;
+            } else if (item.userId) {
+                ownerUserId = item.userId._id;
+            }
+            for (var i = 0; i < item.markId.to.length && !containsTo; i++) {
+                var toUserId = "";
+                var toUserElement = item.to[i];
+                console.log(toUserElement);
+                if (toUserElement instanceof mongoose.Types.ObjectId) {
+                    toUserId = toUserElement;
+                } else {
+                    toUserId = toUserElement._id;
+                }
+
+
+                if (String(toUserId) == String(userId)) {
+                    containsTo = true;
+                }
+            }
+            //---
+
+            //I am the owner or I have collected the item
+            if (String(ownerUserId) == String(userId)) {
+                canSee = true;
+            }
+
+            //The item is public and I am in range
+            if (item.markId.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item.markId, longitude, latitude)) {
+                canSee = true;
+            }
+
+            if (item.markId.visibility == VISIBILITY_PUBLIC && item.markId.radius == 0) {
+                canSee = true;
+            }
+
+            if (item.markId.visibility == VISIBILITY_PRIVATE && containsTo && item.markId.radius == 0) {
+                canSee = true;
+            }
+
+            if (item.markId.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item.markId, longitude, latitude)) {
+                canSee = true;
+            }
+
+            if (!canSee) {
+                //Lets see if he saw once
+                ViewItem.findOne({userId: userId, itemId: item._id}, 'count', function (err, doc) {
+                    if (err) return callback(err);
+                    if (!doc || doc.count == 0) return callback(null, false);
+
+                    callback(null, true);
+                });
             } else {
-                toUserId = toUserElement._id;
-            }
-
-
-            if (String(toUserId) == String(userId)) {
-                containsTo = true;
-            }
-        }
-        //---
-
-        //I am the owner or I have collected the item
-        if (String(ownerUserId) == String(userId)) {
-            canSee = true;
-        }
-
-        //The item is public and I am in range
-        if (item.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item, longitude, latitude)) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PUBLIC && item.radius == 0) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PRIVATE && containsTo && item.radius == 0) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item, longitude, latitude)) {
-            canSee = true;
-        }
-
-        if (!canSee) {
-            //Lets see if he saw once
-            ViewItem.findOne({userId: userId, itemId: item._id}, 'count', function (err, doc) {
-                if (err) return callback(err);
-                if (!doc || doc.count == 0) return callback(null, false);
-
                 callback(null, true);
-            });
-        } else {
-            callback(null, true);
-        }
+            }
+        });
     });
 }
 
@@ -676,4 +701,46 @@ service.listFavourites = function(longitude,latitude,userId,callback){
     });
 
 }
+
+service.listByMark = function(markId,userId,callback){
+
+    Item.find({markId:markId}).sort({created:-1})
+        .populate({ path: 'UserId', model: 'User', select: PUBLIC_USER_FIELDS })
+        .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+        .exec(function(err,items){
+            if(err) return callback(err);
+
+            Utils.map(
+                items,
+                //Map Function
+                function(dbItem,mapCallback){
+
+                    var transformedItem = service.fillItem(dbItem);
+                    service.allowedToSeeContent(transformedItem._id,null,null,userId,function(err,canView){
+                        if(err){
+                            console.err(err);
+                        } else{
+                            if(canView){
+                                transformedItem.message = dbItem.message;
+                                transformedItem.templateId = dbItem.templateId;
+                                transformedItem.mediaId = dbItem.mediaId,
+                                transformedItem.renderParameters = dbItem.renderParameters;
+                            }
+                            transformedItem.canView = canView;
+                        }
+                        transformedItem.favourited = true;
+                        mapCallback(transformedItem);
+                    });
+                }
+                ,
+                //Callback
+                function(items){
+                    if (err) return callback(err);
+                    callback(null,items);
+                });
+        });
+
+}
+
+
 

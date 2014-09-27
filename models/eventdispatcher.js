@@ -1,11 +1,17 @@
+
+
+
+var service = {};
+module.exports = {
+    Service:service
+};
+
 var Apn = require("../utils/apn")
     , Gcm = require("../utils/gcm")
     , Email = require("../utils/email")
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
-    , UserService = require("../models/user").Service;
-
-
-var service = {};
+    , UserService = require("../models/user").Service
+    , Comment = require("../models/item").Comment;
 
 service.onItemCreated = function(item){
 
@@ -64,36 +70,43 @@ service.onCommentAdded = function(itemId,userId){
                 return;
             }
 
-            UserService.findUserById({_id:userId},function(err,userCommented){
-                if(err){
+            Comment.find({itemId:itemId},function(err,comments) {
+                if (err) {
                     console.error(err);
                     return;
                 }
-                if(!userCommented){
-                    console.error("No user found");
-                    return;
-                }
-                //If I am not commenting on my post
-                if(String(item.userId) != String(userId)){
-                    sendNotification(item.userId,""+userCommented.username+" commented on your Mark",{itemId:item._id});
-                }
-                var uniqueUsers = [];
-                for(var i = 0;i<item.comments.length;i++){
-                    var comment = item.comments[i];
-                    uniqueUsers[String(comment.userId)]=true;
-                }
-
-                for(var commentAuthorUserId in uniqueUsers) {
-                    console.log(commentAuthorUserId);
-
-                    if(String(item.userId) != String(commentAuthorUserId) && //It is not the owner
-                        String(userCommented._id) != String(commentAuthorUserId) ) //it is not the same user
-                    {
-                        sendNotification(commentAuthorUserId,""+userCommented.username+" commented on a Mark you commented",{itemId:item._id});
+                UserService.findUserById({_id: userId}, function (err, userCommented) {
+                    if (err) {
+                        console.error(err);
+                        return;
                     }
-                }
+                    if (!userCommented) {
+                        console.error("No user found");
+                        return;
+                    }
+                    //If I am not commenting on my post
+                    if (String(item.userId) != String(userId)) {
+                        sendNotification(item.userId, "" + userCommented.username + " commented on your Mark", {itemId: item._id});
+                    }
+                    var uniqueUsers = [];
+
+                    for (var i = 0; i < comments.length; i++) {
+                        var comment = comments[i];
+                        uniqueUsers[String(comment.userId)] = true;
+                    }
+
+                    for (var commentAuthorUserId in uniqueUsers) {
 
 
+                        if (String(item.userId) != String(commentAuthorUserId) && //It is not the owner
+                            String(userCommented._id) != String(commentAuthorUserId)) //it is not the same user
+                        {
+                            sendNotification(commentAuthorUserId, "" + userCommented.username + " commented on a Mark you commented", {itemId: item._id});
+                        }
+                    }
+
+
+                });
             });
 
 
@@ -103,9 +116,7 @@ service.onCommentAdded = function(itemId,userId){
 }
 
 
-module.exports = {
-    Service:service
-};
+
 
 function sendNotification(userId,message,data){
 
