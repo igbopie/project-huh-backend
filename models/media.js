@@ -289,7 +289,6 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
             } else {
                 console.log("No GPS exif data");
             }
-
             media.save(function (err) {
                 if (err) {
                     callback(err);
@@ -309,6 +308,8 @@ service.create = function (originalPath, contentType, name, ownerId, callback) {
                     })
                 }
             });
+        }else{
+            callback(err);
         }
     });
 
