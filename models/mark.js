@@ -258,7 +258,8 @@ function fillMark(dbMark,userLongitude,userLatitude){
         user: dbMark.userId,
         to: dbMark.to,
         mapIconMediaId: dbMark.mapIconMediaId,
-        mapIconId: dbMark.mapIconId
+        mapIconId: dbMark.mapIconId,
+        items:[]
         //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
     }
 
@@ -267,12 +268,14 @@ function fillMark(dbMark,userLongitude,userLatitude){
         transformedMark.canView = inRange(dbMark,userLongitude,userLatitude);
     }
 
-    if(dbMark.items){
+    /*if(dbMark.items){
         transformedMark.items = [];
         for(var i = 0; i < dbMark.items.length;i++){
             transformedMark.items[i] = ItemService.fillItem(dbMark.items[i]);
         }
-    }
+
+        console.log(transformedMark.items);
+    }*/
 
     return transformedMark;
 }

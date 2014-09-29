@@ -83,6 +83,9 @@ describe('Item', function(){
                         if (err) return done(err);
 
                         results.length.should.be.equal(1);
+                        //Sould be trimmed
+                        //console.log(console.log(require('util').inspect(results, true, 10)));
+                        results[0].items.length.should.be.equal(1);
 
                         done();
                     });

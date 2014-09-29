@@ -272,12 +272,13 @@ function createItemCount1ItemInMark(item) {
     Mark.findOneAndUpdate(
         {_id:item.markId},
         {
-            $inc:{itemCount:1},
-            $push: {
-                items:  JSON.parse(JSON.stringify(item)) //a mongoose object has problems...
-                    //$slice: NUM_MARK_ITEM_CACHE
-
-            }
+            $inc:{itemCount:1}
+            /*$push: {
+                items: {
+                    $each: [JSON.parse(JSON.stringify(item))], //a mongoose object has problems...
+                    $slice: NUM_MARK_ITEM_CACHE
+                }
+            }*/
         },
         function(err){
             if (err) {
