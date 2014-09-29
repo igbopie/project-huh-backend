@@ -83,7 +83,7 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
     MapIconService.findById(mapIconId,function(err,mapIcon){
         if(err){
             promise.reject(err);
-        } else if(mapIcon){
+        } else if(!mapIcon){
             promise.reject("Map icon not found")
         } else {
             alias.mapIconMediaId = mapIcon.mediaId;
