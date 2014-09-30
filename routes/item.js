@@ -82,21 +82,7 @@ exports.view = function(req,res){
 }
 
 
-exports.addComment = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var itemId = req.body.itemId;
-        var comment = req.body.comment;
-        ItemService.addComment(itemId,comment,user._id,function(err){
-            if(err && err instanceof Utils.MarkError && err.code == Utils.ERROR_CODE_UNAUTHORIZED){
-                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
-            } else if (err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,null);
-            }
-        });
-    });
-}
+
 
 
 exports.listSentToMe = function(req,res){
@@ -171,7 +157,9 @@ exports.listFavourites = function(req,res){
 exports.listByMark = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var markId = req.body.markId;
-        ItemService.listByMark(markId,user._id,function(err,data){
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listByMark(markId,user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -184,11 +172,31 @@ exports.listByMark = function(req,res){
 exports.listComments = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var itemId = req.body.itemId;
-        ItemService.listComments(itemId,function(err,data){
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listComments(itemId,user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.addComment = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        var comment = req.body.comment;
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.addComment(itemId,comment,user._id,longitude,latitude,function(err){
+            if(err && err instanceof Utils.MarkError && err.code == Utils.ERROR_CODE_UNAUTHORIZED){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            } else if (err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
             }
         });
     });

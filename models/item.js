@@ -466,25 +466,31 @@ service.fillItem = function(item,longitude,latitude,userId,callback){
     });
 }
 
-service.listComments = function(itemId,callback){
-    Comment.find({itemId:itemId})
-        .sort({date:-1})
-        .populate("userId",PUBLIC_USER_FIELDS)
-        .exec(function(err,comments){
-            if(err) return callback(err);
-            comments = comments.map(function(comment){
-                return {comment:comment.comment,date:comment.date,user:comment.userId};
+service.listComments = function(itemId,userId,longitude,latitude,callback){
+
+    service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView) {
+        if (err) return callback(err);
+        if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED, "Not allowed to view comment"));
+
+        Comment.find({itemId: itemId})
+            .sort({date: -1})
+            .populate("userId", PUBLIC_USER_FIELDS)
+            .exec(function (err, comments) {
+                if (err) return callback(err);
+                comments = comments.map(function (comment) {
+                    return {comment: comment.comment, date: comment.date, user: comment.userId};
+                });
+                callback(null, comments);
             });
-            callback(null,comments);
-        });
+    });
 }
-service.addComment = function(itemId,textComment,userId,callback) {
+service.addComment = function(itemId,textComment,userId,longitude,latitude,callback) {
     Item.findOne({_id: itemId})
         .exec(function (err, item) {
             if (err) return callback(err);
             if (!item) return callback("Item not found");
 
-            service.allowedToSeeContent(itemId,null,null,userId,function(err,canView){
+            service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView){
                 if (err) return callback(err);
                 if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not allowed to post comment"));
 
@@ -585,7 +591,7 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 }
 
 
-service.listByMark = function(markId,userId,callback){
+service.listByMark = function(markId,userId,longitude,latitude,callback){
 
     Item.find({markId:markId}).sort({created:-1})
         .populate({ path: 'UserId', model: 'User', select: PUBLIC_USER_FIELDS })
@@ -598,7 +604,7 @@ service.listByMark = function(markId,userId,callback){
                 //Map Function
                 function(dbItem,mapCallback){
 
-                    service.fillItem(dbItem,null,null,userId,function(err,item){
+                    service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
                         if(err){
                             console.err(err);
                         }
