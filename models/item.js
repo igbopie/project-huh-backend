@@ -333,10 +333,10 @@ service.view = function(itemId,longitude,latitude,userId,callback){
         if(err) return callback(err);
         if(!item) return callback("Not found");
 
-        MarkService.canViewMark(item.markId,userId,longitude,latitude,function(err,permissions){
+        service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView){
             if(err) return callback(err);
 
-            if(permissions.canView || permissions.lastViewed > item.created) {
+            if(canView) {
                 var stat = new ViewItemStats();
                 stat.userId = userId;
                 stat.itemId = item._id;
@@ -356,7 +356,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
                     }
                 );
             }
-            service.fillItem(item,permissions,userId,callback);
+            service.fillItem(item,longitude,latitude,userId,callback);
 
         })
     });
@@ -364,13 +364,23 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
 
 
-/*
+
 service.listSentToMe = function(userId,longitude,latitude,callback){
-    finishItemQuery(
-           Item.find({to:userId,status:STATUS_OK})
-               .sort({created:-1}
-           )
-        ,longitude,latitude,userId,callback);
+    Mark.find({to:userId},function(err,list){
+        if(err) return callback(err);
+        var markIdsArray = [];
+        for(var i = 0; i < list; i++){
+            markIdsArray.push(list[i]._id);
+        }
+
+        finishItemQuery(
+            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
+                .sort({created:-1}
+            )
+            ,longitude,latitude,userId,callback);
+    });
+
+
 
 }
 
@@ -384,7 +394,6 @@ service.listSentByMe = function(userId,longitude,latitude,callback){
 
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("userId",PUBLIC_USER_FIELDS)
-        .populate("to", PUBLIC_USER_FIELDS )
         .exec(function(err,item){
             if(err) return callback(err);
             if(!item) return callback("Item not found");
@@ -402,24 +411,13 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
                     //Map Function
                     function(dbItem,mapCallback){
 
-                        var transformedItem = service.fillItem(dbItem,userId ,longitude,latitude);
-                        service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+                        service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
                             if(err){
                                 console.err(err);
-                            } else{
-                                if(canView){
-
-                                }
-                                transformedItem.canView = canView;
                             }
-                            FavouriteItem.findOne({userId:userId,itemId:dbItem._id},function(err,fav){
-                                if(err) console.err(err);
-
-                                transformedItem.favourited = (fav?true:false);
-
-                                mapCallback(transformedItem);
-                            });
+                            mapCallback(item);
                         });
+
                     }
                     ,
                     //Callback
@@ -430,8 +428,9 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
             }
 
         });
-}*/
-service.fillItem = function(item,markPermissions,userId,callback){
+}
+
+service.fillItem = function(item,longitude,latitude,userId,callback){
     var publicItem = {_id:item._id};
     publicItem.user = item.userId;
     publicItem.created = item.created;
@@ -445,18 +444,24 @@ service.fillItem = function(item,markPermissions,userId,callback){
     publicItem.renderParameters = item.renderParameters;
     publicItem.canView = false;
 
-    if(markPermissions.canView || item.created < markPermissions.lastViewed ){
-        publicItem.message = item.message;
-        publicItem.mediaId = item.mediaId,
-        publicItem.renderParameters = item.renderParameters;
-        publicItem.canView = true;
-    }
-    FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav) {
+
+    service.allowedToSeeContent(item._id,longitude,latitude,userId,function(err,canView) {
         if (err) return callback(err);
 
-        publicItem.favourited = (fav?true:false);
+        if (canView) {
+            publicItem.message = item.message;
+            publicItem.mediaId = item.mediaId,
+                publicItem.renderParameters = item.renderParameters;
+            publicItem.canView = canView;
+        }
 
-        callback(null,publicItem);
+        FavouriteItem.findOne({userId: userId, itemId: item._id}, function (err, fav) {
+            if (err) return callback(err);
+
+            publicItem.favourited = (fav ? true : false);
+
+            callback(null, publicItem);
+        });
     });
 }
 
@@ -542,7 +547,7 @@ service.unfavourite = function(itemId,userId,callback){
     });
 
 }
-/*
+
 service.listFavourites = function(longitude,latitude,userId,callback){
 
     FavouriteItem.find({userId:userId})
@@ -554,22 +559,11 @@ service.listFavourites = function(longitude,latitude,userId,callback){
                 favs,
                 //Map Function
                 function(dbFavItem,mapCallback){
-
-                    var transformedItem = service.fillItem(dbFavItem.itemId,userId ,longitude,latitude);
-                    service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+                    service.fillItem(dbFavItem.itemId ,longitude,latitude,userId,function(err,item){
                         if(err){
                             console.err(err);
-                        } else{
-                            if(canView){
-                                transformedItem.message = dbFavItem.itemId.message;
-                                transformedItem.templateId = dbFavItem.itemId.templateId;
-                                transformedItem.mediaId = dbFavItem.itemId.mediaId,
-                                    transformedItem.renderParameters = dbFavItem.itemId.renderParameters;
-                            }
-                            transformedItem.canView = canView;
                         }
-                        transformedItem.favourited = true;
-                        mapCallback(transformedItem);
+                        mapCallback(item);
                     });
                 }
                 ,
@@ -578,10 +572,9 @@ service.listFavourites = function(longitude,latitude,userId,callback){
                     // populating user object
                     Item.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
                         if (err) return callback(err);
-                        Item.populate( favs, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
-                            if (err) return callback(err);
-                            callback(null,favs);
-                        });
+
+                        callback(null,favs);
+
                     });
                 }
             )
@@ -589,7 +582,8 @@ service.listFavourites = function(longitude,latitude,userId,callback){
     });
 
 }
-*/
+
+
 service.listByMark = function(markId,userId,callback){
 
     Item.find({markId:markId}).sort({created:-1})
@@ -603,21 +597,11 @@ service.listByMark = function(markId,userId,callback){
                 //Map Function
                 function(dbItem,mapCallback){
 
-                    var transformedItem = service.fillItem(dbItem);
-                    service.allowedToSeeContent(transformedItem._id,null,null,userId,function(err,canView){
+                    service.fillItem(dbItem,null,null,userId,function(err,item){
                         if(err){
                             console.err(err);
-                        } else{
-                            if(canView){
-                                transformedItem.message = dbItem.message;
-                                transformedItem.templateId = dbItem.templateId;
-                                transformedItem.mediaId = dbItem.mediaId,
-                                transformedItem.renderParameters = dbItem.renderParameters;
-                            }
-                            transformedItem.canView = canView;
                         }
-                        transformedItem.favourited = true;
-                        mapCallback(transformedItem);
+                        mapCallback(item);
                     });
                 }
                 ,
@@ -630,5 +614,22 @@ service.listByMark = function(markId,userId,callback){
 
 }
 
+
+service.allowedToSeeContent = function(itemId,longitude,latidude,userId,callback){
+    Item.findOne({_id:itemId},function(err,item){
+        if(err) return callback(err);
+        if(!item) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
+
+        MarkService.canViewMark(item.markId,userId,longitude,latidude,function(err,permissions){
+            if(err) return callback(err);
+
+            var canView = permissions.canView || permissions.lastViewed > item.created;
+            callback(null,canView);
+
+        });
+
+    })
+
+}
 
 

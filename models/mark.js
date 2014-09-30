@@ -246,8 +246,13 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
     Mark.findOne({_id:markId},function(error,dbMark){
         if(error) return callback(error);
 
-        var markDistance = distance(dbMark,userLongitude,userLatitude);
-        var markInRange =  inRange(dbMark,userLongitude,userLatitude);
+        var markDistance;
+        var markInRange;
+        if(userLongitude){
+            markDistance = distance(dbMark,userLongitude,userLatitude);
+            markInRange =  inRange(dbMark,userLongitude,userLatitude);
+        }
+
 
         var canSee = false;
         var ownerUserId;
@@ -371,7 +376,7 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
                 if (err) return callback(err);
 
                 if (latestItem) {
-                    ItemService.fillItem(latestItem,permissions,userId,function(err,item){
+                    ItemService.fillItem(latestItem,userLongitude,userLatitude,userId,function(err,item){
                         if(err) return callback(err);
                         transformedMark.items.push(item);
                         callback(null,transformedMark);
