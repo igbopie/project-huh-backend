@@ -442,6 +442,7 @@ service.fillItem = function(item,longitude,latitude,userId,callback){
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
     publicItem.renderParameters = item.renderParameters;
+    publicItem.templateId = item.templateId;
     publicItem.canView = false;
 
 
