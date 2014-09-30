@@ -49,38 +49,6 @@ exports.addMedia = function(mediaId,itemId,token,callback){
 }
 
 
-
-
-exports.searchByLocation = function(latitude,longitude,radius,token,callback){
-    var params ={
-        longitude:longitude,
-        latitude:latitude,
-        radius:radius,
-        token:token};
-    apiClientBase.post('/api/mark/item/search/by/location',params,function(code,headers,data){
-        if(code != 200){
-            callback("The server responded with an invalid code: "+code+" : "+data,code);
-        } else {
-            callback(null,JSON.parse(data).response);
-        }
-    });
-}
-exports.searchByLocationUserLocation = function(latitude,longitude,radius,userLatitude,userLongitude,token,callback){
-    var params ={
-        longitude:longitude,
-        latitude:latitude,
-        radius:radius,
-        userLatitude:userLatitude,
-        userLongitude:userLongitude,
-        token:token};
-    apiClientBase.post('/api/mark/item/search/by/location',params,function(code,headers,data){
-        if(code != 200){
-            callback("The server responded with an invalid code: "+code+" : "+data,code);
-        } else {
-            callback(null,JSON.parse(data).response);
-        }
-    });
-}
 exports.viewMark = function(markId,latitude,longitude,token,callback){
     var params ={markId:markId,
         longitude:longitude,
@@ -138,11 +106,16 @@ exports.listComments = function(itemId,token,callback){
     });
 }
 
-exports.listCollected = function(token,callback){
+
+
+exports.listItems = function(markId,longitude,latitude,token,callback){
     var params ={
+        markId:markId,
+        longitude:longitude,
+        latitude:latitude,
         token:token
     };
-    apiClientBase.post('/api/mark/item/find/by/collected',params,function(code,headers,data){
+    apiClientBase.post('/api/mark/item',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {
@@ -150,6 +123,7 @@ exports.listCollected = function(token,callback){
         }
     });
 }
+
 exports.listSentToMe = function(token,callback){
     var params ={
         token:token

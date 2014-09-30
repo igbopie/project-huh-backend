@@ -369,7 +369,7 @@ service.listSentToMe = function(userId,longitude,latitude,callback){
     Mark.find({to:userId},function(err,list){
         if(err) return callback(err);
         var markIdsArray = [];
-        for(var i = 0; i < list; i++){
+        for(var i = 0; i < list.length; i++){
             markIdsArray.push(list[i]._id);
         }
 
