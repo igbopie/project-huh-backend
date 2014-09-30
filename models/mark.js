@@ -49,6 +49,26 @@ module.exports = {
     Service:service
 };
 
+var viewMarkSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    markId  :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
+    lastViewed:  { type: Date, required: true, default: Date.now },
+    count   :   { type: Number , required:true, default:0}
+});
+
+viewMarkSchema.index({userId:1,markId:1});
+
+var ViewMark = mongoose.model('ViewMark', viewMarkSchema);
+
+var viewMarkStatsSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    markId  :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
+    date:  { type: Date, required: true, default: Date.now }
+});
+
+var ViewMarkStats = mongoose.model('ViewMarkStats', viewMarkStatsSchema);
+
+
 // Now we can import
 var Item = require ('../models/item').Item
     , ItemService = require ('../models/item').Service;
@@ -130,7 +150,7 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
         Mark.find(query,function(err,results){
             if(err) return callback(err);
 
-            processResults(results,callback);
+            processResults(results,userId,callback);
         });
     }else{
         //Radius of earth 6371000 meters
@@ -139,56 +159,61 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
 
             results = results.map(function(x) {
                 var a = x.obj;
-                //a.distance = x.dis * AVERAGE_EARTH_RADIUS;//meters
+                a.dis = x.dis;//meters
                 return a;
             });
 
-            processResults(results,userLatitude,userLongitude,callback);
+            processResults(results,userId,userLatitude,userLongitude,callback);
         });
     }
 
 }
 
-service.view = function(markId,userId,callback){
+service.view = function(markId,userId,userLongitude,userLatitude,callback){
     Mark.findOne({_id:markId})
         .populate("userId",PUBLIC_USER_FIELDS)
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
         .exec(function(err,mark){
             if(err) return callback(err);
-            if(!mark) return callback("Not found");
+            if(!mark) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
 
-            var containsTo = false;
-            //Sometimes it's populated
-            for (var i = 0; i < mark.to.length && !containsTo; i++) {
-                var toUserId = "";
-                var toUserElement = mark.to[i];
-                if (toUserElement instanceof mongoose.Types.ObjectId) {
-                    toUserId = toUserElement;
-                } else {
-                    toUserId = toUserElement._id;
+            fillMark(mark,userId,userLongitude,userLatitude,function(err,mark){
+                if(err) return callback(err);
+
+                if(mark.canView){
+                    //Save stat
+                    ViewMark.findOneAndUpdate(
+                        {
+                            userId:userId,
+                            markId:mark._id
+                        },
+                        {
+                            $set:{lastViewed:Date.now()},
+                            $inc:{count:1}
+                        },
+                        {
+                            upsert: true
+                        },
+                        function(err,view) {
+                            if (err) console.log(err);
+                            if (view) {
+                                if (view.count == 1) {
+                                    //TODO
+                                    //EventService.onItemViewed(itemId, userId);
+                                }
+                            }
+                        }
+                    );
+
                 }
+                //We won't wait
+                callback(null,mark);
 
-
-                if (String(toUserId) == String(userId)) {
-                    containsTo = true;
-                }
-            }
-
-            if(mark.userId._id.equals(userId) ||
-                containsTo == true ||
-                mark.visibility == VISIBILITY_PUBLIC
-                ){
-                callback(null,fillMark(mark));
-            }else {
-                callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not permitted"));
-            }
-
-
-
-    });
+            });
+        });
 }
 
-function processResults(results,userLatitude,userLongitude,transformCallback){
+function processResults(results,userId,userLatitude,userLongitude,transformCallback){
 
     //mapping each doc into new object and populating distance
     // populating user object
@@ -197,23 +222,14 @@ function processResults(results,userLatitude,userLongitude,transformCallback){
         Mark.populate( items, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
             if (err) return callback(err);
             Utils.map(
-                results,
+                items,
                 //Map Function
                 function(geoResultMark,mapCallback){
-                    Item.findOne({markId:geoResultMark._id},null,{sort: {created: -1 }},function(err,latestItem){
+                    fillMark(geoResultMark,userId,userLongitude,userLatitude,function(err,mark){
                         if(err) console.error(err);
 
-                        var transformedMark = fillMark(geoResultMark,userLongitude,userLatitude);
-                        if(latestItem) {
-                            transformedMark.items.push(ItemService.fillItem(latestItem));
-                        }
-
-                        mapCallback(transformedMark);
-
+                        mapCallback(mark);
                     });
-
-
-
                 }
                 ,
                 //Callback
@@ -222,6 +238,84 @@ function processResults(results,userLatitude,userLongitude,transformCallback){
                 }
             )
         });
+    });
+
+}
+
+service.canViewMark = function (markId,userId,userLongitude,userLatitude,callback){
+    Mark.findOne({_id:markId},function(error,dbMark){
+        if(error) return callback(error);
+
+        var markDistance = distance(dbMark,userLongitude,userLatitude);
+        var markInRange =  inRange(dbMark,userLongitude,userLatitude);
+
+        var canSee = false;
+        var ownerUserId;
+        var containsTo = false;
+
+        //+++PRE PROCESS
+        //Sometimes it's populated
+        if (dbMark.userId instanceof mongoose.Types.ObjectId) {
+            ownerUserId = dbMark.userId;
+        } else if (dbMark.userId) {
+            ownerUserId = dbMark.userId._id;
+        }
+        for (var i = 0; i < dbMark.to.length && !containsTo; i++) {
+            var toUserId = "";
+            var toUserElement = dbMark.to[i];
+
+            if (toUserElement instanceof mongoose.Types.ObjectId) {
+                toUserId = toUserElement;
+            } else {
+                toUserId = toUserElement._id;
+            }
+
+
+            if (String(toUserId) == String(userId)) {
+                containsTo = true;
+            }
+        }
+        //---
+
+        //I am the owner or I have collected the item
+        if (String(ownerUserId) == String(userId)) {
+            canSee = true;
+        }
+
+        //The item is public and I am in range
+        if (dbMark.visibility == VISIBILITY_PUBLIC && userLongitude && userLatitude && markInRange) {
+            canSee = true;
+        }
+
+        if (dbMark.visibility == VISIBILITY_PUBLIC && dbMark.radius == 0) {
+            canSee = true;
+        }
+
+        if (dbMark.visibility == VISIBILITY_PRIVATE && containsTo && dbMark.radius == 0) {
+            canSee = true;
+        }
+
+        if (dbMark.visibility == VISIBILITY_PRIVATE && containsTo && userLongitude && userLatitude && markInRange) {
+            canSee = true;
+        }
+
+        if(dbMark.visibility == VISIBILITY_PRIVATE && !containsTo && String(ownerUserId) != String(userId)){
+            return callback(new Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not authorized"));
+        }
+
+        ViewMark.findOne({userId:userId,markId:dbMark._id},function(err,viewMark){
+            if(err) return callback(err);
+            var lastViewed;
+            if(viewMark){
+               lastViewed = viewMark.lastViewed;
+            }
+            callback(null,{
+                canView:canSee,
+                distance:markDistance,
+                lastViewed: lastViewed
+            });
+        });
+
     });
 
 }
@@ -248,38 +342,46 @@ function distance(mark,longitude,latitude){
 }
 
 
-function fillMark(dbMark,userLongitude,userLatitude){
-    var transformedMark = {
-        _id:dbMark._id,
-        longitude: dbMark.location[LOCATION_LONGITUDE],
-        latitude: dbMark.location[LOCATION_LATITUDE],
-        radius: dbMark.radius,
-        name: dbMark.name,
-        user: dbMark.userId,
-        to: dbMark.to,
-        mapIconMediaId: dbMark.mapIconMediaId,
-        mapIconId: dbMark.mapIconId,
-        items:[]
-        //distance: geoResultMark.dis * AVERAGE_EARTH_RADIUS
-    }
+function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
+    service.canViewMark(dbMark._id,userId,userLongitude,userLatitude,function(err,permissions) {
+        if (err) return callback(err);
 
-    if(userLongitude && userLatitude){
-        transformedMark.userDistance = distance(dbMark,userLongitude,userLatitude);
-        transformedMark.canView = inRange(dbMark,userLongitude,userLatitude);
-    }
-
-    /*if(dbMark.items){
-        transformedMark.items = [];
-        for(var i = 0; i < dbMark.items.length;i++){
-            transformedMark.items[i] = ItemService.fillItem(dbMark.items[i]);
+        var transformedMark = {
+            _id: dbMark._id,
+            longitude: dbMark.location[LOCATION_LONGITUDE],
+            latitude: dbMark.location[LOCATION_LATITUDE],
+            radius: dbMark.radius,
+            name: dbMark.name,
+            user: dbMark.userId,
+            to: dbMark.to,
+            mapIconMediaId: dbMark.mapIconMediaId,
+            mapIconId: dbMark.mapIconId,
+            items: [],
+            canView: permissions.canView
         }
 
-        console.log(transformedMark.items);
-    }*/
+        if (dbMark.dis) {
+            transformedMark.distance = dbMark.dis * AVERAGE_EARTH_RADIUS;
+        }
 
-    return transformedMark;
+
+        Item.findOne({markId: dbMark._id}, null, {sort: {created: -1 }})
+            .populate("userId", PUBLIC_USER_FIELDS)
+            .exec(function (err, latestItem) {
+                if (err) return callback(err);
+
+                if (latestItem) {
+                    ItemService.fillItem(latestItem,permissions,userId,function(err,item){
+                        if(err) return callback(err);
+                        transformedMark.items.push(item);
+                        callback(null,transformedMark);
+                    });
+                }else{
+                    callback(null,transformedMark);
+                }
+
+
+            });
+
+    });
 }
-
-//search by location and radius or/and text
-//pipeline aggregation framework with geonear & text
-

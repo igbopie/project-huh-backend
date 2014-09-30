@@ -54,13 +54,12 @@ exports.addMedia = function(req, res) {
         var itemId = req.body.itemId;
         var mediaId = req.body.mediaId;
 
-        ItemService.addMedia(itemId,mediaId,user._id,function(err,item){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
-            }
-        });
+        ItemService.addMedia(itemId,mediaId,user._id)
+        .then(function(item){
+            ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
+        }).catch(function(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }).done();
     });
 };
 

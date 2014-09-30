@@ -84,8 +84,10 @@ describe('Item', function(){
 
                         results.length.should.be.equal(1);
                         //Sould be trimmed
-                        //console.log(console.log(require('util').inspect(results, true, 10)));
+                        console.log(console.log(require('util').inspect(results, true, 10)));
                         results[0].items.length.should.be.equal(1);
+                        results[0].items[0].user.should.have.property("username");
+
 
                         done();
                     });

@@ -85,6 +85,7 @@ var User = require("../models/user").User
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , Mark = require("../models/mark").Mark
+    , MarkService  = require("../models/mark").Service
 
 ///------------------------
 ///------------------------
@@ -102,15 +103,6 @@ var FavouriteItem = mongoose.model('FavouriteItem', favouriteItemSchema);
 ///------------------------
 ///------------------------
 ///------------------------
-var viewItemSchema = new Schema({
-    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    lastViewed:  { type: Date, required: true, default: Date.now },
-    count   :   { type: Number , required:true, default:0}
-});
-
-viewItemSchema.index({userId:1,itemId:1});
-var ViewItem = mongoose.model('ViewItem', viewItemSchema);
 
 var viewItemStatsSchema = new Schema({
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
@@ -147,24 +139,27 @@ service.create = function(message,mediaId,templateId,markId,userId){
 
     //TODO check owner exists!
     //TODO check templateId
-
-    createItemGeneratePreviewImage(item)
-    .then(createItemSave)
-    .then(createItemShortenUrl)
-    .then(createItemSave)
-    .then(createItemAssignTeaserMedia)
-    .then(createItemAssignMedia)
-    .then(createItemCount1ItemInMark)
-    .then(function(item){
-            promise.resolve(item);
-            createBackground(item);
-    })
-    .catch(function (err) {
-        promise.reject(err);
-    })
-    .done();
+    createProcess(promise,item);
 
     return promise.promise;
+}
+
+function createProcess(promise,item){
+    createItemGeneratePreviewImage(item)
+        .then(createItemSave)
+        .then(createItemShortenUrl)
+        .then(createItemSave)
+        .then(createItemAssignTeaserMedia)
+        .then(createItemAssignMedia)
+        .then(createItemCount1ItemInMark)
+        .then(function(item){
+            promise.resolve(item);
+            createBackground(item);
+        })
+        .catch(function (err) {
+            promise.reject(err);
+        })
+        .done();
 }
 
 
@@ -302,7 +297,8 @@ function createBackground(item){
     }
 }
 
-service.addMedia = function(itemId,mediaId,userId,callback){
+service.addMedia = function(itemId,mediaId,userId){
+    var promise = Q.defer();
     Item.findOne({_id:itemId,status:STATUS_PENDING},function(err,item){
         if(err) return callback(err);
         if(!item) return callback("Not found");
@@ -310,8 +306,9 @@ service.addMedia = function(itemId,mediaId,userId,callback){
 
         item.mediaId = mediaId;
 
-        createProcess1(item,callback);
+        createProcess(promise,item);
     });
+    return promise.promise;
 }
 
 service.findById = function(itemId,callback){
@@ -336,80 +333,38 @@ service.view = function(itemId,longitude,latitude,userId,callback){
         if(err) return callback(err);
         if(!item) return callback("Not found");
 
-        service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
+        MarkService.canViewMark(item.markId,userId,longitude,latitude,function(err,permissions){
             if(err) return callback(err);
-            if(allowed){
-                ViewItem.findOneAndUpdate(
-                    {
-                        userId:userId,
-                        itemId:item._id
-                    },
-                    {
-                        $set:{lastViewed:Date.now()},
-                        $inc:{count:1}
-                    },
-                    {
-                        upsert: true
-                    },
-                    function(err,view){
-                        if(err) console.log(err);
-                        if(view){
-                            if(view.count == 1){
-                                EventService.onItemViewed(itemId,userId);
-                            }
-                        }
-                        var stat = new ViewItemStats();
-                        stat.userId = userId;
-                        stat.itemId = item._id;
-                        stat.date = Date.now();
-                        stat.save(
-                            function(err) {
-                                if(err) console.log(err);
-                            }
-                        );
+
+            if(permissions.canView || permissions.lastViewed > item.created) {
+                var stat = new ViewItemStats();
+                stat.userId = userId;
+                stat.itemId = item._id;
+                stat.date = Date.now();
+                stat.save(
+                    function (err) {
+                        if (err) console.log(err);
                     }
                 );
 
                 Item.findOneAndUpdate(
-                    {_id:item._id},
-                    {$inc: { viewCount:1 }},
-                    function(err,item){
-                        if(err) console.log(err);
+                    {_id: item._id},
+                    {$inc: { viewCount: 1 }},
+                    function (err, item) {
+                        if (err) console.log(err);
 
                     }
                 );
-
-                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
-                    if(err) return callback(err);
-
-                    var pItem = service.fillItem(item,userId);
-                    pItem.message = item.message;
-                    pItem.mediaId = item.mediaId,
-                    pItem.renderParameters = item.renderParameters;
-                    pItem.canView = true;
-                    pItem.favourited = (fav?true:false);
-
-                    callback(null,pItem);
-                })
-            }else{
-                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
-                    if(err) return callback(err);
-
-                    var pItem = service.fillItem(item,userId);
-                    pItem.canView = false;
-                    pItem.favourited = (fav?true:false);
-
-                    callback(null,pItem);
-                })
-
             }
-        });
-    })
+            service.fillItem(item,permissions,userId,callback);
+
+        })
+    });
 }
 
 
 
-
+/*
 service.listSentToMe = function(userId,longitude,latitude,callback){
     finishItemQuery(
            Item.find({to:userId,status:STATUS_OK})
@@ -425,26 +380,6 @@ service.listSentByMe = function(userId,longitude,latitude,callback){
             .sort({created:-1}
         )
         ,longitude,latitude,userId,callback);
-}
-
-function inRange(mark,longitude,latitude){
-
-
-    if(distance(mark,longitude,latitude) > mark.radius){
-        return false;
-    }else{
-        return true;
-    }
-
-}
-
-function distance(mark,longitude,latitude){
-    //Check location
-    //distance in meters
-    var distance = Geolib.getDistance(
-        {latitude: mark.location[LOCATION_LATITUDE], longitude: mark.location[LOCATION_LONGITUDE] },
-        {latitude: latitude, longitude: longitude});
-    return distance;
 }
 
 function finishItemQuery(query,longitude,latitude,userId,callback){
@@ -473,9 +408,7 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
                                 console.err(err);
                             } else{
                                 if(canView){
-                                    transformedItem.message = dbItem.message;
-                                    transformedItem.mediaId = dbItem.mediaId,
-                                    transformedItem.renderParameters = dbItem.renderParameters;
+
                                 }
                                 transformedItem.canView = canView;
                             }
@@ -497,8 +430,8 @@ function finishItemQuery(query,longitude,latitude,userId,callback){
             }
 
         });
-}
-service.fillItem = function(item){
+}*/
+service.fillItem = function(item,markPermissions,userId,callback){
     var publicItem = {_id:item._id};
     publicItem.user = item.userId;
     publicItem.created = item.created;
@@ -510,8 +443,21 @@ service.fillItem = function(item){
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
     publicItem.renderParameters = item.renderParameters;
+    publicItem.canView = false;
 
-    return publicItem;
+    if(markPermissions.canView || item.created < markPermissions.lastViewed ){
+        publicItem.message = item.message;
+        publicItem.mediaId = item.mediaId,
+        publicItem.renderParameters = item.renderParameters;
+        publicItem.canView = true;
+    }
+    FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav) {
+        if (err) return callback(err);
+
+        publicItem.favourited = (fav?true:false);
+
+        callback(null,publicItem);
+    });
 }
 
 service.listComments = function(itemId,callback){
@@ -559,82 +505,6 @@ service.addComment = function(itemId,textComment,userId,callback) {
         });
 }
 
-service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback){
-    Item.findOne({_id:itemId,status:STATUS_OK},function(err,item) {
-        if (err) return callback(err);
-        Item.populate( item, { path: 'markId', model: 'Mark'}, function(err,item) {
-            if (err) return callback(err);
-            if (!item) return callback("Entity Not Found");
-
-            var canSee = false;
-            var ownerUserId;
-            var containsTo = false;
-
-            //+++PRE PROCESS
-            //Sometimes it's populated
-            if (item.userId instanceof mongoose.Types.ObjectId) {
-                ownerUserId = item.userId;
-            } else if (item.userId) {
-                ownerUserId = item.userId._id;
-            }
-            for (var i = 0; i < item.markId.to.length && !containsTo; i++) {
-                var toUserId = "";
-                var toUserElement = item.markId.to[i];
-                console.log(toUserElement);
-                if (toUserElement instanceof mongoose.Types.ObjectId) {
-                    toUserId = toUserElement;
-                } else {
-                    toUserId = toUserElement._id;
-                }
-
-
-                if (String(toUserId) == String(userId)) {
-                    containsTo = true;
-                }
-            }
-            //---
-
-            //I am the owner or I have collected the item
-            if (String(ownerUserId) == String(userId)) {
-                canSee = true;
-            }
-
-            //The item is public and I am in range
-            if (item.markId.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item.markId, longitude, latitude)) {
-                canSee = true;
-            }
-
-            if (item.markId.visibility == VISIBILITY_PUBLIC && item.markId.radius == 0) {
-                canSee = true;
-            }
-
-            if (item.markId.visibility == VISIBILITY_PRIVATE && containsTo && item.markId.radius == 0) {
-                canSee = true;
-            }
-
-            if (item.markId.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item.markId, longitude, latitude)) {
-                canSee = true;
-            }
-
-            if(item.markId.visibility == VISIBILITY_PRIVATE && !containsTo && String(item.markId.userId) != String(userId)){
-                return callback(new Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not authorized"));
-            }
-
-            if (!canSee) {
-                //Lets see if he saw once
-                ViewItem.findOne({userId: userId, itemId: item._id}, 'count', function (err, doc) {
-                    if (err) return callback(err);
-                    if (!doc || doc.count == 0) return callback(null, false);
-
-                    callback(null, true);
-                });
-            } else {
-                callback(null, true);
-            }
-        });
-    });
-}
-
 service.favourite = function(itemId,userId,callback){
 
     var fav = new FavouriteItem();
@@ -672,7 +542,7 @@ service.unfavourite = function(itemId,userId,callback){
     });
 
 }
-
+/*
 service.listFavourites = function(longitude,latitude,userId,callback){
 
     FavouriteItem.find({userId:userId})
@@ -719,7 +589,7 @@ service.listFavourites = function(longitude,latitude,userId,callback){
     });
 
 }
-
+*/
 service.listByMark = function(markId,userId,callback){
 
     Item.find({markId:markId}).sort({created:-1})

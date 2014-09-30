@@ -23,7 +23,9 @@ exports.search = function(req, res) {
 exports.view = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
         var markId = req.body.markId;
-        MarkService.view(markId,user._id,function(err,results){
+        var latitude = req.body.latitude;
+        var longitude = req.body.longitude;
+        MarkService.view(markId,user._id,longitude,latitude,function(err,results){
             if(err && err.code == Utils.ERROR_CODE_UNAUTHORIZED) {
                 ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
             }else if(err){
