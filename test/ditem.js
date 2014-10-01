@@ -237,7 +237,7 @@ describe('Item', function(){
             // 40 m
             Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test2",templateId,mapIconId,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
+                Item.create("Test2",null,null,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
                     if (err) return done(err);
                     Item.listItems(data.markId,41.2,41.2,users[0].token, function (err, items) {
                         if (err) return done(err);
