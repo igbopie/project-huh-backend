@@ -370,7 +370,8 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
         }
 
 
-        Item.findOne({markId: dbMark._id}, null, {sort: {created: -1 }})
+        Item.findOne({markId: dbMark._id})
+            .sort({created: -1 })
             .populate("userId", PUBLIC_USER_FIELDS)
             .exec(function (err, latestItem) {
                 if (err) return callback(err);
