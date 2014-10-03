@@ -2,6 +2,7 @@ body{
     background: #13c79b;
     color:white;
     text-align: center;
+    font-family: "quicksandlight";
 }
 
 img{
@@ -100,8 +101,8 @@ width:100%;
 
 .btn-warning {
     color: #fff;
-    background-color: #fad800;
-    border-color: #fad800;
+    background-color: #fac800;
+    border-color: #fac800;
 }
 
 
@@ -126,4 +127,32 @@ width:100%;
     border-top-right-radius: 2px;
 }
 .items .col-xs-4{
+}
+
+.btn-bold{
+    font-weight: bolder;
+}
+
+.input-lg, .form-horizontal .form-group-lg .form-control,.btn-lg, .btn-group-lg>.btn{
+    border-radius: 0px;
+}
+.form-control{
+
+    border: 0px;
+}
+
+.input-lg, .form-horizontal .form-group-lg .form-control,.btn-lg, .btn-group-lg>.btn {
+    height: 46px;
+    margin-top: 0px;
+}
+
+.indexsquare{
+    background: rgba(0,0,0,0.3);
+
+
+}
+@media (min-width: 768px){
+    .indexsquare {
+        max-width: 455px;
+    }
 }
