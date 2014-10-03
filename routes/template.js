@@ -86,7 +86,9 @@ exports.removeById = function(req, res){
 
 exports.listTemplates = function(req, res){
     ApiUtils.auth(req,res,function(user){
-        TemplateService.findTemplates(function(err,templates){
+
+        var timestamp = req.body.timestamp;
+        TemplateService.findTemplates(timestamp,function(err,templates){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

@@ -86,7 +86,9 @@ exports.removeById = function(req, res){
 
 exports.findIcons = function(req, res){
     ApiUtils.auth(req,res,function(user){
-        MapIconService.find(function(err,templates){
+
+        var timestamp = req.body.timestamp;
+        MapIconService.find(timestamp,function(err,templates){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

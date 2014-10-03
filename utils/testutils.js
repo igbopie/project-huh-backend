@@ -2,6 +2,62 @@ var mongoose = require('mongoose');
 var User = require('../apiclient/user');
 var Utils = require('../utils/utils');
 
+exports.cleanTemplates = function(callback){
+    var db = mongoose.createConnection();
+    //Resest DB
+    db.open('mongodb://localhost/seem',function(err) {
+        if(err) {
+            console.log(err);
+            callback(err);
+            return;
+        }
+        db.collection('templates').remove(	function(err) {
+            if (err) {
+                console.log(err);
+                callback(err);
+                return;
+            }
+
+            db.close(function (err) {
+                if (err) {
+                    console.log(err);
+                    callback(err);
+                    return;
+                }
+                callback();
+            });
+        });
+    });
+}
+
+
+exports.cleanMapIcons = function(callback){
+    var db = mongoose.createConnection();
+    //Resest DB
+    db.open('mongodb://localhost/seem',function(err) {
+        if(err) {
+            console.log(err);
+            callback(err);
+            return;
+        }
+        db.collection('mapicons').remove(	function(err) {
+            if (err) {
+                console.log(err);
+                callback(err);
+                return;
+            }
+
+            db.close(function (err) {
+                if (err) {
+                    console.log(err);
+                    callback(err);
+                    return;
+                }
+                callback();
+            });
+        });
+    });
+}
 exports.cleanDatabase = function(callback){
     var db = mongoose.createConnection();
 	//Resest DB

@@ -13,6 +13,7 @@
                         <th>Name</th>
                         <th>Tag</th>
                         <th>Icon</th>
+                        <th>Updated</th>
                         <th>-</th>
                     </tr>
                     </thead>
@@ -22,6 +23,7 @@
                             <td>{{mapicon.name}}</td>
                             <td>{{mapicon.tag}}</td>
                             <td><img class="template-image" ng-src="/api/media/get/large/{{mapicon.mediaId}}"/></td>
+                            <td>{{mapicon.updated}}</td>
                             <td>
                                 <a class="btn btn-warning" href="#/mapicon/edit/{{mapicon._id}}"><i class="fa fa-pencil"></i> Edit</a>
                                 <a class="btn btn-danger" ng-confirm-click="Are you sure you want to delete?" ng-confirmed-click="remove(mapicon._id)" ><i class="fa fa-trash"></i> Delete</a>

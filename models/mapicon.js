@@ -6,9 +6,12 @@ var MediaVars = require('../models/media');
 var mapiconSchema = new Schema({
     name        :   { type: String, required: true},
     tag       :   { type: String, required:false},
-    mediaId     :   { type: Schema.Types.ObjectId, required: true}
+    mediaId     :   { type: Schema.Types.ObjectId, required: true},
+    created     :   { type: Date, required: true, default: Date.now },
+    updated     :   { type: Date, required: true, default: Date.now }
 });
 
+mapiconSchema.index({updated:-1});
 
 var MapIcon = mongoose.model('MapIcon', mapiconSchema);
 
@@ -40,6 +43,8 @@ service.update = function (id,name,tag,mediaId,callback){
         mapIcon.name = name;
         mapIcon.tag = tag;
         mapIcon.mediaId = mediaId;
+        mapIcon.updated = Date.now();
+
         mapIcon.save(function(err){
             if(err) return callback(err,null);
             MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIcon#mediaId",function(err) {
@@ -71,8 +76,12 @@ service.removeById = function (id,callback){
 }
 
 
-service.find = function(callback){
-    MapIcon.find()
+service.find = function(timestamp,callback){
+    var query = {}
+    if(timestamp){
+        query.updated = {$gte:timestamp};
+    }
+    MapIcon.find(query)
         .exec(function(err,docs){
             callback(err,docs);
         });

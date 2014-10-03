@@ -14,8 +14,8 @@ exports.create = function(name,tag,mediaId,token,callback){
 }
 
  
-exports.list = function(token){
-	apiClientBase.post('/api/mapicon',{token:token},function(code,headers,data){
+exports.list = function(timestamp,token,callback){
+	apiClientBase.post('/api/mapicon',{timestamp:timestamp,token:token},function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code:"+code+" : "+data);
 		} else {

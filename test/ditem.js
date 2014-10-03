@@ -12,7 +12,7 @@ var nUsers = 3;
 var users = null;
 var templateId = null;
 var mapIconId = null;
-
+var mediaId = null;
 
 describe('Item', function(){
 
@@ -30,8 +30,9 @@ describe('Item', function(){
                     if(!templateId){
                         TestUtils.makeSuperAdmin(users[0],function(err){
                             if(err) return done(err);
-                            Media.create("test/resources/testimage.jpg",users[0].token,function(err,mediaId) {
+                            Media.create("test/resources/testimage.jpg",users[0].token,function(err,mymediaId) {
                                 if (err) return done(err);
+                                mediaId = mymediaId;
                                 Template.create("TestTemplate", 0, mediaId, users[0].token, function (err, rTemplateId) {
                                     if (err) return done(err);
                                     templateId = rTemplateId;
@@ -51,6 +52,8 @@ describe('Item', function(){
             });
         });
     });
+
+
 
     describe('#createPublic', function(){
         it('should create an item object',function (done) {
