@@ -84,7 +84,7 @@ describe('Item', function(){
 
                         results.length.should.be.equal(1);
                         //Sould be trimmed
-                        console.log(console.log(require('util').inspect(results, true, 10)));
+                        //console.log(console.log(require('util').inspect(results, true, 10)));
                         results[0].items.length.should.be.equal(1);
                         results[0].items[0].user.should.have.property("username");
 
@@ -161,6 +161,17 @@ describe('Item', function(){
                     data.should.have.property("_id");
                     data.should.have.property("items");
                     data.items.length.should.be.equal(1);
+
+                    data.should.have.property("itemCount");
+                    data.should.have.property("memberCount");
+                    data.should.have.property("followerCount");
+                    data.should.have.property("locationName");
+                    data.should.have.property("locationAddress");
+                    data.should.have.property("distance");
+                    data.should.have.property("updated");
+                    data.should.have.property("shortlink");
+
+                    //console.log(require('util').inspect(data, true, 10));
 
                     done();
 

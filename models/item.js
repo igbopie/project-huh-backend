@@ -267,7 +267,10 @@ function createItemCount1ItemInMark(item) {
     Mark.findOneAndUpdate(
         {_id:item.markId},
         {
-            $inc:{itemCount:1}
+            $inc:{itemCount:1},
+            $set:{
+                   updated: Date.now()
+            }
             /*$push: {
                 items: {
                     $each: [JSON.parse(JSON.stringify(item))], //a mongoose object has problems...
@@ -366,7 +369,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
 
 service.listSentToMe = function(userId,longitude,latitude,callback){
-    Mark.find({to:userId},function(err,list){
+    Mark.find({members:userId,userId:{$ne:userId}},function(err,list){
         if(err) return callback(err);
         var markIdsArray = [];
         for(var i = 0; i < list.length; i++){

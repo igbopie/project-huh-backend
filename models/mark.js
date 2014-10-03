@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
     , Q = require("q")
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
+    , UrlShortener = require('../utils/urlshortener')
     ;
 
 
@@ -19,7 +20,8 @@ var markSchema = new Schema({
     name:   { type: String, required: true},
     description:   { type: String, required: false},
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    date    :   { type: Date	, required: true, default: Date.now },
+    created    :   { type: Date	, required: true, default: Date.now },
+    updated    :   { type: Date	, required: true, default: Date.now },
     location    :   { type: [Number], required:true,index: '2dsphere'},
     locationName:   { type: String, required: false},
     locationAddress:   { type: String, required: false},
@@ -27,14 +29,17 @@ var markSchema = new Schema({
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
     mapIconId   :   { type: Schema.Types.ObjectId, required: true},
     mapIconMediaId   :   { type: Schema.Types.ObjectId, required: true},
-    to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
+    members          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
+    memberCount :   { type: Number, required:true, default:0},
     shortlink   :   { type: String, required: false},
     itemCount :   { type: Number, required:true, default:0},
-    items: []
+    items: [],
+    followerCount:  { type: Number, required:true, default:0}
 });
 
 
-markSchema.index({visibility:1,to:1});
+markSchema.index({visibility:1,members:1});
+markSchema.index({members:1,userId:1});
 markSchema.index({visibility:1,userId:1});
 markSchema.index({name:1});
 
@@ -87,17 +92,19 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
     alias.locationAddress = locationAddress;
     alias.locationName = locationName;
     alias.mapIconId = mapIconId;
-    alias.to = to;
+    alias.members = to;
     alias.visibility = VISIBILITY_PRIVATE;
     alias.description = description;
 
-    if(!alias.to || to.length == 0){
-        delete alias.to; //PUBLIC!
+    if(!alias.members || alias.members.length == 0){
+        delete alias.members; //PUBLIC!
         alias.visibility = VISIBILITY_PUBLIC;
         //We use this to reduce the index size, because if we use an index on item.to will grow faster
         // for the kind of information we want.
     } else {
         //TODO check users exists!
+        alias.members.push(userId);
+        alias.memberCount = alias.members.length;
     }
 
     MapIconService.findById(mapIconId,function(err,mapIcon){
@@ -111,7 +118,20 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
                 if (err) {
                     promise.reject(err);
                 } else {
-                    promise.resolve(alias._id);
+                    UrlShortener.shortenMark(alias._id,function(err,shortlink){
+                        if (err) {
+                            promise.reject(err);
+                        } else {
+                            alias.shortlink = shortlink;
+                            alias.save(function (err) {
+                                if (err) {
+                                    promise.reject(err);
+                                } else {
+                                    promise.resolve(alias._id);
+                                }
+                            });
+                        }
+                    });
                 }
             });
         }
@@ -136,11 +156,10 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
 
     var point = {type: 'Point', coordinates: locationArray};
 
-    var queryPrivateOwnMarks = {visibility:VISIBILITY_PRIVATE,userId:userId};
-    var querySentToMeMarks = {visibility:VISIBILITY_PRIVATE,to:userId};
+    var querySentToMeMarks = {visibility:VISIBILITY_PRIVATE,members:userId};
     var queryPublicMarks = {visibility:VISIBILITY_PUBLIC};
 
-    var query = { $or: [queryPrivateOwnMarks,querySentToMeMarks,queryPublicMarks]}
+    var query = { $or: [querySentToMeMarks,queryPublicMarks]}
 
     if(text){
         query.name ={ $regex: text, $options: 'i' };
@@ -159,7 +178,7 @@ service.search = function(latitude,longitude,radius,text,userLatitude,userLongit
 
             results = results.map(function(x) {
                 var a = x.obj;
-                a.dis = x.dis;//meters
+                //a.dis = x.dis;//meters
                 return a;
             });
 
@@ -219,7 +238,7 @@ function processResults(results,userId,userLatitude,userLongitude,transformCallb
     // populating user object
     Mark.populate( results, { path: 'userId', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
         if (err) return callback(err);
-        Mark.populate( items, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
+        Mark.populate( items, { path: 'members', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
             if (err) return callback(err);
             Utils.map(
                 items,
@@ -255,8 +274,8 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
 
 
         var canSee = false;
-        var ownerUserId;
         var containsTo = false;
+        var ownerUserId;
 
         //+++PRE PROCESS
         //Sometimes it's populated
@@ -265,9 +284,10 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
         } else if (dbMark.userId) {
             ownerUserId = dbMark.userId._id;
         }
-        for (var i = 0; i < dbMark.to.length && !containsTo; i++) {
+
+        for (var i = 0; i < dbMark.members.length && !containsTo; i++) {
             var toUserId = "";
-            var toUserElement = dbMark.to[i];
+            var toUserElement = dbMark.members[i];
 
             if (toUserElement instanceof mongoose.Types.ObjectId) {
                 toUserId = toUserElement;
@@ -281,7 +301,6 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
             }
         }
         //---
-
         //I am the owner or I have collected the item
         if (String(ownerUserId) == String(userId)) {
             canSee = true;
@@ -358,15 +377,25 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
             radius: dbMark.radius,
             name: dbMark.name,
             user: dbMark.userId,
-            to: dbMark.to,
+            members: dbMark.members,
+            memberCount: dbMark.memberCount,
             mapIconMediaId: dbMark.mapIconMediaId,
             mapIconId: dbMark.mapIconId,
             items: [],
-            canView: permissions.canView
+            itemCount: dbMark.itemCount,
+            canView: permissions.canView,
+            followerCount: dbMark.followerCount,
+            locationName: dbMark.locationName,
+            locationAddress: dbMark.locationAddress,
+            created: dbMark.created,
+            updated: dbMark.updated,
+            shortlink: dbMark.shortlink,
+            followed: false,
+            favourited: false
         }
 
-        if (dbMark.dis) {
-            transformedMark.distance = dbMark.dis * AVERAGE_EARTH_RADIUS;
+        if (userLongitude && userLatitude) {
+            transformedMark.distance = distance(dbMark,userLongitude,userLatitude);
         }
 
 
