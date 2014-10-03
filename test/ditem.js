@@ -545,4 +545,39 @@ describe('Item', function(){
 
         });
     });
+
+    describe('#createWithImageTwoStepsAndFail()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create( "I am here in starbucks",templateId,mapIconId, null, 41.2, 41.2, 10, [users[1].id],null,null,"Hola",null, users[0].token, function (err,mark) {
+                if (err) return done(err);
+
+                Item.create( "I am here in starbucks",null,null, null, null, null, null,[],null,null,null,mark.markId, users[0].token, function (err,twoStepsItem) {
+                    if (err) return done(err);
+                    Mark.search(41.2, 41.2,100,null,41.2, 41.2, users[0].token,function(err,data) {
+                        if (err) return done(err);
+
+                        data.length.should.be.equal(1);
+                        data[0].itemCount.should.be.equal(1);
+
+                        Media.create("test/resources/testreal.jpeg", users[0].token, function (err, mediaId) {
+                            if (err) return done(err);
+                            Item.addMedia(mediaId, twoStepsItem.itemId, users[0].token, function (err) {
+                                if (err) return done(err);
+                                Mark.search(41.2, 41.2, 100, null, 41.2, 41.2, users[0].token, function (err, data) {
+                                    if (err) return done(err);
+
+                                    data.length.should.be.equal(1);
+                                    data[0].itemCount.should.be.equal(2);
+                                    done()
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+
+
+        });
+    });
 });

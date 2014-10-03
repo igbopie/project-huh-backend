@@ -264,28 +264,32 @@ function createItemAssignMedia(item) {
 function createItemCount1ItemInMark(item) {
     var promise = Q.defer();
 
-    Mark.findOneAndUpdate(
-        {_id:item.markId},
-        {
-            $inc:{itemCount:1},
-            $set:{
-                   updated: Date.now()
-            }
-            /*$push: {
-                items: {
-                    $each: [JSON.parse(JSON.stringify(item))], //a mongoose object has problems...
-                    $slice: NUM_MARK_ITEM_CACHE
+    if (item.status == STATUS_OK) {
+        Mark.findOneAndUpdate(
+            {_id: item.markId},
+            {
+                $inc: {itemCount: 1},
+                $set: {
+                    updated: Date.now()
                 }
-            }*/
-        },
-        function(err){
-            if (err) {
-                promise.reject(err);
-            } else {
-                promise.resolve(item);
+                /*$push: {
+                 items: {
+                 $each: [JSON.parse(JSON.stringify(item))], //a mongoose object has problems...
+                 $slice: NUM_MARK_ITEM_CACHE
+                 }
+                 }*/
+            },
+            function (err) {
+                if (err) {
+                    promise.reject(err);
+                } else {
+                    promise.resolve(item);
+                }
             }
-        }
-    );
+        );
+    }else{
+        promise.resolve(item);
+    }
 
     return promise.promise;
 }
@@ -597,7 +601,7 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 
 service.listByMark = function(markId,userId,longitude,latitude,callback){
 
-    Item.find({markId:markId}).sort({created:-1})
+    Item.find({markId:markId,status:STATUS_OK}).sort({created:-1})
         .populate({ path: 'UserId', model: 'User', select: PUBLIC_USER_FIELDS })
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
         .exec(function(err,items){
