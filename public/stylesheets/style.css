@@ -151,8 +151,11 @@ width:100%;
 
 
 }
-@media (min-width: 768px){
+.col-lg-1-5{
+    width: 4.166666665%;
+}
+/*@media (min-width: 768px){
     .indexsquare {
         max-width: 455px;
     }
-}
+}*/
