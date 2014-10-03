@@ -81,6 +81,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/i/:itemId', routes.item);
+app.get('/m/:markId', routes.mark);
 
 
 //USER

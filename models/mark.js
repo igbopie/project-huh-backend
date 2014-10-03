@@ -140,13 +140,20 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
     return promise.promise;
 }
 
+
 service.findById = function(id,callback){
     Mark.findOne({_id:id},function(err,doc){
         callback(err,doc);
     });
 }
 
-
+service.findByIdForWeb = function(markId,callback){
+    Mark.findOne({_id:markId})
+        .populate("userId",PUBLIC_USER_FIELDS)
+        .exec(function(err,item){
+            callback(err,item);
+        });
+}
 
 service.search = function(latitude,longitude,radius,text,userLatitude,userLongitude,userId,callback){
 

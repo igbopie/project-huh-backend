@@ -610,7 +610,7 @@ service.listByMark = function(markId,userId,longitude,latitude,callback){
 
                     service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
                         if(err){
-                            console.err(err);
+                            console.error(err);
                         }
                         mapCallback(item);
                     });
