@@ -58,14 +58,16 @@ describe('Item', function(){
                 if (err) return done(err);
 
                 data.should.have.property("markId");
-                data.should.have.property("shortlink");
+                data.should.have.property("markShortlink");
+                data.should.have.property("itemShortlink");
                 data.should.have.property("itemId");
 
                 Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err,data) {
                     if (err) return done(err)
 
                     data.should.have.property("itemId");
-                    data.should.have.property("shortlink");
+                    data.should.have.property("itemShortlink");
+                    data.should.have.property("markShortlink");
 
                     done();
                 });
@@ -248,7 +250,7 @@ describe('Item', function(){
             // 40 m
             Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test2",null,null,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
+                Item.create("Test2",templateId,null,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
                     if (err) return done(err);
                     Item.listItems(data.markId,41.2,41.2,users[0].token, function (err, items) {
                         if (err) return done(err);

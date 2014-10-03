@@ -39,7 +39,14 @@ exports.create = function(req, res) {
             return ItemService.create(message,mediaId,templateId,markId,user._id);
         })
         .then(function(item){
-            ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,shortlink:item.shortlink,markId:item.markId});
+            markId = item.markId;
+            MarkService.findById(markId,function(err,mark){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else{
+                    ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,itemShortlink:item.shortlink,markShortlink:mark.shortlink,markId:item.markId});
+                }
+            });
         }).catch(function(err){
             ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
         }).done();

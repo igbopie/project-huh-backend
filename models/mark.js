@@ -127,7 +127,7 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
                                 if (err) {
                                     promise.reject(err);
                                 } else {
-                                    promise.resolve(alias._id);
+                                    promise.resolve(alias);
                                 }
                             });
                         }
@@ -139,7 +139,6 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
 
     return promise.promise;
 }
-
 
 service.findById = function(id,callback){
     Mark.findOne({_id:id},function(err,doc){
