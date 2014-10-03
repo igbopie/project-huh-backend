@@ -322,6 +322,7 @@ service.findById = function(itemId,callback){
 service.findByIdForWeb = function(itemId,callback){
     Item.findOne({_id:itemId})
         .populate("userId",PUBLIC_USER_FIELDS)
+        .populate("markId")
         .exec(function(err,item){
         callback(err,item);
     });

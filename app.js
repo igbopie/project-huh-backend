@@ -80,8 +80,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/item/:itemId', routes.item);
-app.get('/m/:itemId', routes.item);
+app.get('/i/:itemId', routes.item);
 
 
 //USER
