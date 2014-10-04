@@ -61,3 +61,5 @@ Or, if you don't want/need launchctl, you can just run:
     elasticsearch --config=/usr/local/opt/elasticsearch/config/elasticsearch.yml
 ==> Summary
 
+
+
