@@ -259,6 +259,8 @@ describe('Item', function(){
                         if (err) return done(err);
                         //console.log(item);
                         items.length.should.be.equal(2);
+                        items[0].user.should.have.property("username");
+
 
                         done();
                     });

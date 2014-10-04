@@ -602,7 +602,7 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 service.listByMark = function(markId,userId,longitude,latitude,callback){
 
     Item.find({markId:markId,status:STATUS_OK}).sort({created:-1})
-        .populate({ path: 'UserId', model: 'User', select: PUBLIC_USER_FIELDS })
+        .populate({ path: 'userId', model: 'User', select: PUBLIC_USER_FIELDS })
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
         .exec(function(err,items){
             if(err) return callback(err);
