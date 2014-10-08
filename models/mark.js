@@ -382,6 +382,7 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
             latitude: dbMark.location[LOCATION_LATITUDE],
             radius: dbMark.radius,
             name: dbMark.name,
+            description: dbMark.description,
             user: dbMark.userId,
             members: dbMark.members,
             memberCount: dbMark.memberCount,
