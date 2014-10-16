@@ -40,6 +40,13 @@ apiUtils.api = function(req,res,code,message,responseObject){
 
 apiUtils.auth = function(req,res,callback){
     var token = req.body.token;
+
+    var auth = parseAuth(req.headers['authorization']);
+
+    if(auth && auth.scheme == "MarkAuth"){
+        token = auth.token;
+    }
+
     //console.log(req);
     if(token) {
         UserService.findUserByToken(token, function (err, user) {
@@ -55,6 +62,33 @@ apiUtils.auth = function(req,res,callback){
         apiUtils.api(req, res, apiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
     }
 }
+
+function parseAuth(auth) {
+    if (!auth || typeof auth !== 'string') {
+        return;
+    }
+
+    var result = {}, parts, decoded, colon;
+
+    parts = auth.split(' ');
+
+    result.scheme = parts[0];
+    if (result.scheme !== 'Basic') {
+        for(var i = 1; i < parts.length;i++){
+            var vars = parts[i].split('=');
+            result[vars[0]]=vars[1].substring(1,vars[1].length-1);//remove "
+        }
+        return result;
+    }
+
+    decoded = new Buffer(parts[1], 'base64').toString('utf8');
+    colon = decoded.indexOf(':');
+
+    result.username = decoded.substr(0, colon);
+    result.password = decoded.substr(colon + 1);
+
+    return result;
+};
 
 
 // export the class
