@@ -36,7 +36,7 @@ describe('Item', function(){
                                 Template.create("TestTemplate", 0, mediaId, users[0].token, function (err, rTemplateId) {
                                     if (err) return done(err);
                                     templateId = rTemplateId;
-                                    MapIcon.create("TestIcon","tag",mediaId, users[0].token, function (err, rMapIconId) {
+                                    MapIcon.create("TestIcon","tag",mediaId,null, users[0].token, function (err, rMapIconId) {
                                         if (err) return done(err);
                                         mapIconId = rMapIconId;
                                         done();
