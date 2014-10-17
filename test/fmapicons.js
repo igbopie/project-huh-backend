@@ -47,24 +47,27 @@ describe('MapIcons', function(){
     describe('#mapIconsSystem',function(){
         it('should create and verify mapicon system',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            MapIcon.create("TestTemplate", "tag", mediaId, users[0].token, function (err, rTemplateId) {
+            MapIcon.create("TestTemplate", "tag", mediaId,null, users[0].token, function (err, rTemplateId) {
                 if (err) return done(err);
 
                 var date = Date.now();
-
-                MapIcon.create("TestTemplate2", "tag", mediaId, users[0].token, function (err, rTemplateId) {
+                MapIcon.createGroup("Group",mediaId,users[0].token, function (err, groupId) {
                     if (err) return done(err);
 
-                    MapIcon.list(date,users[0].token,function(err,list){
+                    MapIcon.create("TestTemplate2", "tag", mediaId,groupId, users[0].token, function (err, rTemplateId) {
                         if (err) return done(err);
 
-                        list.length.should.be.equal(1);
-
-                        MapIcon.list(null,users[0].token,function(err,list) {
+                        MapIcon.list(date,users[0].token,function(err,list){
                             if (err) return done(err);
 
-                            list.length.should.be.equal(2);
-                            done();
+                            list.length.should.be.equal(1);
+
+                            MapIcon.list(null,users[0].token,function(err,list) {
+                                if (err) return done(err);
+
+                                list.length.should.be.equal(2);
+                                done();
+                            });
                         });
                     });
                 });

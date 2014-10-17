@@ -143,6 +143,12 @@ app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
+app.post('/api/mapicon/group',mapicon.findIconGroups);
+app.post('/api/mapicon/group/update',mapicon.updateGroup);
+app.post('/api/mapicon/group/view',mapicon.findGroupById);
+app.post('/api/mapicon/group/create',mapicon.createGroup);
+app.post('/api/mapicon/group/remove',mapicon.removeGroupById);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
