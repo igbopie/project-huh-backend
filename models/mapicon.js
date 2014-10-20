@@ -5,27 +5,31 @@ var MediaVars = require('../models/media');
 
 var mapiconSchema = new Schema({
     name        :   { type: String, required: true},
-    tag       :   { type: String, required:false},
+    tag         :   { type: String, required:false},
     mediaId     :   { type: Schema.Types.ObjectId, required: true},
     created     :   { type: Date, required: true, default: Date.now },
     updated     :   { type: Date, required: true, default: Date.now },
-    groupId  :   { type: Schema.Types.ObjectId, required: false, ref:"MapIconGroup"}
+    groupId     :   { type: Schema.Types.ObjectId, required: false, ref:"MapIconPack"},
+    points      :   { type: Number, required:true, default: 0}
 });
 
 mapiconSchema.index({updated:-1});
 
 var MapIcon = mongoose.model('MapIcon', mapiconSchema);
 
-var mapiconGroupSchema = new Schema({
+var mapiconPackSchema = new Schema({
     name        :   { type: String, required: true},
     mediaId     :   { type: Schema.Types.ObjectId, required: true},
     created     :   { type: Date, required: true, default: Date.now },
-    updated     :   { type: Date, required: true, default: Date.now }
+    updated     :   { type: Date, required: true, default: Date.now },
+    isFree      :   { type: Boolean, required:true, default: true},
+    points      :   { type: Number, required:true, default: 0},
+    appStoreCode:   { type: String, required: false}
 });
 
-mapiconGroupSchema.index({updated:-1});
+mapiconPackSchema.index({updated:-1});
 
-var MapIconGroup = mongoose.model('MapIconGroup', mapiconGroupSchema);
+var MapIconPack = mongoose.model('MapIconPack', mapiconPackSchema);
 
 
 var service = {};
@@ -51,13 +55,13 @@ service.create = function (name,tag,mediaId,groupId,callback){
     });
 }
 
-service.createGroup = function (name,mediaId,callback){
-    var mapIcon = new MapIconGroup();
+service.createPack = function (name,mediaId,callback){
+    var mapIcon = new MapIconPack();
     mapIcon.name = name;
     mapIcon.mediaId = mediaId;
     mapIcon.save(function(err){
         if(err) return callback(err,null);
-        MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconGroup#mediaId",function(err) {
+        MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconPack#mediaId",function(err) {
             if (err) {
                 callback(err, null);
             } else {
@@ -96,8 +100,8 @@ service.update = function (id,name,tag,mediaId,groupId,callback){
 }
 
 
-service.updateGroup = function (id,name,mediaId,callback){
-    MapIconGroup.findOne({_id:id},function(err,mapIcon){
+service.updatePack = function (id,name,mediaId,callback){
+    MapIconPack.findOne({_id:id},function(err,mapIcon){
         if(err) return callback(err);
 
         mapIcon.name = name;
@@ -106,7 +110,7 @@ service.updateGroup = function (id,name,mediaId,callback){
 
         mapIcon.save(function(err){
             if(err) return callback(err,null);
-            MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconGroup#mediaId",function(err) {
+            MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconPack#mediaId",function(err) {
                 if (err) {
                     callback(err, null);
                 } else {
@@ -124,8 +128,8 @@ service.findById = function (id,callback){
     });
 }
 
-service.findGroupById = function (id,callback){
-    MapIconGroup.findOne({_id:id},function(err,doc){
+service.findPackById = function (id,callback){
+    MapIconPack.findOne({_id:id},function(err,doc){
         callback(err,doc);
     });
 }
@@ -138,8 +142,8 @@ service.removeById = function (id,callback){
         //TODO check if images can be removed if no one is using them (see Items)
     });
 }
-service.removeGroupById = function (id,callback){
-    MapIconGroup.findOne({_id:id},function(err,doc){
+service.removePackById = function (id,callback){
+    MapIconPack.findOne({_id:id},function(err,doc){
         if(err) return callback(err);
         if(!doc) return callback("not found");
         doc.remove(callback);
@@ -159,12 +163,12 @@ service.find = function(timestamp,callback){
 }
 
 
-service.findGroups = function(timestamp,callback){
+service.findPacks = function(timestamp,callback){
     var query = {}
     if(timestamp){
         query.updated = {$gte:timestamp};
     }
-    MapIconGroup.find(query)
+    MapIconPack.find(query)
         .exec(function(err,docs){
             callback(err,docs);
         });

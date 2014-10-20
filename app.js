@@ -143,11 +143,11 @@ app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
-app.post('/api/mapicon/group',mapicon.findIconGroups);
-app.post('/api/mapicon/group/update',mapicon.updateGroup);
-app.post('/api/mapicon/group/view',mapicon.findGroupById);
-app.post('/api/mapicon/group/create',mapicon.createGroup);
-app.post('/api/mapicon/group/remove',mapicon.removeGroupById);
+app.post('/api/mapicon/pack',mapicon.findIconPacks);
+app.post('/api/mapicon/pack/update',mapicon.updatePack);
+app.post('/api/mapicon/pack/view',mapicon.findPackById);
+app.post('/api/mapicon/pack/create',mapicon.createPack);
+app.post('/api/mapicon/pack/remove',mapicon.removePackById);
 
 
 http.createServer(app).listen(app.get('port'), function(){

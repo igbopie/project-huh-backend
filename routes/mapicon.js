@@ -28,13 +28,13 @@ exports.create = function(req, res){
     });
 };
 
-exports.createGroup = function(req, res){
+exports.createPack = function(req, res){
     ApiUtils.auth(req,res,function(user){
 
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         if(user.superadmin) {
-            MapIconService.createGroup(name,mediaId,function (err, template) {
+            MapIconService.createPack(name,mediaId,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -68,14 +68,14 @@ exports.update = function(req, res){
     });
 };
 
-exports.updateGroup = function(req, res){
+exports.updatePack = function(req, res){
     ApiUtils.auth(req,res,function(user){
 
         var id = req.body.id;
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         if(user.superadmin) {
-            MapIconService.updateGroup(id,name,mediaId,function (err, template) {
+            MapIconService.updatePack(id,name,mediaId,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -106,11 +106,11 @@ exports.findById = function(req, res){
     });
 };
 
-exports.findGroupById = function(req, res){
+exports.findPackById = function(req, res){
     ApiUtils.auth(req,res,function(user){
         var id = req.body.id;
         if(user.superadmin) {
-            MapIconService.findGroupById(id,function (err, template) {
+            MapIconService.findPackById(id,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -140,11 +140,11 @@ exports.removeById = function(req, res){
     });
 };
 
-exports.removeGroupById = function(req, res){
+exports.removePackById = function(req, res){
     ApiUtils.auth(req,res,function(user){
         var id = req.body.id;
         if(user.superadmin) {
-            MapIconService.removeGroupById(id,function (err, template) {
+            MapIconService.removePackById(id,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -174,11 +174,11 @@ exports.findIcons = function(req, res){
 };
 
 
-exports.findIconGroups = function(req, res){
+exports.findIconPacks = function(req, res){
     ApiUtils.auth(req,res,function(user){
 
         var timestamp = req.body.timestamp;
-        MapIconService.findGroups(timestamp,function(err,templates){
+        MapIconService.findPacks(timestamp,function(err,templates){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{

@@ -13,9 +13,9 @@ exports.create = function(name,tag,mediaId,groupId,token,callback){
     });
 }
 
-exports.createGroup = function(name,mediaId,token,callback){
+exports.createPack = function(name,mediaId,token,callback){
     var params ={name:name,mediaId:mediaId,token:token};
-    apiClientBase.post('/api/mapicon/group/create',params,function(code,headers,data){
+    apiClientBase.post('/api/mapicon/pack/create',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);
         } else {

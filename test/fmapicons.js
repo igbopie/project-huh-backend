@@ -51,7 +51,7 @@ describe('MapIcons', function(){
                 if (err) return done(err);
 
                 var date = Date.now();
-                MapIcon.createGroup("Group",mediaId,users[0].token, function (err, groupId) {
+                MapIcon.createPack("Pack",mediaId,users[0].token, function (err, groupId) {
                     if (err) return done(err);
 
                     MapIcon.create("TestTemplate2", "tag", mediaId,groupId, users[0].token, function (err, rTemplateId) {
