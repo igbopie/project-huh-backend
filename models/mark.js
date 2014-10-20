@@ -76,7 +76,9 @@ var ViewMarkStats = mongoose.model('ViewMarkStats', viewMarkStatsSchema);
 
 // Now we can import
 var Item = require ('../models/item').Item
-    , ItemService = require ('../models/item').Service;
+    , ItemService = require ('../models/item').Service
+
+    , UserService = require("../models/user").Service;
 
 service.create = function(userId,latitude,longitude,radius,to,name,description,locationName,locationAddress,mapIconId){
     var promise = Q.defer();
@@ -124,11 +126,14 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
                         } else {
                             alias.shortlink = shortlink;
                             alias.save(function (err) {
-                                if (err) {
-                                    promise.reject(err);
-                                } else {
-                                    promise.resolve(alias);
-                                }
+                                UserService.addMarkHandler(alias,function(err){
+                                    if (err) {
+                                        promise.reject(err);
+                                    } else {
+                                        promise.resolve(alias);
+                                    }
+                                });
+
                             });
                         }
                     });

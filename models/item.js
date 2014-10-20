@@ -64,7 +64,7 @@ module.exports = {
 };
 
 
-var User = require("../models/user").User
+var UserService = require("../models/user").Service
     , Media = require("../models/media").Media
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
@@ -152,6 +152,7 @@ function createProcess(promise,item){
         .then(createItemAssignTeaserMedia)
         .then(createItemAssignMedia)
         .then(createItemCount1ItemInMark)
+        .then(UserService.addPostHandler)
         .then(function(item){
             promise.resolve(item);
             createBackground(item);

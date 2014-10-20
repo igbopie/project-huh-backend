@@ -4,6 +4,7 @@ var mongoose = require('mongoose')
   , crypto = require('crypto')
   ,	dateUtils = require('date-utils')
   , Utils = require('../utils/utils')
+  , Q = require("q")
   ,	SALT_WORK_FACTOR = 4
   , TOKEN_LENGTH = 48
   , MAX_TOKENS = 10
@@ -12,24 +13,10 @@ var mongoose = require('mongoose')
   , TOKEN_EXPIRATION_DAYS = 30
   , TOKEN_EXPIRATION_HOURS = 0
   , textSearch = require('mongoose-text-search')
-  , PUBLIC_USER_FIELDS ="username mediaId bio name"
-  , FRIENDS_LIMIT = 1000;
-
-/*var friendRequestSchema = new Schema({
-    friendId		: {	type: Schema.Types.ObjectId, required: true}
-  , friendUsername	: { type: String	, required: true}
-  , dateRequested  		: { type: Date	, required: true, default: Date.now}
-});
-
-var friendSchema = new Schema({
-    friendId		: {	type: Schema.Types.ObjectId, required: true}
-  , friendUsername	: { type: String	, required: true}
-  , displayName		: { type: String	, required: false}
-  , dateAdded  		: { type: Date	, required: true, default: Date.now}
-  , dateRequested  		: { type: Date	, required: true}
-});
-*/
-
+  , PUBLIC_USER_FIELDS ="username mediaId bio name markCount postCount points"
+  , POINTS_FOR_CREATING_MARK = 100
+  , POINTS_FOR_CREATING_POST = 50
+    ;
 
 var tokenSchema = new Schema({
     token		: {	type: String, required: true}
@@ -40,29 +27,31 @@ var tokenSchema = new Schema({
 
 
 var userSchema = new Schema({
-    username	    : { type: String, required: true, trim: true, index: { unique: true } }
-  ,	password	    : { type: String, required: true }
-  , email   	    : { type: String, required: true, index: { unique: true }  }
-  , superadmin   	: { type: Boolean, required: true ,default:false}
-  , name           : { type: String, required: false}
-  , bio           : { type: String, required: false}
-  , created		    : { type: Date	, required: true, default: Date.now }
-  , modified	    : { type: Date	, required: true, default: Date.now }
-  , phone			: {	type: String  , required: false, index: { unique: true, sparse: true } } // HASHED
-  , phoneVerificationCode: { type: String  , required: false }
-  , phoneVerificationTries: { type: Number	  , required: false }
-  , phoneVerified		: { type: Boolean , required: true, default: false }
-  , phoneDateVerified	: { type: Date	  , required: false }
-  , phoneDateAdded		: { type: Date	  , required: false }
-  , tokens		    : [tokenSchema]
-  , mediaId	: {	type: Schema.Types.ObjectId, required: false}
-  , facebookId      : { type: String, required: false, index: { unique: true, sparse: true } }
-  , apnToken        : { type: String  , required: false } //iOs notification
-  , apnSubscribeDate: { type: Date	  , required: false }
-  , gcmToken        : { type: String  , required: false } //Android notification
-  , gcmSubscribeDate: { type: Date	  , required: false }
-
-    //TODO photo, iOS Device ID,Android Device ID,Facebook ID
+    username	            : { type: String    , required: true, trim: true, index: { unique: true } }
+  ,	password	            : { type: String    , required: true }
+  , email   	            : { type: String    , required: true, index: { unique: true }  }
+  , superadmin   	        : { type: Boolean   , required: true ,default:false}
+  , name                    : { type: String    , required: false}
+  , bio                     : { type: String    , required: false}
+  , created		            : { type: Date	    , required: true, default: Date.now }
+  , modified	            : { type: Date	    , required: true, default: Date.now }
+  , phone			        : {	type: String    , required: false, index: { unique: true, sparse: true } } // HASHED
+  , phoneVerificationCode   : { type: String    , required: false }
+  , phoneVerificationTries  : { type: Number	, required: false }
+  , phoneVerified		    : { type: Boolean   , required: true, default: false }
+  , phoneDateVerified	    : { type: Date	    , required: false }
+  , phoneDateAdded		    : { type: Date	    , required: false }
+  , tokens		            : [tokenSchema]
+  , mediaId	                : {	type: Schema.Types.ObjectId, required: false}
+  , facebookId              : { type: String    , required: false, index: { unique: true, sparse: true } }
+  , apnToken                : { type: String    , required: false } //iOs notification
+  , apnSubscribeDate        : { type: Date	    , required: false }
+  , gcmToken                : { type: String    , required: false } //Android notification
+  , gcmSubscribeDate        : { type: Date	    , required: false }
+  , markCount               : {type: Number	    , required: true, default:0 }
+  , postCount               : {type: Number	    , required: true, default:0 }
+  , points                  : {type: Number	    , required: true, default:0 }
+  //TODO iOS Device ID,Android Device ID,Facebook ID
 });
 
 
@@ -331,6 +320,58 @@ service.search = function(text,callback){
         callback(err,docs);
     });
 }
+
+service.addMarkHandler = function(mark,callback){
+    var promise = Q.defer();
+
+    User.findOneAndUpdate(
+    {_id:mark.userId},
+    {$inc:{
+        markCount:1,
+        points:POINTS_FOR_CREATING_MARK
+    }},
+    function(err){
+        if (err) {
+            promise.reject(err);
+            if(callback){
+                callback(err);
+            }
+        } else {
+            promise.resolve(mark);
+            if(callback){
+                callback();
+            }
+        }
+    }
+    );
+
+    return promise.promise;
+}
+
+service.addPostHandler = function(item){
+    var promise = Q.defer();
+    if (item.status == 1) {
+        User.findOneAndUpdate(
+            {_id: item.userId},
+            {$inc: {
+                postCount: 1,
+                points: POINTS_FOR_CREATING_POST
+            }},
+            function (err) {
+                if (err) {
+                    promise.reject(err);
+                } else {
+                    promise.resolve(item);
+                }
+            }
+        );
+    }else{
+        promise.resolve(item);
+    }
+
+    return promise.promise;
+}
+
 
 
 module.exports = {
