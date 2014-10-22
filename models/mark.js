@@ -34,7 +34,7 @@ var markSchema = new Schema({
     shortlink   :   { type: String, required: false},
     itemCount :   { type: Number, required:true, default:0},
     items: [],
-    followerCount:  { type: Number, required:true, default:0}
+    favouriteCount:  { type: Number, required:true, default:0}
 });
 
 
@@ -45,6 +45,19 @@ markSchema.index({name:1});
 
 
 var Mark = mongoose.model('Mark', markSchema);
+
+
+var favouriteMarkSchema = new Schema({
+    userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    markId :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
+    date: { type: Date	, required: true, default: Date.now }
+});
+
+favouriteMarkSchema.index({userId:1,date:-1});
+favouriteMarkSchema.index({userId:1,markId:1},{unique:true});
+
+var FavouriteMark = mongoose.model('FavouriteMark', favouriteMarkSchema);
+
 //Service?
 var service = {};
 
@@ -355,6 +368,44 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
 
 }
 
+service.favourite = function(markId,userId,callback){
+
+    var fav = new FavouriteMark();
+    fav.markId = markId;
+    fav.userId = userId;
+
+    fav.save(function(err){
+        //Already favourited
+        if(err && err.code == 11000) return callback();
+
+        if(err) return callback(err);
+
+        Mark.update({_id:markId},{$inc:{favouriteCount:1}},function(err){
+            if(err) return callback(err);
+            callback();
+        });
+    });
+}
+
+
+service.unfavourite = function(markId,userId,callback){
+
+    FavouriteMark.findOne({userId:userId,markId:markId},function(err,favDoc){
+        if(err) return callback(err);
+        if(!favDoc) return callback("Not Favourited");
+
+        favDoc.remove(function(err){
+            if(err) return callback(err);
+
+            Mark.update({_id:markId},{$inc:{favouriteCount:-1}},function(err){
+                if(err) return callback(err);
+                callback();
+            });
+        });
+    });
+
+}
+
 function inRange(mark,longitude,latitude){
     if(mark.radius == 0){
         return true;
@@ -396,7 +447,7 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
             items: [],
             itemCount: dbMark.itemCount,
             canView: permissions.canView,
-            followerCount: dbMark.followerCount,
+            favouriteCount: dbMark.favouriteCount,
             locationName: dbMark.locationName,
             locationAddress: dbMark.locationAddress,
             created: dbMark.created,
@@ -409,26 +460,29 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
         if (userLongitude && userLatitude) {
             transformedMark.distance = distance(dbMark,userLongitude,userLatitude);
         }
+        FavouriteMark.findOne({userId: userId, markId: dbMark._id}, function (err, fav) {
+            if (err) return callback(err);
 
+            transformedMark.favourited = (fav ? true : false);
 
-        Item.findOne({markId: dbMark._id})
-            .sort({created: -1 })
-            .populate("userId", PUBLIC_USER_FIELDS)
-            .exec(function (err, latestItem) {
-                if (err) return callback(err);
+            Item.findOne({markId: dbMark._id})
+                .sort({created: -1 })
+                .populate("userId", PUBLIC_USER_FIELDS)
+                .exec(function (err, latestItem) {
+                    if (err) return callback(err);
 
-                if (latestItem) {
-                    ItemService.fillItem(latestItem,userLongitude,userLatitude,userId,function(err,item){
-                        if(err) return callback(err);
-                        transformedMark.items.push(item);
+                    if (latestItem) {
+                        ItemService.fillItem(latestItem,userLongitude,userLatitude,userId,function(err,item){
+                            if(err) return callback(err);
+                            transformedMark.items.push(item);
+                            callback(null,transformedMark);
+                        });
+                    }else{
                         callback(null,transformedMark);
-                    });
-                }else{
-                    callback(null,transformedMark);
-                }
+                    }
 
 
-            });
-
+                });
+        });
     });
 }

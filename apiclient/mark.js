@@ -21,3 +21,46 @@ exports.search = function(latitude,longitude,radius,text,userLatitude,userLongit
     });
 }
 
+
+exports.view = function(markId,latitude,longitude,token,callback){
+    var params ={markId:markId,
+        longitude:longitude,
+        latitude:latitude,
+        token:token};
+    apiClientBase.post('/api/mark/view',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
+exports.favourite = function(markId,token,callback){
+    var params ={
+        markId:markId,
+        token:token
+    };
+    apiClientBase.post('/api/mark/favourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+exports.unfavourite = function(markId,token,callback){
+    var params ={
+        markId:markId,
+        token:token
+    };
+    apiClientBase.post('/api/mark/unfavourite',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null);
+        }
+    });
+}
+

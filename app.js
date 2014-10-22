@@ -115,6 +115,10 @@ app.post('/api/mark/item/create',item.create);
 app.post('/api/mark/item/addmedia',item.addMedia);
 
 app.post('/api/mark/view',mark.view);
+
+app.post('/api/mark/favourite',mark.favourite);
+app.post('/api/mark/unfavourite',mark.unfavourite);
+
 app.post('/api/mark/item',item.listByMark);
 
 app.post('/api/mark/item/view',item.view);

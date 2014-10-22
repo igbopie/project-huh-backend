@@ -38,4 +38,29 @@ exports.view = function(req, res) {
 };
 
 
+exports.favourite = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        MarkService.favourite(markId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}
 
+
+exports.unfavourite = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        MarkService.unfavourite(markId,user._id,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}

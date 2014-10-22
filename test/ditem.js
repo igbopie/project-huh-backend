@@ -160,7 +160,7 @@ describe('Item', function(){
         it('should create an item object',function (done) {
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.viewMark(data.markId,41.2,41.2,users[0].token,function(err,data){
+                Mark.view(data.markId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
 
                     data.should.have.property("_id");
@@ -169,7 +169,7 @@ describe('Item', function(){
 
                     data.should.have.property("itemCount");
                     data.should.have.property("memberCount");
-                    data.should.have.property("followerCount");
+                    data.should.have.property("favouriteCount");
                     data.should.have.property("locationName");
                     data.should.have.property("locationAddress");
                     data.should.have.property("distance");
@@ -189,11 +189,11 @@ describe('Item', function(){
         it('should create an item object',function (done) {
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
                 if (err) return done(err);
-                Item.viewMark(createResponse.markId,41.2,41.2,users[0].token,function(err,data){
+                Mark.view(createResponse.markId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
-                    Item.viewMark(createResponse.markId,41.2,41.2,users[1].token,function(err,data){
+                    Mark.view(createResponse.markId,41.2,41.2,users[1].token,function(err,data){
                         if(err) return done(err);
-                        Item.viewMark(createResponse.markId,41.2,41.2,users[2].token,function(err,data){
+                        Mark.view(createResponse.markId,41.2,41.2,users[2].token,function(err,data){
                             if(err && data == 401) return done();
                             if(!err) return done("Should return unauthorized")
                             done(err);
@@ -208,11 +208,11 @@ describe('Item', function(){
         it('should create an item object',function (done) {
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
                 if (err) return done(err);
-                Item.viewItem(createResponse.itemId,41.2,41.2,users[0].token,function(err,data){
+                Item.view(createResponse.itemId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
-                    Item.viewItem(createResponse.itemId,41.2,41.2,users[1].token,function(err,data){
+                    Item.view(createResponse.itemId,41.2,41.2,users[1].token,function(err,data){
                         if(err) return done(err);
-                        Item.viewItem(createResponse.itemId,41.2,41.2,users[2].token,function(err,data){
+                        Item.view(createResponse.itemId,41.2,41.2,users[2].token,function(err,data){
                             if(err && data == 401) return done();
                             if(!err) return done("Should return unauthorized")
                             done(err);
@@ -279,7 +279,7 @@ describe('Item', function(){
             // 40 m
             Item.create("Test",templateId,mapIconId,null,40.665006,-3.779096,10,[],null,null,"Nacho's house",null,users[0].token,function(err,item){
                 if(err) return done(err);
-                Item.viewItem(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
+                Item.view(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
                     obj.should.not.have.property("message");
                     done();
@@ -296,7 +296,7 @@ describe('Item', function(){
             // 40 m
             Item.create("Test",templateId,mapIconId,null,40.665006,-3.779096,50,[],null,null,"Nacho's house",null,users[0].token,function(err,item){
                 if(err) return done(err);
-                Item.viewItem(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
+                Item.view(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
                     if(!obj) return done("It should return an object");
 
@@ -318,7 +318,7 @@ describe('Item', function(){
             // 40 m
             Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
                 if (err) return done(err);
-                Item.viewItem(item.itemId,40.665350,-3.778955, users[1].token, function (err, data) {
+                Item.view(item.itemId,40.665350,-3.778955, users[1].token, function (err, data) {
                     if (err) return done(err);
                     data.should.have.property('message');
                     done();
@@ -339,7 +339,7 @@ describe('Item', function(){
                 // 40 m
                 Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [users[0].id],null,null,"home",null, users[0].token, function (err, item) {
                     if (err) return done(err);
-                    Item.viewItem(item.itemId,40.665350,-3.778955, users[1].token, function (err, code) {
+                    Item.view(item.itemId,40.665350,-3.778955, users[1].token, function (err, code) {
                         if (err && code == 401) return done();
                         done("Should return 401 error");
                     })
@@ -430,7 +430,7 @@ describe('Item', function(){
                 Item.favourite(item.itemId,users[0].token,function(err){
                     if (err) return done(err);
 
-                    Item.viewItem(item.itemId,40.665006, -3.779096,users[0].token,function(err,item){
+                    Item.view(item.itemId,40.665006, -3.779096,users[0].token,function(err,item){
                         if (err) return done(err);
 
                         item.should.have.property("favouriteCount");
@@ -459,7 +459,7 @@ describe('Item', function(){
 
                     Item.favourite(item.itemId,users[0].token,function(err) {
                         if (err) return done(err);
-                        Item.viewItem(item.itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                        Item.view(item.itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
                             if (err) return done(err);
 
                             item.should.have.property("favouriteCount");
@@ -492,7 +492,7 @@ describe('Item', function(){
                     Item.unfavourite(item.itemId,users[0].token,function(err) {
                         if (err) return done(err);
 
-                        Item.viewItem(item.itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                        Item.view(item.itemId, 40.665006, -3.779096, users[0].token, function (err, item) {
                             if (err) return done(err);
 
                             item.should.have.property("favouriteCount");
@@ -508,6 +508,99 @@ describe('Item', function(){
             });
         });
     });
+
+
+    //
+    describe('#favouriteMark()', function(){
+        it('should fav a Mark',function (done) {
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+                if (err) return done(err);
+
+                Mark.favourite(item.markId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Mark.view(item.markId,40.665006, -3.779096,users[0].token,function(err,mark){
+                        if (err) return done(err);
+
+                        mark.should.have.property("favouriteCount");
+                        mark.favouriteCount.should.be.equal(1);
+                        mark.should.have.property("favourited");
+                        mark.favourited.should.be.ok;
+
+                        done()
+                    });;
+                });
+
+            });
+        });
+    });
+
+    describe('#favouriteMarkTwice()', function(){
+        it('should search',function (done) {
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+                if (err) return done(err);
+
+                Mark.favourite(item.markId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Mark.favourite(item.markId,users[0].token,function(err) {
+                        if (err) return done(err);
+                        Mark.view(item.markId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                            if (err) return done(err);
+
+                            item.should.have.property("favouriteCount");
+                            item.favouriteCount.should.be.equal(1);
+                            item.should.have.property("favourited");
+                            item.favourited.should.be.ok;
+
+                            done()
+                        });
+                    });
+
+                });
+
+            });
+        });
+    });
+
+    describe('#unfavouriteMark()', function(){
+        it('should search',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+                if (err) return done(err);
+
+                Mark.favourite(item.markId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Mark.unfavourite(item.markId,users[0].token,function(err) {
+                        if (err) return done(err);
+
+                        Mark.view(item.markId, 40.665006, -3.779096, users[0].token, function (err, item) {
+                            if (err) return done(err);
+
+                            item.should.have.property("favouriteCount");
+                            item.favouriteCount.should.be.equal(0);
+                            item.should.have.property("favourited");
+                            item.favourited.should.be.not.ok;
+
+                            done()
+                        });
+                    });
+                });
+
+            });
+        });
+    });
+    //
 
     describe('#favouriteAndList()', function(){
         it('should search',function (done) {
