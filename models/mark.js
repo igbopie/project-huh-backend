@@ -64,6 +64,7 @@ var service = {};
 // The exports is here to avoid cyclic dependency problem
 module.exports = {
     Mark: Mark,
+    FavouriteMark:FavouriteMark,
     Service:service
 };
 

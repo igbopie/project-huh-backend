@@ -110,6 +110,19 @@ exports.listItems = function(markId,longitude,latitude,token,callback){
     });
 }
 
+exports.favStream = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/mark/item/find/by/stream',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 exports.listSentToMe = function(token,callback){
     var params ={
         token:token

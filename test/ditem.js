@@ -600,6 +600,31 @@ describe('Item', function(){
             });
         });
     });
+
+    describe('#favouriteMarkAndStream()', function(){
+        it('should fav a Mark',function (done) {
+            //40.665006, -3.779096
+            //40.665350, -3.778955
+            // 40 m
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+                if (err) return done(err);
+
+                Mark.favourite(item.markId,users[0].token,function(err){
+                    if (err) return done(err);
+
+                    Item.favStream(users[0].token,function(err,items){
+                        if (err) return done(err);
+
+                        items.length.should.be.equal(1);
+                        //console.log(items);
+                        done()
+                    });;
+                });
+
+            });
+        });
+    });
+
     //
 
     describe('#favouriteAndList()', function(){

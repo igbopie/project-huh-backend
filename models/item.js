@@ -85,6 +85,7 @@ var UserService = require("../models/user").Service
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
     , Mark = require("../models/mark").Mark
+    , FavouriteMark  = require("../models/mark").FavouriteMark
     , MarkService  = require("../models/mark").Service
 
 ///------------------------
@@ -373,7 +374,21 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
 
 
+service.favStream = function(userId,longitude,latitude,callback){
+    FavouriteMark.find({userId:userId},function(err,list){
+        if(err) return callback(err);
+        var markIdsArray = [];
+        for(var i = 0; i < list.length; i++){
+            markIdsArray.push(list[i].markId);
+        }
 
+        finishItemQuery(
+            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
+                .sort({created:-1}
+            )
+            ,longitude,latitude,userId,callback);
+    });
+}
 service.listSentToMe = function(userId,longitude,latitude,callback){
     Mark.find({members:userId,userId:{$ne:userId}},function(err,list){
         if(err) return callback(err);

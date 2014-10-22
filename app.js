@@ -133,6 +133,7 @@ app.post('/api/mark/item/favourite/list',item.listFavourites);
 app.post('/api/mark/search',mark.search);
 app.post('/api/mark/item/find/by/senttome',item.listSentToMe);
 app.post('/api/mark/item/find/by/sentbyme',item.listSentByMe);
+app.post('/api/mark/item/find/by/stream',item.favStream);
 //----
 app.post('/api/template',template.listTemplates);
 app.post('/api/template/update',template.update);
