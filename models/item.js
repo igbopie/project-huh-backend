@@ -375,7 +375,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
 
 service.public = function(userId,longitude,latitude,callback){
-    FavouriteMark.find({userId:userId},function(err,list){
+    FavouriteMark.find({userId:userId,visibility:VISIBILITY_PUBLIC},function(err,list){
         if(err) return callback(err);
         var markIdsArray = [];
         for(var i = 0; i < list.length; i++){
@@ -418,38 +418,38 @@ service.sent = function(userId,longitude,latitude,callback){
 
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("userId",PUBLIC_USER_FIELDS)
+        .populate("markId")
         .exec(function(err,item){
             if(err) return callback(err);
             if(!item) return callback("Item not found");
 
-            if(item instanceof Item) {
-                var publicItem = service.fillItem(item, userId,longitude,latitude);
-                if (publicItem) {
-                    return callback(null, publicItem);
-                } else {
-                    return callback("Not permitted");
-                }
-            }else{
-                Utils.map(
-                    item,
-                    //Map Function
-                    function(dbItem,mapCallback){
 
-                        service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
+            Utils.map(
+                item,
+                //Map Function
+                function(dbItem,mapCallback){
+                    var mark = dbItem.markId;
+
+                    service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
+                        if(err){
+                            console.err(err);
+                        }
+                        MarkService.fillMark(mark,userId,longitude,latitude,false,function(err,mark){
                             if(err){
                                 console.err(err);
                             }
+                            item.mark = mark;
                             mapCallback(item);
                         });
+                    });
 
-                    }
-                    ,
-                    //Callback
-                    function(results){
-                        callback(null, results);
-                    }
-                )
-            }
+                }
+                ,
+                //Callback
+                function(results){
+                    callback(null, results);
+                }
+            )
 
         });
 }

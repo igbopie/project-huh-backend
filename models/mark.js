@@ -50,10 +50,12 @@ var Mark = mongoose.model('Mark', markSchema);
 var favouriteMarkSchema = new Schema({
     userId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
     markId :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
-    date: { type: Date	, required: true, default: Date.now }
+    date: { type: Date	, required: true, default: Date.now },
+    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE }
+
 });
 
-favouriteMarkSchema.index({userId:1,date:-1});
+favouriteMarkSchema.index({userId:1,visibility:1,date:-1});
 favouriteMarkSchema.index({userId:1,markId:1},{unique:true});
 
 var FavouriteMark = mongoose.model('FavouriteMark', favouriteMarkSchema);
@@ -222,7 +224,7 @@ service.view = function(markId,userId,userLongitude,userLatitude,callback){
             if(err) return callback(err);
             if(!mark) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
 
-            fillMark(mark,userId,userLongitude,userLatitude,function(err,mark){
+            service.fillMark(mark,userId,userLongitude,userLatitude,true,function(err,mark){
                 if(err) return callback(err);
 
                 if(mark.canView){
@@ -270,7 +272,7 @@ function processResults(results,userId,userLatitude,userLongitude,transformCallb
                 items,
                 //Map Function
                 function(geoResultMark,mapCallback){
-                    fillMark(geoResultMark,userId,userLongitude,userLatitude,function(err,mark){
+                    service.fillMark(geoResultMark,userId,userLongitude,userLatitude,true,function(err,mark){
                         if(err) console.error(err);
 
                         mapCallback(mark);
@@ -372,21 +374,32 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
 
 service.favourite = function(markId,userId,callback){
 
-    var fav = new FavouriteMark();
-    fav.markId = markId;
-    fav.userId = userId;
 
-    fav.save(function(err){
-        //Already favourited
-        if(err && err.code == 11000) return callback();
+    Mark.findById(markId,function(err,mark){
+        if(err){
+            return callback(err);
+        }
+        if(!mark){
+            return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
+        }
 
-        if(err) return callback(err);
+        var fav = new FavouriteMark();
+        fav.markId = markId;
+        fav.visibility = mark.visibility;
+        fav.userId = userId;
+        fav.save(function(err){
+            //Already favourited
+            if(err && err.code == 11000) return callback();
 
-        Mark.update({_id:markId},{$inc:{favouriteCount:1}},function(err){
             if(err) return callback(err);
-            callback();
+
+            Mark.update({_id:markId},{$inc:{favouriteCount:1}},function(err){
+                if(err) return callback(err);
+                callback();
+            });
         });
-    });
+    })
+
 }
 
 
@@ -430,7 +443,7 @@ function distance(mark,longitude,latitude){
 }
 
 
-function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
+service.fillMark = function(dbMark,userId,userLongitude,userLatitude,includeLatest,callback){
     service.canViewMark(dbMark._id,userId,userLongitude,userLatitude,function(err,permissions) {
         if (err) return callback(err);
 
@@ -446,7 +459,6 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
             memberCount: dbMark.memberCount,
             mapIconMediaId: dbMark.mapIconMediaId,
             mapIconId: dbMark.mapIconId,
-            items: [],
             itemCount: dbMark.itemCount,
             canView: permissions.canView,
             favouriteCount: dbMark.favouriteCount,
@@ -467,24 +479,29 @@ function fillMark(dbMark,userId,userLongitude,userLatitude,callback){
 
             transformedMark.favourited = (fav ? true : false);
 
-            Item.findOne({markId: dbMark._id})
-                .sort({created: -1 })
-                .populate("userId", PUBLIC_USER_FIELDS)
-                .exec(function (err, latestItem) {
-                    if (err) return callback(err);
+            if(includeLatest) {
+                transformedMark.items = [];
+                Item.findOne({markId: dbMark._id})
+                    .sort({created: -1 })
+                    .populate("userId", PUBLIC_USER_FIELDS)
+                    .exec(function (err, latestItem) {
+                        if (err) return callback(err);
 
-                    if (latestItem) {
-                        ItemService.fillItem(latestItem,userLongitude,userLatitude,userId,function(err,item){
-                            if(err) return callback(err);
-                            transformedMark.items.push(item);
-                            callback(null,transformedMark);
-                        });
-                    }else{
-                        callback(null,transformedMark);
-                    }
+                        if (latestItem) {
+                            ItemService.fillItem(latestItem, userLongitude, userLatitude, userId, function (err, item) {
+                                if (err) return callback(err);
+                                transformedMark.items.push(item);
+                                callback(null, transformedMark);
+                            });
+                        } else {
+                            callback(null, transformedMark);
+                        }
 
 
-                });
+                    });
+            }else{
+                callback(null, transformedMark);
+            }
         });
     });
 }
