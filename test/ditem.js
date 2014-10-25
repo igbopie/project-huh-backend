@@ -115,7 +115,15 @@ describe('Item', function(){
 
                         results.length.should.be.equal(1);
 
-                        done();
+                        Mark.view( results[0]._id,41.2,41.2, users[1].token,function(err,mark) {
+                            if (err) return done(err);
+                            if(!mark) return done("mark should be filled")
+
+                            mark.members.length.should.be.equal(2);
+                            mark.members[0].should.have.property("username");
+
+                            done();
+                        });
                     });
                 });
             });

@@ -217,6 +217,7 @@ service.view = function(markId,userId,userLongitude,userLatitude,callback){
     Mark.findOne({_id:markId})
         .populate("userId",PUBLIC_USER_FIELDS)
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+        .populate({ path: 'members', model: 'User', select: PUBLIC_USER_FIELDS })
         .exec(function(err,mark){
             if(err) return callback(err);
             if(!mark) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
