@@ -374,7 +374,7 @@ service.view = function(itemId,longitude,latitude,userId,callback){
 
 
 
-service.favStream = function(userId,longitude,latitude,callback){
+service.public = function(userId,longitude,latitude,callback){
     FavouriteMark.find({userId:userId},function(err,list){
         if(err) return callback(err);
         var markIdsArray = [];
@@ -389,7 +389,7 @@ service.favStream = function(userId,longitude,latitude,callback){
             ,longitude,latitude,userId,callback);
     });
 }
-service.listSentToMe = function(userId,longitude,latitude,callback){
+service.private = function(userId,longitude,latitude,callback){
     Mark.find({members:userId,userId:{$ne:userId}},function(err,list){
         if(err) return callback(err);
         var markIdsArray = [];
@@ -408,7 +408,7 @@ service.listSentToMe = function(userId,longitude,latitude,callback){
 
 }
 
-service.listSentByMe = function(userId,longitude,latitude,callback){
+service.sent = function(userId,longitude,latitude,callback){
     finishItemQuery(
         Item.find({userId:userId,status:STATUS_OK})
             .sort({created:-1}

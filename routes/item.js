@@ -88,11 +88,11 @@ exports.view = function(req,res){
     });
 }
 
-exports.favStream = function(req,res){
+exports.public = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.favStream(user._id,longitude,latitude,function(err,data){
+        ItemService.public(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -105,11 +105,11 @@ exports.favStream = function(req,res){
 
 
 
-exports.listSentToMe = function(req,res){
+exports.private = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.listSentToMe(user._id,longitude,latitude,function(err,data){
+        ItemService.private(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -119,11 +119,11 @@ exports.listSentToMe = function(req,res){
     });
 }
 
-exports.listSentByMe = function(req,res){
+exports.sent = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.listSentByMe(user._id,longitude,latitude,function(err,data){
+        ItemService.sent(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
