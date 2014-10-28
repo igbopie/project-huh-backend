@@ -42,7 +42,9 @@ service.create = function (name,tag,mediaId,packId,pointsThreshold,callback){
     if(packId){
         mapIcon.packId = packId;
     }
-    mapIcon.pointsThreshold = pointsThreshold;
+    if(pointsThreshold) {
+        mapIcon.pointsThreshold = pointsThreshold;
+    }
     mapIcon.save(function(err){
         if(err) return callback(err,null);
         MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIcon#mediaId",function(err) {
@@ -61,7 +63,10 @@ service.createPack = function (name,mediaId,isFree,pointsThreshold,appStoreCode,
     mapIcon.name = name;
     mapIcon.mediaId = mediaId;
     mapIcon.isFree = isFree;
-    mapIcon.pointsThreshold = pointsThreshold;
+
+    if(pointsThreshold) {
+        mapIcon.pointsThreshold = pointsThreshold;
+    }
     mapIcon.appStoreCode = appStoreCode;
     mapIcon.save(function(err){
         if(err) return callback(err,null);
@@ -88,7 +93,10 @@ service.update = function (id,name,tag,mediaId,packId,pointsThreshold,callback){
         if(packId){
             mapIcon.packId = packId;
         }
-        mapIcon.pointsThreshold = pointsThreshold;
+
+        if(pointsThreshold) {
+            mapIcon.pointsThreshold = pointsThreshold;
+        }
         mapIcon.save(function(err){
             if(err) return callback(err,null);
             MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIcon#mediaId",function(err) {
@@ -113,7 +121,10 @@ service.updatePack = function (id,name,mediaId,isFree,pointsThreshold,appStoreCo
         mapIcon.mediaId = mediaId;
         mapIcon.updated = Date.now();
         mapIcon.isFree = isFree;
-        mapIcon.pointsThreshold = pointsThreshold;
+
+        if(pointsThreshold) {
+            mapIcon.pointsThreshold = pointsThreshold;
+        }
         mapIcon.appStoreCode = appStoreCode;
         mapIcon.save(function(err){
             if(err) return callback(err,null);

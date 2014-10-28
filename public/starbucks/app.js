@@ -96,6 +96,18 @@ app.config(['$routeProvider',
                 templateUrl: 'partials/mapicon-create.html',
                 controller: 'MapIconEdit'
             }).
+            when('/mapiconpack', {
+                templateUrl: 'partials/mapiconpack.html',
+                controller: 'MapIconPackList'
+            }).
+            when('/mapiconpack/create', {
+                templateUrl: 'partials/mapiconpack-create.html',
+                controller: 'MapIconPackCreate'
+            }).
+            when('/mapiconpack/edit/:id', {
+                templateUrl: 'partials/mapiconpack-create.html',
+                controller: 'MapIconPackEdit'
+            }).
             otherwise({
                 redirectTo: '/templates'
             });
@@ -249,8 +261,8 @@ app.service('MapIconService', ['$http','AuthService', function ($http,AuthServic
         });
     };
 
-    this.update = function (id,name,tag,mediaId,callback) {
-        $http.post(urlBase+'/update',{id:id,name:name,tag:tag,mediaId:mediaId,token:AuthService.getToken()}).success(function(data) {
+    this.update = function (id,name,tag,mediaId,pointsThreshold,packId,callback) {
+        $http.post(urlBase+'/update',{id:id,name:name,tag:tag,mediaId:mediaId,token:AuthService.getToken(),pointsThreshold:pointsThreshold,packId:packId}).success(function(data) {
             if(data.response){
                 callback(null,data.response);
             }else{
@@ -261,8 +273,8 @@ app.service('MapIconService', ['$http','AuthService', function ($http,AuthServic
         });
     };
 
-    this.create = function(name,tag,mediaId,callback){
-        $http.post(urlBase+"/create",{token:AuthService.getToken(),name:name,tag:tag,mediaId:mediaId}).success(function(data) {
+    this.create = function(name,tag,mediaId,pointsThreshold,packId,callback){
+        $http.post(urlBase+"/create",{token:AuthService.getToken(),name:name,tag:tag,mediaId:mediaId,pointsThreshold:pointsThreshold,packId:packId}).success(function(data) {
             if(data.response){
                 callback(null,data.response);
             }else{
@@ -284,6 +296,72 @@ app.service('MapIconService', ['$http','AuthService', function ($http,AuthServic
         });
     }
 }]);
+
+
+app.service('MapIconPackService', ['$http','AuthService', function ($http,AuthService) {
+
+    var urlBase = '/api/mapicon/pack';
+
+    this.list = function (callback) {
+        $http.post(urlBase,{token:AuthService.getToken()}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    };
+
+    this.view = function (id,callback) {
+        $http.post(urlBase+'/view',{id:id,token:AuthService.getToken()}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    };
+
+    this.update = function (id,name,tag,mediaId,pointsThreshold,isFree,appStoreCode,callback) {
+        $http.post(urlBase+'/update',{id:id,name:name,tag:tag,mediaId:mediaId,token:AuthService.getToken(),pointsThreshold:pointsThreshold,isFree:isFree,appStoreCode:appStoreCode}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    };
+
+    this.create = function(name,tag,mediaId,pointsThreshold,isFree,appStoreCode,callback){
+        $http.post(urlBase+"/create",{token:AuthService.getToken(),name:name,tag:tag,mediaId:mediaId,pointsThreshold:pointsThreshold,isFree:isFree,appStoreCode:appStoreCode}).success(function(data) {
+            if(data.response){
+                callback(null,data.response);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    }
+    this.remove = function(id,callback){
+        $http.post(urlBase+"/remove",{token:AuthService.getToken(),id:id}).success(function(data) {
+            if(data.code == 200){
+                callback(null);
+            }else{
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
+    }
+}]);
+
 
 app.service('MediaService', ['$http','$upload','AuthService', function ($http,$upload,AuthService) {
 
