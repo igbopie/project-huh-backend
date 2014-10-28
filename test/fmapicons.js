@@ -47,14 +47,14 @@ describe('MapIcons', function(){
     describe('#mapIconsSystem',function(){
         it('should create and verify mapicon system',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            MapIcon.create("TestTemplate", "tag", mediaId,null, users[0].token, function (err, rTemplateId) {
+            MapIcon.create("TestTemplate", "tag", mediaId,null,1000, users[0].token, function (err, rTemplateId) {
                 if (err) return done(err);
 
                 var date = Date.now();
-                MapIcon.createPack("Pack",mediaId,users[0].token, function (err, groupId) {
+                MapIcon.createPack("Pack",mediaId,true,0,null,users[0].token, function (err, packId) {
                     if (err) return done(err);
 
-                    MapIcon.create("TestTemplate2", "tag", mediaId,groupId, users[0].token, function (err, rTemplateId) {
+                    MapIcon.create("TestTemplate2", "tag", mediaId,packId,0, users[0].token, function (err, rTemplateId) {
                         if (err) return done(err);
 
                         MapIcon.list(date,users[0].token,function(err,list){

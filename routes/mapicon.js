@@ -13,9 +13,10 @@ exports.create = function(req, res){
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         var tag = req.body.tag;
-        var groupId = req.body.groupId;
+        var packId = req.body.packId;
+        var pointsThreshold = req.body.pointsThreshold;
         if(user.superadmin) {
-            MapIconService.create(name,tag,mediaId,groupId,function (err, template) {
+            MapIconService.create(name,tag,mediaId,packId,pointsThreshold,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -33,8 +34,11 @@ exports.createPack = function(req, res){
 
         var mediaId = req.body.mediaId;
         var name = req.body.name;
+        var isFree = req.body.isFree;
+        var pointsThreshold = req.body.pointsThreshold;
+        var appStoreCode= req.body.appStoreCode;
         if(user.superadmin) {
-            MapIconService.createPack(name,mediaId,function (err, template) {
+            MapIconService.createPack(name,mediaId,isFree,pointsThreshold,appStoreCode,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -54,8 +58,10 @@ exports.update = function(req, res){
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         var tag = req.body.tag;
+        var packId = req.body.packId;
+        var pointsThreshold = req.body.pointsThreshold;
         if(user.superadmin) {
-            MapIconService.update(id,name,tag,mediaId,function (err, template) {
+            MapIconService.update(id,name,tag,mediaId,packId,pointsThreshold,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -74,8 +80,11 @@ exports.updatePack = function(req, res){
         var id = req.body.id;
         var mediaId = req.body.mediaId;
         var name = req.body.name;
+        var isFree = req.body.isFree;
+        var pointsThreshold = req.body.pointsThreshold;
+        var appStoreCode= req.body.appStoreCode;
         if(user.superadmin) {
-            MapIconService.updatePack(id,name,mediaId,function (err, template) {
+            MapIconService.updatePack(id,name,mediaId,isFree,pointsThreshold,appStoreCode,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {

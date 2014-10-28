@@ -2,8 +2,8 @@ var apiClientBase = require('./apiclientbase');
  
  
  
-exports.create = function(name,tag,mediaId,groupId,token,callback){
-	var params ={name:name,tag:tag,mediaId:mediaId,groupId:groupId,token:token};
+exports.create = function(name,tag,mediaId,packId,pointsThreshold,token,callback){
+	var params ={name:name,tag:tag,mediaId:mediaId,packId:packId,pointsThreshold:pointsThreshold,token:token};
 	apiClientBase.post('/api/mapicon/create',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);
@@ -13,8 +13,8 @@ exports.create = function(name,tag,mediaId,groupId,token,callback){
     });
 }
 
-exports.createPack = function(name,mediaId,token,callback){
-    var params ={name:name,mediaId:mediaId,token:token};
+exports.createPack = function(name,mediaId,isFree,pointsThreshold,appStoreCode,token,callback){
+    var params ={name:name,mediaId:mediaId,isFree:isFree,pointsThreshold:pointsThreshold,appStoreCode:appStoreCode,token:token};
     apiClientBase.post('/api/mapicon/pack/create',params,function(code,headers,data){
         if(code != 200){
             callback("The server responded with an invalid code: "+code+" : "+data,code);

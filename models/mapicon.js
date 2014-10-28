@@ -34,14 +34,15 @@ var MapIconPack = mongoose.model('MapIconPack', mapiconPackSchema);
 
 var service = {};
 
-service.create = function (name,tag,mediaId,groupId,callback){
+service.create = function (name,tag,mediaId,packId,pointsThreshold,callback){
     var mapIcon = new MapIcon();
     mapIcon.name = name;
     mapIcon.tag = tag;
     mapIcon.mediaId = mediaId;
-    if(groupId){
-    mapIcon.groupId = groupId;
+    if(packId){
+        mapIcon.packId = packId;
     }
+    mapIcon.pointsThreshold = pointsThreshold;
     mapIcon.save(function(err){
         if(err) return callback(err,null);
         MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIcon#mediaId",function(err) {
@@ -55,10 +56,13 @@ service.create = function (name,tag,mediaId,groupId,callback){
     });
 }
 
-service.createPack = function (name,mediaId,callback){
+service.createPack = function (name,mediaId,isFree,pointsThreshold,appStoreCode,callback){
     var mapIcon = new MapIconPack();
     mapIcon.name = name;
     mapIcon.mediaId = mediaId;
+    mapIcon.isFree = isFree;
+    mapIcon.pointsThreshold = pointsThreshold;
+    mapIcon.appStoreCode = appStoreCode;
     mapIcon.save(function(err){
         if(err) return callback(err,null);
         MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconPack#mediaId",function(err) {
@@ -73,7 +77,7 @@ service.createPack = function (name,mediaId,callback){
 }
 
 
-service.update = function (id,name,tag,mediaId,groupId,callback){
+service.update = function (id,name,tag,mediaId,packId,pointsThreshold,callback){
     MapIcon.findOne({_id:id},function(err,mapIcon){
         if(err) return callback(err);
 
@@ -81,9 +85,10 @@ service.update = function (id,name,tag,mediaId,groupId,callback){
         mapIcon.tag = tag;
         mapIcon.mediaId = mediaId;
         mapIcon.updated = Date.now();
-        if(groupId){
-            mapIcon.groupId = groupId;
+        if(packId){
+            mapIcon.packId = packId;
         }
+        mapIcon.pointsThreshold = pointsThreshold;
         mapIcon.save(function(err){
             if(err) return callback(err,null);
             MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIcon#mediaId",function(err) {
@@ -100,14 +105,16 @@ service.update = function (id,name,tag,mediaId,groupId,callback){
 }
 
 
-service.updatePack = function (id,name,mediaId,callback){
+service.updatePack = function (id,name,mediaId,isFree,pointsThreshold,appStoreCode,callback){
     MapIconPack.findOne({_id:id},function(err,mapIcon){
         if(err) return callback(err);
 
         mapIcon.name = name;
         mapIcon.mediaId = mediaId;
         mapIcon.updated = Date.now();
-
+        mapIcon.isFree = isFree;
+        mapIcon.pointsThreshold = pointsThreshold;
+        mapIcon.appStoreCode = appStoreCode;
         mapIcon.save(function(err){
             if(err) return callback(err,null);
             MediaService.assign(mapIcon.mediaId,[],MediaVars.VISIBILITY_PUBLIC,mapIcon._id,"MapIconPack#mediaId",function(err) {
