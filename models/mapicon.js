@@ -9,8 +9,8 @@ var mapiconSchema = new Schema({
     mediaId     :   { type: Schema.Types.ObjectId, required: true},
     created     :   { type: Date, required: true, default: Date.now },
     updated     :   { type: Date, required: true, default: Date.now },
-    groupId     :   { type: Schema.Types.ObjectId, required: false, ref:"MapIconPack"},
-    points      :   { type: Number, required:true, default: 0}
+    packId     :   { type: Schema.Types.ObjectId, required: false, ref:"MapIconPack"},
+    pointsThreshold      :   { type: Number, required:true, default: 0}
 });
 
 mapiconSchema.index({updated:-1});
@@ -18,13 +18,13 @@ mapiconSchema.index({updated:-1});
 var MapIcon = mongoose.model('MapIcon', mapiconSchema);
 
 var mapiconPackSchema = new Schema({
-    name        :   { type: String, required: true},
-    mediaId     :   { type: Schema.Types.ObjectId, required: true},
-    created     :   { type: Date, required: true, default: Date.now },
-    updated     :   { type: Date, required: true, default: Date.now },
-    isFree      :   { type: Boolean, required:true, default: true},
-    points      :   { type: Number, required:true, default: 0},
-    appStoreCode:   { type: String, required: false}
+    name            :   { type: String, required: true},
+    mediaId         :   { type: Schema.Types.ObjectId, required: true},
+    created         :   { type: Date, required: true, default: Date.now },
+    updated         :   { type: Date, required: true, default: Date.now },
+    isFree          :   { type: Boolean, required:true, default: true},
+    pointsThreshold :   { type: Number, required:true, default: 0},
+    appStoreCode    :   { type: String, required: false}
 });
 
 mapiconPackSchema.index({updated:-1});
