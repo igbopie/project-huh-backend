@@ -64,3 +64,15 @@ exports.unfavourite = function(markId,token,callback){
     });
 }
 
+exports.listFavourite = function(token,callback){
+    var params ={
+        token:token
+    };
+    apiClientBase.post('/api/mark/favourite/list',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

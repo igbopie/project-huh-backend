@@ -538,7 +538,14 @@ describe('Item', function(){
                         mark.should.have.property("favourited");
                         mark.favourited.should.be.ok;
 
-                        done()
+                        Mark.listFavourite(users[0].token,function(err,listFavs){
+                            if (err) return done(err);
+
+                            listFavs.length.should.be.equal(1);
+
+                            done()
+                        });
+
                     });;
                 });
 

@@ -421,6 +421,45 @@ service.unfavourite = function(markId,userId,callback){
 
 }
 
+
+service.listFavourites = function(longitude,latitude,userId,callback){
+
+    FavouriteMark.find({userId:userId})
+        .populate("markId")
+        .exec(function(err,favs){
+            if(err) return callback(err);
+
+            Utils.map(
+                favs,
+                //Map Function
+                function(dbFavMark,mapCallback){
+                    service.fillMark(dbFavMark.markId,userId,longitude,latitude,true,function(err,mark){
+                        if(err){
+                            console.err(err);
+                        }
+                        mapCallback(mark);
+                    });
+                }
+                ,
+                //Callback
+                function(favs){
+                    // populating user object
+                    Mark.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                        if (err) return callback(err);
+                        Mark.populate( favs, { path: 'members', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
+                            if (err) return callback(err);
+
+                            callback(null, favs);
+                        });
+
+                    });
+                }
+            )
+
+        });
+
+}
+
 function inRange(mark,longitude,latitude){
     if(mark.radius == 0){
         return true;
