@@ -169,31 +169,27 @@ exports.removePackById = function(req, res){
 
 
 exports.findIcons = function(req, res){
-    ApiUtils.auth(req,res,function(user){
+    var timestamp = req.body.timestamp || req.query.timestamp;
 
-        var timestamp = req.body.timestamp;
-        MapIconService.find(timestamp,function(err,templates){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,templates);
-            }
-        });
+    MapIconService.find(timestamp,function(err,templates){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }else{
+            ApiUtils.api(req,res,ApiUtils.OK,null,templates);
+        }
     });
 };
 
 
 exports.findIconPacks = function(req, res){
-    ApiUtils.auth(req,res,function(user){
+    var timestamp = req.body.timestamp || req.query.timestamp;
 
-        var timestamp = req.body.timestamp;
-        MapIconService.findPacks(timestamp,function(err,templates){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,templates);
-            }
-        });
+    MapIconService.findPacks(timestamp,function(err,templates){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }else{
+            ApiUtils.api(req,res,ApiUtils.OK,null,templates);
+        }
     });
 };
 

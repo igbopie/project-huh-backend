@@ -146,12 +146,14 @@ app.post('/api/template/create',template.create);
 app.post('/api/template/remove',template.removeById);
 
 
+app.get('/api/mapicon',mapicon.findIcons);
 app.post('/api/mapicon',mapicon.findIcons);
 app.post('/api/mapicon/update',mapicon.update);
 app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
+app.get('/api/mapicon/pack',mapicon.findIconPacks);
 app.post('/api/mapicon/pack',mapicon.findIconPacks);
 app.post('/api/mapicon/pack/update',mapicon.updatePack);
 app.post('/api/mapicon/pack/view',mapicon.findPackById);
