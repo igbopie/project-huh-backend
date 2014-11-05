@@ -27,23 +27,24 @@ var tokenSchema = new Schema({
 
 
 var userSchema = new Schema({
-    username	            : { type: String    , required: true, trim: true, index: { unique: true } }
-  ,	password	            : { type: String    , required: true }
-  , email   	            : { type: String    , required: true, index: { unique: true }  }
-  , superadmin   	        : { type: Boolean   , required: true ,default:false}
+    username	            	: { type: String    , required: true, trim: true, index: { unique: true } }
+  ,	password	            	: { type: String    , required: true }
+  , email   	            	: { type: String    , required: true, index: { unique: true }  }
+  , superadmin   	        	: { type: Boolean   , required: true ,default:false}
   , name                    : { type: String    , required: false}
   , bio                     : { type: String    , required: false}
-  , created		            : { type: Date	    , required: true, default: Date.now }
-  , modified	            : { type: Date	    , required: true, default: Date.now }
-  , phone			        : {	type: String    , required: false, index: { unique: true, sparse: true } } // HASHED
+  , created		            	: { type: Date	    , required: true, default: Date.now }
+  , modified	            	: { type: Date	    , required: true, default: Date.now }
+  , phone			        			: {	type: String    , required: false, index: { unique: true, sparse: true } } // HASHED
   , phoneVerificationCode   : { type: String    , required: false }
   , phoneVerificationTries  : { type: Number	, required: false }
-  , phoneVerified		    : { type: Boolean   , required: true, default: false }
-  , phoneDateVerified	    : { type: Date	    , required: false }
-  , phoneDateAdded		    : { type: Date	    , required: false }
-  , tokens		            : [tokenSchema]
+  , phoneVerified		    		: { type: Boolean   , required: true, default: false }
+  , phoneDateVerified	    	: { type: Date	    , required: false }
+  , phoneDateAdded		   	 	: { type: Date	    , required: false }
+  , tokens		            	: [tokenSchema]
   , mediaId	                : {	type: Schema.Types.ObjectId, required: false}
-  , facebookId              : { type: String    , required: false, index: { unique: true, sparse: true } }
+	, backgroundMediaId				: {	type: Schema.Types.ObjectId, required: false}
+	, facebookId              : { type: String    , required: false, index: { unique: true, sparse: true } }
   , apnToken                : { type: String    , required: false } //iOs notification
   , apnSubscribeDate        : { type: Date	    , required: false }
   , gcmToken                : { type: String    , required: false } //Android notification

@@ -20,6 +20,7 @@ var mongoose = require('mongoose')
     , UPLOAD_STATUSES_UPLOADED = "UPLOADED"
     , UPLOAD_STATUSES_ASSIGNED = "ASSIGNED"
     , UPLOAD_STATUSES = [UPLOAD_STATUSES_UPLOADED,UPLOAD_STATUSES_ASSIGNED]
+    , Q = require("q")
     ;
 
 /* Lifecicle: Upload -> UPLOADED, then assign. If not assigned, the media can be cleaned by a "garbage collector" TODO */
@@ -236,6 +237,7 @@ service.removeAux = function (media, formatName, callback) {
 };
 
 service.assign = function(mediaId,canView,visibility,entityRefId,entityRefName, callback){
+    var promise = Q.defer();
     if(!entityRefId){
         return callback("Entity Ref Id required");
     }
@@ -244,9 +246,11 @@ service.assign = function(mediaId,canView,visibility,entityRefId,entityRefName, 
     }
     service.findById(mediaId,function(err,media){
         if(err){
-            callback(err);
+            promise.reject(err);
+            callback?callback(err):'';
         } else if(!media){
-            callback("Media not found");
+            promise.reject(err);
+            callback?callback("Media not found"):'';
         }else{
             media.canView = canView;
             media.visibility = visibility;
@@ -254,10 +258,17 @@ service.assign = function(mediaId,canView,visibility,entityRefId,entityRefName, 
             media.entityRefName = entityRefName;
             media.uploadStatus = UPLOAD_STATUSES_ASSIGNED;
             media.save(function(err){
-               callback(err);
+                if(err) {
+                    promise.reject(err);
+                    callback(err);
+                }
+                callback?callback(err):'';
+                promise.resolve();
             });
         }
-    })
+    });
+
+    return promise.promise;
 }
 
 service.create = function (originalPath, contentType, name, ownerId, callback) {

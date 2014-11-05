@@ -5,6 +5,7 @@ var MediaService = require('../models/media').Service;
 var MediaVars = require('../models/media');
 var ApiUtils = require('../utils/apiutils'); 
 var SMS = require('../utils/sms');
+var Q = require("q");
 
 
 exports.create = function(req, res) {
@@ -108,7 +109,8 @@ exports.profile = function(req, res) {
             bio             :1,
             postCount       :1,
             markCount       :1,
-            points       :1
+            points       :1,
+            backgroundMediaId:1
         };
         var username = req.body.username;
 
@@ -135,17 +137,24 @@ exports.profile = function(req, res) {
 exports.update = function(req, res) {
     ApiUtils.auth(req,res,function(user){
         var email = req.body.email;
+        var backgroundMediaId = req.body.backgroundMediaId;
         var mediaId = req.body.mediaId;
         var facebookId = req.body.facebookId;
         var name = req.body.name;
         var bio = req.body.bio;
         var changedMedia = false;
+        var changedBackgroundMediaId = false;
+
         if(email){
             user.email = email;
         }
         if(mediaId){
             user.mediaId = mediaId;
             changedMedia = true;
+        }
+        if(backgroundMediaId){
+            user.backgroundMediaId = backgroundMediaId;
+            changedBackgroundMediaId = true;
         }
         if(facebookId){
             user.facebookId = facebookId;
@@ -158,21 +167,29 @@ exports.update = function(req, res) {
         }
         user.modified = new Date();
 
-        user.save(function(err){
-            if(changedMedia){
-                MediaService.assign(user.mediaId,[],MediaVars.VISIBILITY_PUBLIC,user._id,"User#mediaId",function(err){
-                    if(err){
-                        ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-                    } else {
-                        ApiUtils.api(req,res,ApiUtils.OK,null,null);
-                    }
+        user.save(function(err) {
+            if(err) return ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+
+            var promise = Q.when();
+            if (changedMedia) {
+                promise.then(function () {
+                    promise = MediaService.assign(user.mediaId, [], MediaVars.VISIBILITY_PUBLIC, user._id, "User#mediaId");
                 });
-            }else if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            } else {
-                ApiUtils.api(req,res,ApiUtils.OK,null,null);
             }
+            if (changedBackgroundMediaId) {
+                promise.then(function () {
+                    return MediaService.assign(user.mediaId, [], MediaVars.VISIBILITY_PUBLIC, user._id, "User#backgroundMediaId");
+                })
+            }
+
+            promise.catch(function (err) {
+                ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            }).done(function(){
+                ApiUtils.api(req, res, ApiUtils.OK, null, null);
+            });
+
         });
+
     });
 }
 

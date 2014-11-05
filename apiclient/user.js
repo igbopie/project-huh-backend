@@ -51,6 +51,15 @@ exports.update = function(email,facebookId,mediaId,bio,name,token,callback){
         }
     });
 }
+exports.updatev2 = function(email,facebookId,mediaId,backgroundMediaId,bio,name,token,callback){
+    apiClientBase.post('/api/user/update',{email:email,facebookId:facebookId,mediaId:mediaId,backgroundMediaId:backgroundMediaId,bio:bio,name:name,token:token},function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code:"+code+" : "+data);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 
 exports.addPhone = function(phone,token,callback){ 
 	apiClientBase.post('/api/user/addphone',{phone:phone,token:token},function(code,headers,data){

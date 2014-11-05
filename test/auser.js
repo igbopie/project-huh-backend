@@ -155,6 +155,32 @@ describe('User', function(){
         });
     });
 
+    describe('#update(backgroundImage)', function(){
+        it('should update only the image profile',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            var users = TestUtils.randomUsers(1);
+            TestUtils.createUsers(users,function(err){
+                if (err) return done(err);
+                TestUtils.loginUsers(users,function(err){
+                    if (err) return done(err);
+                    Media.create("test/resources/testimage.jpg",users[0].token,function(err,data){
+                        if(err) return done(err);
+                        User.updatev2(null,null,null,data,null,null,users[0].token,function(err){
+                            if (err) return done(err);
+                            User.profile(users[0].username,users[0].token,function(err,profile) {
+                                if (err) return done(err);
+
+                                profile.should.have.property("backgroundMediaId");
+
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
     describe('#profile1()', function(){
         it('should get user details',function (done) {
             var users = TestUtils.randomUsers(2);
