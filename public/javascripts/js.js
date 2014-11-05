@@ -19,12 +19,12 @@ function postIndexForm(){
 
         }).complete(function(){
             $("#spinner").slideUp();
-            $("#thanks").removeClass("invisible").slideDown();
+            $("#thanks").removeClass("invisible hide").slideDown();
         });
 
         $("#interested").slideUp();
 
-        $("#spinner").removeClass("invisible").slideDown();
+        $("#spinner").removeClass("invisible hide").slideDown();
     }
     else {
         //Error message

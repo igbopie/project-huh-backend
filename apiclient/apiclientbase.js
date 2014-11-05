@@ -3,24 +3,31 @@ var querystring = require('querystring');
 var http = require('http');
 var FormData = require('form-data');
 var fs = require('fs');
-
 var PORT = 3000;
 var HOST = 'localhost';
 
 exports.post = function(method,params,callback) {
 	// Build the post string from an object
 	var postData = querystring.stringify(params);
-	
+
+
+	var headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': postData.length
+
+    }
+
+    if(params && params.token){
+        headers['Authorization'] = "MarkAuth token=\""+params.token+"\"";
+        delete params.token;
+    }
 	// An object of options to indicate where to post to
 	var postOptions = {
 		host: HOST,
 		port: PORT,
 		path: method,
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'Content-Length': postData.length
-			}
+		headers:headers
 	};
 	
 	// Set up the request

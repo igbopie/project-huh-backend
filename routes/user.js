@@ -106,10 +106,9 @@ exports.profile = function(req, res) {
             mediaId  :1,
             name            :1,
             bio             :1,
-            following       :1,
-            followers       :1,
-            published       :1,
-            favourites      :1
+            postCount       :1,
+            markCount       :1,
+            points       :1
         };
         var username = req.body.username;
 

@@ -55,7 +55,7 @@ var friend = require('./routes/friend');
 var media = require('./routes/media');
 var item = require('./routes/item');
 var template = require('./routes/template');
-var alias = require('./routes/alias');
+var mark = require('./routes/mark');
 var mapicon = require('./routes/mapicon');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
@@ -80,8 +80,8 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/item/:itemId', routes.item);
-app.get('/m/:itemId', routes.item);
+app.get('/i/:itemId', routes.item);
+app.get('/m/:markId', routes.mark);
 
 
 //USER
@@ -110,18 +110,35 @@ app.post('/api/friends/blocked', friend.listBlocked);
 app.post('/api/friends/block', friend.block);
 app.post('/api/friends/unblock', friend.unblock);
 app.post('/api/friends/search', friend.search);
+//----
+app.post('/api/mark/item/create',item.create);
+app.post('/api/mark/item/addmedia',item.addMedia);
 
-app.post('/api/item/create',item.create);
-app.post('/api/item/addmedia',item.addMedia);
-app.post('/api/item/search/by/location',item.searchByLocation);
-app.post('/api/item/view',item.view);
-app.post('/api/item/comment/add',item.addComment);
-app.post('/api/item/favourite',item.favourite);
-app.post('/api/item/unfavourite',item.unfavourite);
-app.post('/api/item/favourite/list',item.listFavourites);
-app.post('/api/item/find/by/senttome',item.listSentToMe);
-app.post('/api/item/find/by/sentbyme',item.listSentByMe);
+app.post('/api/mark/view',mark.view);
 
+app.post('/api/mark/favourite',mark.favourite);
+app.post('/api/mark/unfavourite',mark.unfavourite);
+app.post('/api/mark/favourite/list',mark.listFavourites);
+
+app.post('/api/mark/item',item.listByMark);
+
+app.post('/api/mark/item/view',item.view);
+
+app.post('/api/mark/item/comment',item.listComments);
+app.post('/api/mark/item/comment/add',item.addComment);
+
+app.post('/api/mark/item/favourite',item.favourite);
+app.post('/api/mark/item/unfavourite',item.unfavourite);
+app.post('/api/mark/item/favourite/list',item.listFavourites);
+
+app.post('/api/mark/search',mark.search);
+app.post('/api/mark/item/public',item.public);
+app.post('/api/mark/item/find/by/stream',item.public);
+app.post('/api/mark/item/private',item.private);
+app.post('/api/mark/item/find/by/senttome',item.private);
+app.post('/api/mark/item/sent',item.sent);
+app.post('/api/mark/item/find/by/sentbyme',item.sent);
+//----
 app.post('/api/template',template.listTemplates);
 app.post('/api/template/update',template.update);
 app.post('/api/template/view',template.findById);
@@ -135,7 +152,12 @@ app.post('/api/mapicon/view',mapicon.findById);
 app.post('/api/mapicon/create',mapicon.create);
 app.post('/api/mapicon/remove',mapicon.removeById);
 
-app.post('/api/alias/search',alias.search);
+app.post('/api/mapicon/pack',mapicon.findIconPacks);
+app.post('/api/mapicon/pack/update',mapicon.updatePack);
+app.post('/api/mapicon/pack/view',mapicon.findPackById);
+app.post('/api/mapicon/pack/create',mapicon.createPack);
+app.post('/api/mapicon/pack/remove',mapicon.removePackById);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

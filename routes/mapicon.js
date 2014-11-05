@@ -13,8 +13,32 @@ exports.create = function(req, res){
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         var tag = req.body.tag;
+        var packId = req.body.packId;
+        var pointsThreshold = req.body.pointsThreshold;
         if(user.superadmin) {
-            MapIconService.create(name,tag,mediaId,function (err, template) {
+            MapIconService.create(name,tag,mediaId,packId,pointsThreshold,function (err, template) {
+                if (err) {
+                    ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                } else {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, template._id);
+                }
+            });
+        }else{
+            ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+        }
+    });
+};
+
+exports.createPack = function(req, res){
+    ApiUtils.auth(req,res,function(user){
+
+        var mediaId = req.body.mediaId;
+        var name = req.body.name;
+        var isFree = req.body.isFree;
+        var pointsThreshold = req.body.pointsThreshold;
+        var appStoreCode= req.body.appStoreCode;
+        if(user.superadmin) {
+            MapIconService.createPack(name,mediaId,isFree,pointsThreshold,appStoreCode,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -34,8 +58,10 @@ exports.update = function(req, res){
         var mediaId = req.body.mediaId;
         var name = req.body.name;
         var tag = req.body.tag;
+        var packId = req.body.packId;
+        var pointsThreshold = req.body.pointsThreshold;
         if(user.superadmin) {
-            MapIconService.update(id,name,tag,mediaId,function (err, template) {
+            MapIconService.update(id,name,tag,mediaId,packId,pointsThreshold,function (err, template) {
                 if (err) {
                     ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
                 } else {
@@ -47,6 +73,30 @@ exports.update = function(req, res){
         }
     });
 };
+
+exports.updatePack = function(req, res){
+    ApiUtils.auth(req,res,function(user){
+
+        var id = req.body.id;
+        var mediaId = req.body.mediaId;
+        var name = req.body.name;
+        var isFree = req.body.isFree;
+        var pointsThreshold = req.body.pointsThreshold;
+        var appStoreCode= req.body.appStoreCode;
+        if(user.superadmin) {
+            MapIconService.updatePack(id,name,mediaId,isFree,pointsThreshold,appStoreCode,function (err, template) {
+                if (err) {
+                    ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                } else {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, template._id);
+                }
+            });
+        }else{
+            ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+        }
+    });
+};
+
 
 exports.findById = function(req, res){
     ApiUtils.auth(req,res,function(user){
@@ -64,6 +114,24 @@ exports.findById = function(req, res){
         }
     });
 };
+
+exports.findPackById = function(req, res){
+    ApiUtils.auth(req,res,function(user){
+        var id = req.body.id;
+        if(user.superadmin) {
+            MapIconService.findPackById(id,function (err, template) {
+                if (err) {
+                    ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                } else {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, template);
+                }
+            });
+        }else{
+            ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+        }
+    });
+};
+
 exports.removeById = function(req, res){
     ApiUtils.auth(req,res,function(user){
         var id = req.body.id;
@@ -81,12 +149,30 @@ exports.removeById = function(req, res){
     });
 };
 
+exports.removePackById = function(req, res){
+    ApiUtils.auth(req,res,function(user){
+        var id = req.body.id;
+        if(user.superadmin) {
+            MapIconService.removePackById(id,function (err, template) {
+                if (err) {
+                    ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+                } else {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, template);
+                }
+            });
+        }else{
+            ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,null,null);
+        }
+    });
+};
 
 
 
 exports.findIcons = function(req, res){
     ApiUtils.auth(req,res,function(user){
-        MapIconService.find(function(err,templates){
+
+        var timestamp = req.body.timestamp;
+        MapIconService.find(timestamp,function(err,templates){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -95,3 +181,19 @@ exports.findIcons = function(req, res){
         });
     });
 };
+
+
+exports.findIconPacks = function(req, res){
+    ApiUtils.auth(req,res,function(user){
+
+        var timestamp = req.body.timestamp;
+        MapIconService.findPacks(timestamp,function(err,templates){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,templates);
+            }
+        });
+    });
+};
+

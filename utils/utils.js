@@ -120,6 +120,7 @@ utils.error = function(code,message){
 }
 
 utils.ERROR_CODE_UNAUTHORIZED = 400100;
+utils.ERROR_CODE_NOTFOUND = 400101;
 
 // export the class
 module.exports =  utils;

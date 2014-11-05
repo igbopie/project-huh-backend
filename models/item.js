@@ -1,10 +1,73 @@
 var mongoose = require('mongoose')
     , Schema = mongoose.Schema
-    , User = require("../models/user").User
+    , LOCATION_LONGITUDE = 0
+    , LOCATION_LATITUDE = 1
+    , STATUS = [STATUS_PENDING,STATUS_OK]
+    , STATUS_PENDING = 0
+    , STATUS_OK = 1
+    , NUM_MARK_ITEM_CACHE = 1;
+
+
+
+var itemSchema = new Schema({
+    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    created     :   { type: Date	, required: true, default: Date.now },
+    templateId  :   { type: Schema.Types.ObjectId, required: false},
+    // Private fields (not viewed)
+    message     :   { type: String, required: false},
+    mediaId     :   { type: Schema.Types.ObjectId, required: false},
+    // A pre rendered image of the message
+    teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
+    teaserMessage:   { type: String, required: false},
+    //Additional parameters
+    renderParameters   :   { type: String, required: false},
+    //
+    markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
+    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
+    //STATS
+    viewCount :   { type: Number, required:true, default:0},
+    favouriteCount :   { type: Number, required:true, default:0},
+    commentCount :   { type: Number, required:true, default:0},
+    //
+    shortlink   :   { type: String, required: false}
+
+
+});
+
+itemSchema.index({markId:1,created:-1});
+itemSchema.index({userId:1,status:1});
+itemSchema.index({userId:1,visibility:1,status:1});
+itemSchema.index({visibility:1,status:1});
+itemSchema.index({created:-1,markId:1});
+itemSchema.index({status:1});
+
+
+var Item = mongoose.model('Item', itemSchema);
+
+var commentSchema = new Schema({
+    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
+    comment :   { type: String  , required: true },
+    date    :   { type: Date	, required: true, default: Date.now }
+});
+
+itemSchema.index({itemId:1,date:-1});
+
+var Comment = mongoose.model('Comment', commentSchema);
+
+//Dependency problem
+var service = {};
+module.exports = {
+    Item: Item,
+    Comment: Comment,
+    Service:service
+};
+
+
+var UserService = require("../models/user").Service
     , Media = require("../models/media").Media
     , MediaService = require("../models/media").Service
     , MediaVars = require('../models/media')
-    , AliasService = require("../models/alias").Service
     , FriendService = require("../models/friend").Service
     , TemplateService = require("../models/template").Service
     , MapIconService = require("../models/mapicon").Service
@@ -16,80 +79,15 @@ var mongoose = require('mongoose')
     , CronJob = require('cron').CronJob
     , CONSTANT_DATE = 1377966600  // is a constant and a very special date :)
     , PUBLIC_USER_FIELDS = require("../models/user").PUBLIC_USER_FIELDS
+    , AVERAGE_EARTH_RADIUS = 6371000 //In meters
+    , UrlShortener = require('../utils/urlshortener')
+    , Q = require("q")
     , VISIBILITY_PRIVATE = 0
     , VISIBILITY_PUBLIC = 1
-    , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC]
-    , LOCATION_LONGITUDE = 0
-    , LOCATION_LATITUDE = 1
-    , STATUS = [STATUS_PENDING,STATUS_OK]
-    , STATUS_PENDING = 0
-    , STATUS_OK = 1
-    , AVERAGE_EARTH_RADIUS = 6371000 //In meters
-    , BITLY_USERNAME = process.env.BITLY_USERNAME
-    , BITLY_TOKEN = process.env.BITLY_TOKEN
-    , BITLY_DOMAIN = process.env.BITLY_DOMAIN
-    , BITLY_DOMAIN_ITEM_REDIRECT = process.env.BITLY_DOMAIN_ITEM_REDIRECT
-    , Bitly = require('bitly')
-;
-var bitly;
-if(BITLY_TOKEN){
-    bitly = new Bitly(BITLY_USERNAME,BITLY_TOKEN);
-    console.log("BITLY initialized");
-}
+    , Mark = require("../models/mark").Mark
+    , FavouriteMark  = require("../models/mark").FavouriteMark
+    , MarkService  = require("../models/mark").Service
 
-
-
-var commentSchema = new Schema({
-    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    comment :   { type: String  , required: true },
-    date    :   { type: Date	, required: true, default: Date.now }
-});
-
-var itemSchema = new Schema({
-    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    created     :   { type: Date	, required: true, default: Date.now },
-    //++ Private fields (not viewed)
-    message     :   { type: String, required: false},
-    templateId  :   { type: Schema.Types.ObjectId, required: false},
-    templateMediaId:   { type: Schema.Types.ObjectId, required: false},
-    mediaId     :   { type: Schema.Types.ObjectId, required: false},
-    //--
-    // A pre rendered image of the message
-    teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
-    teaserTemplateMediaId:   { type: Schema.Types.ObjectId, required: false},
-    teaserMessage:   { type: String, required: false},
-    mapIconId   :   { type: Schema.Types.ObjectId, required: false},
-    mapIconMediaId   :   { type: Schema.Types.ObjectId, required: false},
-    location    :   { type: [Number], required:true,index: '2dsphere'},
-    radius      :   { type: Number, required:true},
-    locationName:   { type: String, required: false},
-    locationAddress:   { type: String, required: false},
-    aliasName   :   { type: String, required: false},
-    aliasId     :   { type: Schema.Types.ObjectId, required: false, ref:"Alias"},
-    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
-    to          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
-    comments    :   [commentSchema],
-    //STATS
-    viewCount :   { type: Number, required:true, default:0},
-    favouriteCount :   { type: Number, required:true, default:0},
-    commentCount :   { type: Number, required:true, default:0},
-    //
-    renderParameters   :   { type: String, required: false},
-    //
-    shortlink   :   { type: String, required: false}
-
-
-});
-
-itemSchema.index({userId:1,status:1});
-itemSchema.index({userId:1,visibility:1,status:1});
-itemSchema.index({visibility:1,status:1});
-itemSchema.index({created:-1});
-itemSchema.index({radius:-1});
-itemSchema.index({to:1,status:1});
-
-var Item = mongoose.model('Item', itemSchema);
 ///------------------------
 ///------------------------
 ///------------------------
@@ -106,15 +104,6 @@ var FavouriteItem = mongoose.model('FavouriteItem', favouriteItemSchema);
 ///------------------------
 ///------------------------
 ///------------------------
-var viewItemSchema = new Schema({
-    userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    itemId  :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    lastViewed:  { type: Date, required: true, default: Date.now },
-    count   :   { type: Number , required:true, default:0}
-});
-
-viewItemSchema.index({userId:1,itemId:1});
-var ViewItem = mongoose.model('ViewItem', viewItemSchema);
 
 var viewItemStatsSchema = new Schema({
     userId  :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
@@ -127,31 +116,15 @@ var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 ///------------------------
 ///------------------------
 ///------------------------
-var itemInboxSchema = new Schema({
-    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    ownerUserId :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    itemId      :   { type: Schema.Types.ObjectId, required: true, ref:"Item"},
-    created     :   { type: Date	, required: true, default: Date.now },
-    location    :   { type: [Number], required:true,index: '2dsphere'},
-    radius      :   { type: Number, required:true}
-});
-
-itemInboxSchema.index({userId:1,itemId:1},{unique:true}); //just one item per user
-itemInboxSchema.index({itemId:1});
-itemInboxSchema.index({status:1});
-itemInboxSchema.index({radius:-1});
-
-var ItemInbox = mongoose.model('ItemInbox', itemInboxSchema);
-///------------------------
-///------------------------
-///------------------------
 //          Service
 ///------------------------
 ///------------------------
 ///------------------------
-var service = {};
 
-service.create = function(message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId,callback){
+
+service.create = function(message,mediaId,templateId,markId,userId){
+    var promise = Q.defer();
+
     var item = new Item();
     item.message = message;
     if(mediaId){
@@ -160,151 +133,167 @@ service.create = function(message,mediaId,templateId,mapIconId,latitude,longitud
     if(templateId){
         item.templateId = templateId;
     }
-    if(mapIconId){
-        item.mapIconId = mapIconId;
-    }
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = longitude;
-    locationArray[LOCATION_LATITUDE] = latitude;
-    item.location = locationArray;
-    item.radius = radius;
-    item.to = to;
+
     item.userId = userId;
+    item.markId = markId;
 
-    item.locationName = locationName;
-    item.locationAddress = locationAddress;
-
-    item.visibility = VISIBILITY_PRIVATE;
-
-    if(!item.to || to.length == 0){
-        delete item.to; //PUBLIC!
-        item.visibility = VISIBILITY_PUBLIC;
-        //We use this to reduce the index size, because if we use an index on item.to will grow faster
-        // for the kind of information we want.
-    } else {
-        //TODO check users exists!
-    }
 
     //TODO check owner exists!
-    //TODO check iconId
     //TODO check templateId
+    createProcess(promise,item);
 
-    //find Alias
-    if(aliasId && aliasId != ""){
-        //if found, bring data
-        //TODO check visibility and permissions
-        AliasService.findById(aliasId,function(err, alias){
-            if(err) return callback(err);
-
-            item.aliasId = alias._id;
-            item.aliasName = alias.name;
-            item.locationAddress = alias.locationAddress;
-            item.locationName = alias.locationName;
-            item.location = alias.location;
-
-            createProcess0(item,callback);
-        });
-
-    } else if(aliasName){
-        //if no Id and Create Alias -> create a new one
-        AliasService.create(userId,latitude,longitude,item.visibility,aliasName,locationName,locationAddress,function(err,alias){
-            if(err) return callback(err);
-
-            item.aliasId = alias._id;
-            item.aliasName = alias.name;
-
-            createProcess0(item,callback);
-        });
-
-    } else{
-        //no alias
-
-        delete item.aliasId;
-        delete item.aliasName;
-
-        createProcess0(item,callback);
-    }
-
+    return promise.promise;
 }
 
-function createProcess0(item,callback){
-    if(item.mapIconId){
-        MapIconService.findById(item.mapIconId,function(err,mapIcon){
-            if(err) return callback(err);
-            if(!mapIcon) return callback("Map Icon not found");
-
-            item.mapIconMediaId = mapIcon.mediaId;
-
-            createProcess1(item,callback);
+function createProcess(promise,item){
+    createItemGeneratePreviewImage(item)
+        .then(createItemSave)
+        .then(createItemShortenUrl)
+        .then(createItemSave)
+        .then(createItemAssignTeaserMedia)
+        .then(createItemAssignMedia)
+        .then(createItemCount1ItemInMark)
+        .then(UserService.addPostHandler)
+        .then(function(item){
+            promise.resolve(item);
+            createBackground(item);
         })
-    }else{
-        createProcess1(item,callback);
-    }
+        .catch(function (err) {
+            promise.reject(err);
+        })
+        .done();
 }
 
-function createProcess1(item,callback){
+
+
+function createItemGeneratePreviewImage(item){
+    var promise = Q.defer();
+
     ItemUtils.generatePreviewImage(item,function(err,item){
-        if(err) return callback(err);
-
-        if(item.mediaId || item.templateMediaId ){
-            item.status = STATUS_OK;
+        if(err) {
+            promise.reject(err);
+        } else {
+            promise.resolve(item);
         }
-        item.save(function(err){
-            if(err){
-                return callback(err);
-            }
-            if(bitly){
-                bitly.shorten(BITLY_DOMAIN_ITEM_REDIRECT+item._id,BITLY_DOMAIN,function(err,response){
-                    if(err){
-                        return callback(err);
-                    }
-                    //console.log(response);
-                    item.shortlink =  response.data.url;
-                    item.save(function(err) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        createProcess2(item,callback);
-                    });
-                })
-            } else {
-                createProcess2(item,callback);
-            }
-
-
-        })
     });
-}
-function createProcess2(item,callback){
-    if (item.teaserMediaId) {
-        MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
-            if (err) console.error(err);
 
-            createProcess3(item, callback);
-        });
-    } else {
-        createProcess3(item, callback);
-    }
+    return promise.promise;
 }
-function createProcess3(item,callback){
+
+function createItemSave(item) {
+    var promise = Q.defer();
+
     if (item.mediaId) {
-        var visibility = MediaVars.VISIBILITY_PRIVATE;
-        if (item.visibility == VISIBILITY_PUBLIC) {
-            visibility = MediaVars.VISIBILITY_PUBLIC;
+        item.status = STATUS_OK;
+    }
+    item.save(function (err) {
+        if(err) {
+            promise.reject(err);
+        } else {
+            promise.resolve(item);
         }
-        MediaService.assign(item.mediaId, item.to, visibility, item._id, "Item#mediaId", function (err) {
+    });
+
+    return promise.promise;
+}
+
+function createItemShortenUrl(item) {
+    var promise = Q.defer();
+
+    UrlShortener.shortenItem(item._id, function (err, shortlink) {
+        if (err) {
+            promise.reject(err);
+        } else {
+            if(shortlink){
+                item.shortlink = shortlink;
+            }
+            promise.resolve(item);
+        }
+    })
+
+    return promise.promise;
+
+}
+//Save Again
+function createItemAssignTeaserMedia(item) {
+    var promise = Q.defer();
+
+    if (item.teaserMediaId && !item.templateId) {
+        MediaService.assign(item.teaserMediaId, [], MediaVars.VISIBILITY_PUBLIC, item._id, "Item#teaserMediaId", function (err) {
             if (err) {
-                //TODO remove item
-                callback(err);
+                promise.reject(err);
             } else {
-                callback(null, item);
-                createBackground(item);
+                promise.resolve(item);
             }
         });
     } else {
-        callback(null, item);
-        createBackground(item);
+        promise.resolve(item);
     }
+
+    return promise.promise;
+}
+
+
+function createItemAssignMedia(item) {
+    var promise = Q.defer();
+
+    if (item.mediaId && !item.templateId) {
+
+        Mark.findOne({_id:item.markId},function(err,mark){
+            if (err) {
+                promise.reject(err);
+            }else {
+                var visibility = MediaVars.VISIBILITY_PRIVATE;
+                if (mark.visibility == VISIBILITY_PUBLIC) { //See mark!
+                    visibility = MediaVars.VISIBILITY_PUBLIC;
+                }
+                MediaService.assign(item.mediaId, mark.to, visibility, item._id, "Item#mediaId", function (err) {
+                    if (err) {
+                        promise.reject(err);
+                    } else {
+                        promise.resolve(item);
+                    }
+                });
+            }
+        });
+    } else {
+        promise.resolve(item);
+    }
+
+    return promise.promise;
+}
+
+function createItemCount1ItemInMark(item) {
+    var promise = Q.defer();
+
+    if (item.status == STATUS_OK) {
+        Mark.findOneAndUpdate(
+            {_id: item.markId},
+            {
+                $inc: {itemCount: 1},
+                $set: {
+                    updated: Date.now()
+                }
+                /*$push: {
+                 items: {
+                 $each: [JSON.parse(JSON.stringify(item))], //a mongoose object has problems...
+                 $slice: NUM_MARK_ITEM_CACHE
+                 }
+                 }*/
+            },
+            function (err) {
+                if (err) {
+                    promise.reject(err);
+                } else {
+                    promise.resolve(item);
+                }
+            }
+        );
+    }else{
+        promise.resolve(item);
+    }
+
+    return promise.promise;
 }
 
 
@@ -313,36 +302,12 @@ function createBackground(item){
     //We return to the user but we keep working on the "background"
     //Send and notify users
     if(item.to && item.status == STATUS_OK){
-        item.to.forEach(function(userId){
-            //Check friendship!
-            //FriendService.isFriend(userId,item.ownerUserId,function(err,isFriend){
-            //    if(err){
-            //        console.error(err);
-            //    }else if(isFriend){
-            var itemInbox = new ItemInbox();
-            itemInbox.userId = userId;
-            itemInbox.itemId = item._id;
-            itemInbox.location = item.location;
-            itemInbox.radius = item.radius;
-            itemInbox.ownerUserId = item.userId;
-            itemInbox.save(function(err){
-                if(err){
-                    console.error(err);
-                }else{
-                    EventService.onItemInboxCreated(itemInbox);
-                }
-            });
-            //    } else {
-            //        //TODO maybe send friend request?
-            //    }
-            //});
-
-
-        })
+        EventService.onItemCreated(item);
     }
 }
 
-service.addMedia = function(itemId,mediaId,userId,callback){
+service.addMedia = function(itemId,mediaId,userId){
+    var promise = Q.defer();
     Item.findOne({_id:itemId,status:STATUS_PENDING},function(err,item){
         if(err) return callback(err);
         if(!item) return callback("Not found");
@@ -350,8 +315,9 @@ service.addMedia = function(itemId,mediaId,userId,callback){
 
         item.mediaId = mediaId;
 
-        createProcess1(item,callback);
+        createProcess(promise,item);
     });
+    return promise.promise;
 }
 
 service.findById = function(itemId,callback){
@@ -362,6 +328,7 @@ service.findById = function(itemId,callback){
 service.findByIdForWeb = function(itemId,callback){
     Item.findOne({_id:itemId})
         .populate("userId",PUBLIC_USER_FIELDS)
+        .populate("markId")
         .exec(function(err,item){
         callback(err,item);
     });
@@ -372,229 +339,76 @@ service.view = function(itemId,longitude,latitude,userId,callback){
     Item.findOne({_id:itemId})
         .populate("userId",PUBLIC_USER_FIELDS)
         .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
-        .populate("comments.userId",PUBLIC_USER_FIELDS)
         .exec(function(err,item){
         if(err) return callback(err);
         if(!item) return callback("Not found");
 
-        service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,allowed){
-            if(allowed){
-                ViewItem.findOneAndUpdate(
-                    {
-                        userId:userId,
-                        itemId:item._id
-                    },
-                    {
-                        $set:{lastViewed:Date.now()},
-                        $inc:{count:1}
-                    },
-                    {
-                        upsert: true
-                    },
-                    function(err,view){
-                        if(err) console.log(err);
-                        if(view){
-                            if(view.count == 1){
-                                EventService.onItemViewed(itemId,userId);
-                            }
-                        }
-                        var stat = new ViewItemStats();
-                        stat.userId = userId;
-                        stat.itemId = item._id;
-                        stat.date = Date.now();
-                        stat.save(
-                            function(err) {
-                                if(err) console.log(err);
-                            }
-                        );
+        service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView){
+            if(err) return callback(err);
+
+            if(canView) {
+                var stat = new ViewItemStats();
+                stat.userId = userId;
+                stat.itemId = item._id;
+                stat.date = Date.now();
+                stat.save(
+                    function (err) {
+                        if (err) console.log(err);
                     }
                 );
 
                 Item.findOneAndUpdate(
-                    {_id:item._id},
-                    {$inc: { viewCount:1 }},
-                    function(err,item){
-                        if(err) console.log(err);
+                    {_id: item._id},
+                    {$inc: { viewCount: 1 }},
+                    function (err, item) {
+                        if (err) console.log(err);
 
                     }
                 );
-
-                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
-                    if(err) return callback(err);
-
-                    var pItem = fillItem(item,userId);
-                    pItem.message = item.message;
-                    pItem.templateId = item.templateId;
-                    pItem.templateMediaId = item.templateMediaId;
-                    pItem.mediaId = item.mediaId,
-                    pItem.renderParameters = item.renderParameters;
-                    pItem.comments = item.comments.map(function(comment){
-                        return {comment:comment.comment,date:comment.date,user:comment.userId};
-                    });
-                    pItem.canView = true;
-                    pItem.favourited = (fav?true:false);
-
-                    callback(null,pItem);
-                })
-            }else{
-                FavouriteItem.findOne({userId:userId,itemId:item._id},function(err,fav){
-                    if(err) return callback(err);
-
-                    var pItem = fillItem(item,userId);
-                    pItem.canView = false;
-                    pItem.favourited = (fav?true:false);
-
-                    callback(null,pItem);
-                })
-
             }
-        });
-    })
-}
+            service.fillItem(item,longitude,latitude,userId,callback);
 
-service.searchUnOpenedItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
-
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = Number(longitude);
-    locationArray[LOCATION_LATITUDE] = Number(latitude);
-
-    var point = {type: 'Point', coordinates: locationArray};
-
-    //TODO dissapear from map
-    var query = {to:userId,status:STATUS_OK};
-
-
-    //Radius of earth 6371000 meters
-    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
-        if(err) return callback(err);
-        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
-    });
-
-}
-
-service.searchPublicItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
-
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = Number(longitude);
-    locationArray[LOCATION_LATITUDE] = Number(latitude);
-
-    var point = {type: 'Point', coordinates: locationArray};
-
-    var query = {visibility:VISIBILITY_PUBLIC,status:STATUS_OK};
-
-    //Radius of earth 6371000 meters
-    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
-        if(err) return callback(err);
-        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
-    });
-
-}
-
-service.searchSentByMeItemsByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
-
-    var locationArray = [];
-    locationArray[LOCATION_LONGITUDE] = Number(longitude);
-    locationArray[LOCATION_LATITUDE] = Number(latitude);
-
-    var point = {type: 'Point', coordinates: locationArray};
-
-    var query = {userId:userId,visibility:VISIBILITY_PRIVATE,status:STATUS_OK};
-
-    //Radius of earth 6371000 meters
-    Item.geoNear(point, {maxDistance:Number(radius)/AVERAGE_EARTH_RADIUS , spherical: true, query:query}, function (err, results,stats) {
-        if(err) return callback(err);
-        transformGeoNearResults(results,userLongitude,userLatitude,userId,callback);
-    });
-
-}
-service.searchByLocation = function(latitude,longitude,radius,userLatitude,userLongitude,userId,callback){
-    var results ={};
-    service.searchUnOpenedItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data){
-
-        if(err) return callback(err);
-        results.sentToMe = data;
-        service.searchPublicItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data) {
-
-            if (err) return callback(err);
-            results.public = data;
-
-            service.searchSentByMeItemsByLocation(latitude,longitude,radius,userLatitude,userLongitude,userId,function(err,data) {
-
-                if (err) return callback(err);
-                results.sentByMe = data;
-
-                AliasService.search(latitude, longitude, radius, null, userId, function (err, data) {
-                    if (err) return callback(err);
-                    results.aliases = data;
-
-                    callback(null, results);
-                });
-            });
-        });
+        })
     });
 }
-function transformGeoNearResults(results,longitude,latitude,userId,transformCallback){
-    /*var array = [];
-    for(var i=0;i < results.length;i++){
-        var mongoGeoNearObject = results[i];
-        array.push(itemToPublicItemList(mongoGeoNearObject.obj));
 
-    }*/
-    //mapping each doc into new object and populating distance
-    Utils.map(
-        results,
-        //Map Function
-        function(geoResultItem,mapCallback){
-            var transformedItem = fillItem( geoResultItem.obj,userId ,longitude,latitude);
-            transformedItem.distance = geoResultItem.dis * AVERAGE_EARTH_RADIUS;//meters
-            service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
-                if(err){
-                    console.err(err);
-                } else{
-                    if(canView){
-                        transformedItem.message = geoResultItem.obj.message;
-                        transformedItem.templateId = geoResultItem.obj.templateId;
-                        transformedItem.mediaId = geoResultItem.obj.mediaId,
-                        transformedItem.renderParameters = geoResultItem.obj.renderParameters;
-                    }
-                    transformedItem.canView = canView;
-                }
-                FavouriteItem.findOne({userId:userId,itemId:geoResultItem.obj._id},function(err,fav){
-                    if(err) console.err(err);
 
-                    transformedItem.favourited = (fav?true:false);
 
-                    mapCallback(transformedItem);
-                });
-            });
+service.public = function(userId,longitude,latitude,callback){
+    FavouriteMark.find({userId:userId,visibility:VISIBILITY_PUBLIC},function(err,list){
+        if(err) return callback(err);
+        var markIdsArray = [];
+        for(var i = 0; i < list.length; i++){
+            markIdsArray.push(list[i].markId);
         }
-        ,
-        //Callback
-        function(results){
 
-            // populating user object
-            Item.populate( results, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
-                if (err) return callback(err);
-                Item.populate( items, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,items) {
-                    if (err) return callback(err);
-                    transformCallback(null, items);
-                });
-            });
+        finishItemQuery(
+            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
+                .sort({created:-1}
+            )
+            ,longitude,latitude,userId,callback);
+    });
+}
+service.private = function(userId,longitude,latitude,callback){
+    Mark.find({members:userId,userId:{$ne:userId}},function(err,list){
+        if(err) return callback(err);
+        var markIdsArray = [];
+        for(var i = 0; i < list.length; i++){
+            markIdsArray.push(list[i]._id);
         }
-    )
+
+        finishItemQuery(
+            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
+                .sort({created:-1}
+            )
+            ,longitude,latitude,userId,callback);
+    });
+
+
+
 }
 
-
-service.listSentToMe = function(userId,longitude,latitude,callback){
-    finishItemQuery(
-           Item.find({to:userId,status:STATUS_OK})
-               .sort({created:-1}
-           )
-        ,longitude,latitude,userId,callback);
-
-}
-
-service.listSentByMe = function(userId,longitude,latitude,callback){
+service.sent = function(userId,longitude,latitude,callback){
     finishItemQuery(
         Item.find({userId:userId,status:STATUS_OK})
             .sort({created:-1}
@@ -602,93 +416,48 @@ service.listSentByMe = function(userId,longitude,latitude,callback){
         ,longitude,latitude,userId,callback);
 }
 
-function inRange(item,longitude,latitude){
-
-
-    if(distance(item,longitude,latitude) > item.radius){
-        return false;
-    }else{
-        return true;
-    }
-
-}
-
-function distance(item,longitude,latitude){
-    //Check location
-    //distance in meters
-    var distance = Geolib.getDistance(
-        {latitude: item.location[LOCATION_LATITUDE], longitude: item.location[LOCATION_LONGITUDE] },
-        {latitude: latitude, longitude: longitude});
-    return distance;
-}
-
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("userId",PUBLIC_USER_FIELDS)
-        .populate("to", PUBLIC_USER_FIELDS )
+        .populate("markId")
         .exec(function(err,item){
             if(err) return callback(err);
             if(!item) return callback("Item not found");
 
-            if(item instanceof Item) {
-                var publicItem = fillItem(item, userId,longitude,latitude);
-                if (publicItem) {
-                    return callback(null, publicItem);
-                } else {
-                    return callback("Not permitted");
-                }
-            }else{
-                Utils.map(
-                    item,
-                    //Map Function
-                    function(dbItem,mapCallback){
 
-                        var transformedItem = fillItem(dbItem,userId ,longitude,latitude);
-                        service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+            Utils.map(
+                item,
+                //Map Function
+                function(dbItem,mapCallback){
+                    var mark = dbItem.markId;
+
+                    service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
+                        if(err){
+                            console.err(err);
+                        }
+                        MarkService.fillMark(mark,userId,longitude,latitude,false,function(err,mark){
                             if(err){
                                 console.err(err);
-                            } else{
-                                if(canView){
-                                    transformedItem.message = dbItem.message;
-                                    transformedItem.templateId = dbItem.templateId;
-                                    transformedItem.mediaId = dbItem.mediaId,
-                                    transformedItem.renderParameters = dbItem.renderParameters;
-                                }
-                                transformedItem.canView = canView;
                             }
-                            FavouriteItem.findOne({userId:userId,itemId:dbItem._id},function(err,fav){
-                                if(err) console.err(err);
-
-                                transformedItem.favourited = (fav?true:false);
-
-                                mapCallback(transformedItem);
-                            });
+                            item.mark = mark;
+                            mapCallback(item);
                         });
-                    }
-                    ,
-                    //Callback
-                    function(results){
-                        callback(null, results);
-                    }
-                )
-            }
+                    });
+
+                }
+                ,
+                //Callback
+                function(results){
+                    callback(null, results);
+                }
+            )
 
         });
 }
-function fillItem(item,userId,longitude,latitude){
+
+service.fillItem = function(item,longitude,latitude,userId,callback){
     var publicItem = {_id:item._id};
-    publicItem.longitude = item.location[LOCATION_LONGITUDE];
-    publicItem.latitude = item.location[LOCATION_LATITUDE];
-    publicItem.radius = item.radius;
     publicItem.user = item.userId;
     publicItem.created = item.created;
-    publicItem.locationAddress = item.locationAddress;
-    publicItem.locationName = item.locationName;
-    publicItem.aliasName = item.aliasName;
-    publicItem.aliasId = item.aliasId;
-    publicItem.templateId = item.templateId;
-    publicItem.mapIconId = item.mapIconId;
-    publicItem.mapIconMediaId = item.mapIconMediaId;
-    publicItem.to = item.to;
     publicItem.viewCount = item.viewCount;
     publicItem.favouriteCount = item.favouriteCount;
     publicItem.commentCount = item.commentCount;
@@ -696,111 +465,80 @@ function fillItem(item,userId,longitude,latitude){
 
     publicItem.teaserMediaId = item.teaserMediaId;
     publicItem.teaserMessage = item.teaserMessage;
-    publicItem.teaserTemplateMediaId = item.teaserTemplateMediaId;
     publicItem.renderParameters = item.renderParameters;
+    publicItem.templateId = item.templateId;
+    publicItem.canView = false;
 
 
-    if(longitude && latitude){
-        publicItem.userDistance = distance(item,longitude,latitude);
-        publicItem.canView = inRange(item,longitude,latitude);
-    }
+    service.allowedToSeeContent(item._id,longitude,latitude,userId,function(err,canView) {
+        if (err) return callback(err);
 
-    return publicItem;
+        if (canView) {
+            publicItem.message = item.message;
+            publicItem.mediaId = item.mediaId,
+                publicItem.renderParameters = item.renderParameters;
+            publicItem.canView = canView;
+        }
+
+        FavouriteItem.findOne({userId: userId, itemId: item._id}, function (err, fav) {
+            if (err) return callback(err);
+
+            publicItem.favourited = (fav ? true : false);
+
+            callback(null, publicItem);
+        });
+    });
 }
 
+service.listComments = function(itemId,userId,longitude,latitude,callback){
 
-service.addComment = function(itemId,comment,userId,callback) {
+    service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView) {
+        if (err) return callback(err);
+        if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED, "Not allowed to view comment"));
+
+        Comment.find({itemId: itemId})
+            .sort({date: -1})
+            .populate("userId", PUBLIC_USER_FIELDS)
+            .exec(function (err, comments) {
+                if (err) return callback(err);
+                comments = comments.map(function (comment) {
+                    return {comment: comment.comment, date: comment.date, user: comment.userId};
+                });
+                callback(null, comments);
+            });
+    });
+}
+service.addComment = function(itemId,textComment,userId,longitude,latitude,callback) {
     Item.findOne({_id: itemId})
         .exec(function (err, item) {
             if (err) return callback(err);
             if (!item) return callback("Item not found");
 
-            service.allowedToSeeContent(itemId,null,null,userId,function(err,canView){
+            service.allowedToSeeContent(itemId,longitude,latitude,userId,function(err,canView){
                 if (err) return callback(err);
                 if (!canView) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not allowed to post comment"));
 
-                Item.update(
-                    {_id: item},
-                    {
-                        $push: {comments: {userId:userId,data:Date.now(),comment:comment}},
-                        $inc: {commentCount:1}
-                    },
-                    function (err) {
-                        callback(err);
-                        EventService.onCommentAdded(itemId,userId);
-                    });
+                var comment = new Comment();
+
+                comment.userId = userId;
+                comment.itemId = itemId;
+                comment.comment= textComment;
+                comment.save(function(err){
+                    if(err) return callback(err);
+                    Item.update(
+                        {_id: item},
+                        {
+                            $inc: {commentCount:1}
+                        },
+                        function (err) {
+                            callback(err);
+                            EventService.onCommentAdded(itemId,userId);
+                        });
+                });
+
             })
 
         });
-}
-
-service.allowedToSeeContent = function(itemId,longitude,latitude,userId,callback){
-    Item.findOne({_id:itemId,status:STATUS_OK},function(err,item) {
-        if (err) return callback(err);
-        if (!item) return callback("Entity Not Found");
-
-        var canSee = false;
-        var ownerUserId;
-        var containsTo = false;
-
-        //+++PRE PROCESS
-        //Sometimes it's populated
-        if (item.userId instanceof mongoose.Types.ObjectId) {
-            ownerUserId = item.userId;
-        } else if (item.userId) {
-            ownerUserId = item.userId._id;
-        }
-        for (var i = 0; i < item.to.length && !containsTo; i++) {
-            var toUserId = "";
-            var toUserElement = item.to[i];
-            console.log(toUserElement);
-            if (toUserElement instanceof mongoose.Types.ObjectId) {
-                toUserId = toUserElement;
-            } else {
-                toUserId = toUserElement._id;
-            }
-
-
-            if (String(toUserId) == String(userId)) {
-                containsTo = true;
-            }
-        }
-        //---
-
-        //I am the owner or I have collected the item
-        if (String(ownerUserId) == String(userId)) {
-            canSee = true;
-        }
-
-        //The item is public and I am in range
-        if (item.visibility == VISIBILITY_PUBLIC && longitude && latitude && inRange(item, longitude, latitude)) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PUBLIC && item.radius == 0) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PRIVATE && containsTo && item.radius == 0) {
-            canSee = true;
-        }
-
-        if (item.visibility == VISIBILITY_PRIVATE && containsTo && longitude && latitude && inRange(item, longitude, latitude)) {
-            canSee = true;
-        }
-
-        if (!canSee) {
-            //Lets see if he saw once
-            ViewItem.findOne({userId: userId, itemId: item._id}, 'count', function (err, doc) {
-                if (err) return callback(err);
-                if (!doc || doc.count == 0) return callback(null, false);
-
-                callback(null, true);
-            });
-        } else {
-            callback(null, true);
-        }
-    });
 }
 
 service.favourite = function(itemId,userId,callback){
@@ -852,22 +590,11 @@ service.listFavourites = function(longitude,latitude,userId,callback){
                 favs,
                 //Map Function
                 function(dbFavItem,mapCallback){
-
-                    var transformedItem = fillItem(dbFavItem.itemId,userId ,longitude,latitude);
-                    service.allowedToSeeContent(transformedItem._id,longitude,latitude,userId,function(err,canView){
+                    service.fillItem(dbFavItem.itemId ,longitude,latitude,userId,function(err,item){
                         if(err){
                             console.err(err);
-                        } else{
-                            if(canView){
-                                transformedItem.message = dbFavItem.itemId.message;
-                                transformedItem.templateId = dbFavItem.itemId.templateId;
-                                transformedItem.mediaId = dbFavItem.itemId.mediaId,
-                                    transformedItem.renderParameters = dbFavItem.itemId.renderParameters;
-                            }
-                            transformedItem.canView = canView;
                         }
-                        transformedItem.favourited = true;
-                        mapCallback(transformedItem);
+                        mapCallback(item);
                     });
                 }
                 ,
@@ -876,10 +603,9 @@ service.listFavourites = function(longitude,latitude,userId,callback){
                     // populating user object
                     Item.populate( favs, { path: 'user', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
                         if (err) return callback(err);
-                        Item.populate( favs, { path: 'to', model: 'User', select: PUBLIC_USER_FIELDS }, function(err,favs) {
-                            if (err) return callback(err);
-                            callback(null,favs);
-                        });
+
+                        callback(null,favs);
+
                     });
                 }
             )
@@ -889,17 +615,52 @@ service.listFavourites = function(longitude,latitude,userId,callback){
 }
 
 
-///Old Stuff
-//return callback(new NotStartedSeemError("Cannot add photos to a seem that has not started"))
-/*function EndedSeemError(message) {
-    this.name = 'ExpiredSeem';
-    this.message = message;
-    this.stack = (new Error()).stack;
-}
-EndedSeemError.prototype = new Error;
-*/
+service.listByMark = function(markId,userId,longitude,latitude,callback){
 
-module.exports = {
-    Item: Item,
-    Service:service
-};
+    Item.find({markId:markId,status:STATUS_OK}).sort({created:-1})
+        .populate({ path: 'userId', model: 'User', select: PUBLIC_USER_FIELDS })
+        .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+        .exec(function(err,items){
+            if(err) return callback(err);
+
+            Utils.map(
+                items,
+                //Map Function
+                function(dbItem,mapCallback){
+
+                    service.fillItem(dbItem,longitude,latitude,userId,function(err,item){
+                        if(err){
+                            console.error(err);
+                        }
+                        mapCallback(item);
+                    });
+                }
+                ,
+                //Callback
+                function(items){
+                    if (err) return callback(err);
+                    callback(null,items);
+                });
+        });
+
+}
+
+
+service.allowedToSeeContent = function(itemId,longitude,latidude,userId,callback){
+    Item.findOne({_id:itemId},function(err,item){
+        if(err) return callback(err);
+        if(!item) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND,"Not found"));
+
+        MarkService.canViewMark(item.markId,userId,longitude,latidude,function(err,permissions){
+            if(err) return callback(err);
+
+            var canView = permissions.canView || permissions.lastViewed > item.created;
+            callback(null,canView);
+
+        });
+
+    })
+
+}
+
+

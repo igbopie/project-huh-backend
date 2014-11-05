@@ -35,6 +35,9 @@ https://github.com/mcollina/heroku-buildpack-imagemagick
  BITLY_TOKEN
  BITLY_DOMAIN
 
+ - EMAIL (require amazon)
+ SEND_EMAIL = true
+
 
 * To test:
 mocha -R spec
@@ -57,4 +60,6 @@ Then to load elasticsearch now:
 Or, if you don't want/need launchctl, you can just run:
     elasticsearch --config=/usr/local/opt/elasticsearch/config/elasticsearch.yml
 ==> Summary
+
+
 

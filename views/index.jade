@@ -3,22 +3,29 @@ extends layout
 block content
   div.container
     br
-    img(src="/images/markwoodlogo.gif",title="mark",style="width:290px;")
+    br.hidden-xs
+    br.hidden-xs
+    br.hidden-xs
     div.row
-      div.col-xs-12.col-md-6.col-md-offset-3
-        br
-        p.lead Interested?
-        form.form-inline#interested(target="_self",action="javascript: postIndexForm()",role="form")
-            div.form-group
-                input.input-lg.form-control#email(type="email",name="email",placeholder="Email",required="required")
-            button.btn.btn-primary.btn-lg(type="submit")  Let us know!
-        div#spinner.lead.invisible
-            i.fa.fa-refresh.fa-spin
-        div#thanks.lead.invisible
-            i.fa.fa-check-circle
-            span Thank You!
-        br
+      div.visible-lg.col-lg-1.col-lg-1-5
+      div.col-xs-12.col-lg-5.col-lg-offset-3.col-md-6.col-md-offset-3.col-sm-8.col-sm-offset-2
+        div.indexsquare
+            br
+            img(src="/images/marklogobig.png",title="mark",style="width:200px;")
+            br
+            br
+            p.lead YOUR TERRITORY
+            form.form-inline#interested(target="_self",action="javascript: postIndexForm()",role="form")
+                div.form-group
+                    input.input-lg.form-control#email(type="email",name="email",placeholder="e-mail address",required="required")
+                button.btn.btn-warning.btn-lg.btn-bold(type="submit")  LET'S ROCK!
+            div#spinner.lead.invisible.hide
+                i.fa.fa-refresh.fa-spin
+            div#thanks.lead.invisible.hide
+                i.fa.fa-check-circle
+                span  Thank You!
+            br
   style(type='text/css')
-      |body { background: url('/images/bg4.jpg') top center fixed #414141;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover; }
+      |body { background: url('/images/bg5.jpg') 80% 50% fixed #414141;-webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover; }
 
 

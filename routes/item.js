@@ -1,13 +1,22 @@
 var ItemService = require('../models/item').Service;
 var ApiUtils = require('../utils/apiutils');
 var Utils = require('../utils/utils');
+var MarkService = require("../models/mark").Service;
+var Q = require("q");
+
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
         //message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId
+
+        //ITEM
+
+        var markId = req.body.markId;
         var message = req.body.message;
         var mediaId = req.body.mediaId;
         var templateId = req.body.templateId;
+
+        //MARK
         var mapIconId = req.body.mapIconId;
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
@@ -15,16 +24,34 @@ exports.create = function(req, res) {
         var to = req.body.to;
         var locationName = req.body.locationName;
         var locationAddress = req.body.locationAddress;
-        var aliasName = req.body.aliasName;
-        var aliasId = req.body.aliasId;
+        var markName = req.body.markName;
+        var markDescription = req.body.markDescription;
 
-        ItemService.create(message,mediaId,templateId, mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,user._id,function(err,item){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
-            }
-        });
+
+        var promise
+        if(!markId){
+            promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,markDescription,locationName,locationAddress,mapIconId);
+        } else {
+            promise = Q.when(markId);
+        }
+
+        promise.then(function(markId){
+            return ItemService.create(message,mediaId,templateId,markId,user._id);
+        })
+        .then(function(item){
+            markId = item.markId;
+            MarkService.findById(markId,function(err,mark){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                } else{
+                    ApiUtils.api(req,res,ApiUtils.OK,null,{itemId:item._id,itemShortlink:item.shortlink,markShortlink:mark.shortlink,markId:item.markId});
+                }
+            });
+        }).catch(function(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }).done();
+
+
     });
 };
 
@@ -34,50 +61,15 @@ exports.addMedia = function(req, res) {
         var itemId = req.body.itemId;
         var mediaId = req.body.mediaId;
 
-        ItemService.addMedia(itemId,mediaId,user._id,function(err,item){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
-            }
-        });
+        ItemService.addMedia(itemId,mediaId,user._id)
+        .then(function(item){
+            ApiUtils.api(req,res,ApiUtils.OK,null,{_id:item._id,shortlink:item.shortlink});
+        }).catch(function(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }).done();
     });
 };
 
-
-
-
-
-
-exports.searchByLocation = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var latitude = req.body.latitude;
-        var longitude = req.body.longitude;
-        var userLatitude = req.body.userLatitude;
-        var userLongitude = req.body.userLongitude;
-        var radius = req.body.radius;
-        ItemService.searchByLocation(latitude,longitude,radius,userLatitude,userLongitude,user._id,function(err,data){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,data);
-            }
-        });
-    });
-}
-
-exports.leave = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var itemId = req.body.itemId;
-        ItemService.leave(itemId,user._id,function(err,data){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,data);
-            }
-        });
-    });
-}
 
 exports.view = function(req,res){
     ApiUtils.auth(req,res,function(user) {
@@ -85,38 +77,22 @@ exports.view = function(req,res){
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
         ItemService.view(itemId,longitude,latitude,user._id,function(err,data){
-            if(err){
-                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
-            }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,data);
-            }
-        });
-    });
-}
-
-
-exports.addComment = function(req,res){
-    ApiUtils.auth(req,res,function(user) {
-        var itemId = req.body.itemId;
-        var comment = req.body.comment;
-        ItemService.addComment(itemId,comment,user._id,function(err){
-            if(err && err instanceof Utils.MarkError && err.code == Utils.ERROR_CODE_UNAUTHORIZED){
+            if(err && err.code == Utils.ERROR_CODE_UNAUTHORIZED) {
                 ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
-            } else if (err){
+            }else if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
-                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
             }
         });
     });
 }
 
-
-exports.listSentToMe = function(req,res){
+exports.public = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.listSentToMe(user._id,longitude,latitude,function(err,data){
+        ItemService.public(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -126,11 +102,28 @@ exports.listSentToMe = function(req,res){
     });
 }
 
-exports.listSentByMe = function(req,res){
+
+
+
+exports.private = function(req,res){
     ApiUtils.auth(req,res,function(user) {
         var longitude = req.body.longitude;
         var latitude = req.body.latitude;
-        ItemService.listSentByMe(user._id,longitude,latitude,function(err,data){
+        ItemService.private(user._id,longitude,latitude,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.sent = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.sent(user._id,longitude,latitude,function(err,data){
             if(err){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
@@ -176,6 +169,54 @@ exports.listFavourites = function(req,res){
                 ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
             }else{
                 ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.listByMark = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listByMark(markId,user._id,longitude,latitude,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.listComments = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.listComments(itemId,user._id,longitude,latitude,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+
+exports.addComment = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var itemId = req.body.itemId;
+        var comment = req.body.comment;
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        ItemService.addComment(itemId,comment,user._id,longitude,latitude,function(err){
+            if(err && err instanceof Utils.MarkError && err.code == Utils.ERROR_CODE_UNAUTHORIZED){
+                ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            } else if (err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
             }
         });
     });

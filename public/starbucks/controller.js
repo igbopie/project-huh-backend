@@ -198,9 +198,9 @@ markStarbucksControllers.controller('MapIconCreate',[ '$scope',"MediaService","M
         $scope.imgSrc = undefined;
     }
 
-    $scope.save = function(name,tag,mediaId){
+    $scope.save = function(name,tag,mediaId,pointsThreshold,packId){
         $scope.loading = true;
-        MapIconService.create(name,tag,mediaId,function(err,templateId){
+        MapIconService.create(name,tag,mediaId,pointsThreshold,packId,function(err,templateId){
             if(!err){
                 $scope.loading = false;
                 $location.path('mapicon');
@@ -219,6 +219,8 @@ markStarbucksControllers.controller('MapIconEdit',[ '$scope',"MediaService","Map
         $scope.name = template.name;
         $scope.tag = template.tag;
         $scope.mediaId = template.mediaId;
+        $scope.pointsThreshold = template.pointsThreshold;
+        $scope.packId = template.packId;
         MediaService.getMedia(template.mediaId,"thumb",function(url){
             $scope.imgSrc = url;
             $scope.template = template;
@@ -250,9 +252,9 @@ markStarbucksControllers.controller('MapIconEdit',[ '$scope',"MediaService","Map
             }
         );
     };
-    $scope.save = function(name,tag,mediaId){
+    $scope.save = function(name,tag,mediaId,pointsThreshold,packId){
         $scope.loading = true;
-        MapIconService.update($routeParams.id,name,tag,mediaId,function(err,templateId){
+        MapIconService.update($routeParams.id,name,tag,mediaId,pointsThreshold,packId,function(err,templateId){
             if(!err){
                 $scope.loading = false;
                 $location.path('mapicon');
@@ -260,6 +262,126 @@ markStarbucksControllers.controller('MapIconEdit',[ '$scope',"MediaService","Map
         });
     }
 }]);
+
+
+/******/
+/******/
+/******/
+/******/
+
+markStarbucksControllers.controller('MapIconPackList', ['$scope', '$routeParams',"MapIconPackService",
+    function($scope, $routeParams,MapIconPackService) {
+
+        $scope.list = function() {
+            $scope.loading = true;
+            MapIconPackService.list(function (err, data) {
+
+                $scope.mapicons = data;
+                $scope.loading = false;
+            });
+        }
+        $scope.list();
+
+        $scope.remove = function(id){
+            $scope.loading = true;
+            MapIconPackService.remove(id,function(err){
+                $scope.list();
+            });
+        };
+
+    }]);
+
+markStarbucksControllers.controller('MapIconPackCreate',[ '$scope',"MediaService","MapIconPackService","$location", function($scope,MediaService,MapIconPackService,$location) {
+    $scope.loading = false;
+    $scope.isFree = true;
+
+    $scope.onFileSelect = function($files) {
+        $scope.loading = true;
+        MediaService.createMedia(
+            $files,
+            function(progress){
+
+            },
+            function(mediaId){
+                $scope.mediaId = mediaId;
+                MediaService.getMedia(mediaId,"thumb",function(url){
+                    $scope.imgSrc = url;
+                    $scope.loading = false;
+                });
+
+            }
+        );
+    };
+    $scope.removeImage = function(){
+        $scope.mediaId = undefined;
+        $scope.imgSrc = undefined;
+    }
+
+    $scope.save = function(name,tag,mediaId,pointsThreshold,isFree,appStoreCode){
+        $scope.loading = true;
+        MapIconPackService.create(name,tag,mediaId,pointsThreshold,isFree,appStoreCode,function(err,templateId){
+            if(!err){
+                $scope.loading = false;
+                $location.path('mapiconpack');
+            }
+        });
+    }
+}]);
+
+
+markStarbucksControllers.controller('MapIconPackEdit',[ '$scope',"MediaService","MapIconPackService","$location","$routeParams",
+    function($scope,MediaService,MapIconPackService,$location,$routeParams) {
+        console.log($routeParams.id);
+
+        $scope.loading = true;
+        MapIconPackService.view($routeParams.id,function(err,template){
+            $scope.name = template.name;
+            $scope.mediaId = template.mediaId;
+            $scope.pointsThreshold = template.pointsThreshold;
+            $scope.isFree = template.isFree;
+            $scope.appStoreCode = template.appStoreCode;
+
+            MediaService.getMedia(template.mediaId,"thumb",function(url){
+                $scope.imgSrc = url;
+                $scope.template = template;
+                $scope.loading = false;
+            });
+
+        });
+
+        $scope.removeImage = function(){
+            $scope.mediaId = undefined;
+            $scope.imgSrc = undefined;
+
+        }
+
+        $scope.onFileSelect = function($files) {
+            $scope.loading = true;
+            MediaService.createMedia(
+                $files,
+                function(progress){
+
+                },
+                function(mediaId){
+                    $scope.mediaId = mediaId;
+                    MediaService.getMedia(mediaId,"thumb",function(url){
+                        $scope.imgSrc = url;
+                        $scope.loading = false;
+                    });
+
+                }
+            );
+        };
+        $scope.save = function(name,tag,mediaId,pointsThreshold,isFree,appStoreCode){
+            $scope.loading = true;
+            MapIconPackService.update($routeParams.id,name,tag,mediaId,pointsThreshold,isFree,appStoreCode,function(err,templateId){
+                if(!err){
+                    $scope.loading = false;
+                    $location.path('mapiconpack');
+                }
+            });
+        }
+    }]);
 
 
 
