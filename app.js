@@ -120,6 +120,8 @@ app.post('/api/mark/favourite',mark.favourite);
 app.post('/api/mark/unfavourite',mark.unfavourite);
 app.post('/api/mark/favourite/list',mark.listFavourites);
 
+app.post('/api/mark/user/public/list',mark.listUserPublic);
+
 app.post('/api/mark/item',item.listByMark);
 
 app.post('/api/mark/item/view',item.view);

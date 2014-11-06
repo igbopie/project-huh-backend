@@ -93,7 +93,6 @@ var ViewMarkStats = mongoose.model('ViewMarkStats', viewMarkStatsSchema);
 // Now we can import
 var Item = require ('../models/item').Item
     , ItemService = require ('../models/item').Service
-
     , UserService = require("../models/user").Service;
 
 service.create = function(userId,latitude,longitude,radius,to,name,description,locationName,locationAddress,mapIconId){
@@ -459,6 +458,44 @@ service.listFavourites = function(longitude,latitude,userId,callback){
         });
 
 }
+
+
+service.listUserPublic = function(searchUsername,longitude,latitude,userId,callback){
+    UserService.findUserByUsername(searchUsername,function(err,user){
+        if(err){
+            return callback(err);
+        }
+
+        Mark.find({visibility:VISIBILITY_PUBLIC,userId:user._id})
+          .sort({updated:-1})
+          .populate("userId",PUBLIC_USER_FIELDS)
+          .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+          .populate({ path: 'members', model: 'User', select: PUBLIC_USER_FIELDS })
+          .exec(function(err,marks){
+              if(err) return callback(err);
+
+              Utils.map(
+                marks,
+                //Map Function
+                function(dbMark,mapCallback){
+                    service.fillMark(dbMark,userId,longitude,latitude,true,function(err,mark){
+                        if(err){
+                            console.err(err);
+                        }
+                        mapCallback(mark);
+                    });
+                }
+                ,
+                //Callback
+                function(marks){
+                    callback(null, marks);
+                }
+              )
+
+          });
+    });
+}
+
 
 function inRange(mark,longitude,latitude){
     if(mark.radius == 0){

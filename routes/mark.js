@@ -78,3 +78,19 @@ exports.listFavourites = function(req,res){
         });
     });
 }
+
+
+exports.listUserPublic = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        var username = req.body.username;
+        MarkService.listUserPublic(username,longitude,latitude,user._id,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
