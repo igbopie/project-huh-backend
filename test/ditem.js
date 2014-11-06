@@ -88,6 +88,7 @@ describe('Item', function(){
                         if (err) return done(err);
                         //console.log(data);
                         data.length.should.be.equal(1);
+                        data[0].user._id.should.be.equal(users[0].id);
 
                         done();
 
