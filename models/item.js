@@ -36,8 +36,6 @@ var itemSchema = new Schema({
 
 itemSchema.index({markId:1,created:-1});
 itemSchema.index({userId:1,status:1});
-itemSchema.index({userId:1,visibility:1,status:1});
-itemSchema.index({visibility:1,status:1});
 itemSchema.index({created:-1,markId:1});
 itemSchema.index({status:1});
 
@@ -416,6 +414,33 @@ service.sent = function(userId,longitude,latitude,callback){
         ,longitude,latitude,userId,callback);
 }
 
+service.listUserPublic = function(searchUsername,longitude,latitude,userId,callback){
+    UserService.findUserByUsername(searchUsername,function(err,user){
+        if(err){
+            return callback(err);
+        }
+        finishItemQuery(
+            Item.find({userId:user._id,status:STATUS_OK}).sort({created:-1})
+          ,longitude,latitude,userId,function(err,items){
+              if(err){
+                  return callback(err);
+              }
+
+              //TODO fix query...
+              var publicItems = [];
+
+              for(var i = 0;i < items.length; i++){
+                  if(items[i].mark.visibility == 1){
+                      publicItems.push(items[i]);
+                  }
+              }
+
+              callback(null,publicItems);
+
+          });
+    });
+}
+
 function finishItemQuery(query,longitude,latitude,userId,callback){
     query.populate("userId",PUBLIC_USER_FIELDS)
         .populate("markId")
@@ -644,6 +669,9 @@ service.listByMark = function(markId,userId,longitude,latitude,callback){
         });
 
 }
+
+
+
 
 
 service.allowedToSeeContent = function(itemId,longitude,latidude,userId,callback){

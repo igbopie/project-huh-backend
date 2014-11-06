@@ -189,3 +189,18 @@ exports.listFavourite = function(token,callback){
         }
     });
 }
+
+
+exports.listUserPublic = function(username,token,callback){
+    var params ={
+        token:token,
+        username:username
+    };
+    apiClientBase.post('/api/mark/item/user/public/list',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}

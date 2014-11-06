@@ -81,17 +81,27 @@ describe('Item', function(){
         it('should create an item object',function (done) {
             Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, 10, [], null, null, "Nacho's house", null, users[0].token, function (err, data) {
                 if (err) return done(err);
-                Mark.search(41.2, 41.2, 100, null, 41.2, 41.2, users[0].token, function (err, results) {
+                Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, 10, [users[1].id], null, null, "Nacho's house", null, users[0].token, function (err, data) {
                     if (err) return done(err);
-
-                    Mark.listUserPublic(users[0].username,users[1].token,function(err,data){
+                    Mark.search(41.2, 41.2, 100, null, 41.2, 41.2, users[0].token, function (err, results) {
                         if (err) return done(err);
-                        //console.log(data);
-                        data.length.should.be.equal(1);
-                        data[0].user._id.should.be.equal(users[0].id);
+                        Mark.listUserPublic(users[0].username,users[1].token,function(err,data){
+                            if (err) return done(err);
+                            //console.log(data);
+                            data.length.should.be.equal(1);
+                            data[0].user._id.should.be.equal(users[0].id);
 
-                        done();
+                            Item.listUserPublic(users[0].username,users[1].token,function(err,data){
+                                if (err) return done(err);
 
+                                data.length.should.be.equal(1);
+                                data[0].user._id.should.be.equal(users[0].id);
+
+                                done();
+
+
+                            });
+                        });
 
                     });
                 });

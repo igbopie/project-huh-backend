@@ -543,6 +543,7 @@ service.fillMark = function(dbMark,userId,userLongitude,userLatitude,includeLate
             created: dbMark.created,
             updated: dbMark.updated,
             shortlink: dbMark.shortlink,
+            visibility: dbMark.visibility,
             followed: false,
             favourited: false
         }
