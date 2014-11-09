@@ -13,30 +13,30 @@ var mongoose = require('mongoose')
 
 
 var itemSchema = new Schema({
-    userId      :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
-    created     :   { type: Date	, required: true, default: Date.now },
-    templateId  :   { type: Schema.Types.ObjectId, required: false},
+    userId              :   { type: Schema.Types.ObjectId, required: true, ref:"User"},
+    created             :   { type: Date	, required: true, default: Date.now },
+    templateId          :   { type: Schema.Types.ObjectId, required: false},
     // Private fields (not viewed)
-    message     :   { type: String, required: false},
-    mediaId     :   { type: Schema.Types.ObjectId, required: false},
+    message             :   { type: String, required: false},
+    mediaId             :   { type: Schema.Types.ObjectId, required: false},
     // A pre rendered image of the message
-    teaserMediaId:   { type: Schema.Types.ObjectId, required: false},
-    teaserMessage:   { type: String, required: false},
+    teaserMediaId       :   { type: Schema.Types.ObjectId, required: false},
+    teaserMessage       :   { type: String, required: false},
     //Additional parameters
-    renderParameters   :   { type: String, required: false},
+    renderParameters    :   { type: String, required: false},
     //
-    markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
-    status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
-    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
-    members          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
+    markId              :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
+    status              :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
+    visibility          :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
+    members             :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public,
+    replyItemId             :   { type: Schema.Types.ObjectId, ref: 'Item' }, //users, no users = public
+    replyCount          :   { type: Number, default:0, required: true }, //users, no users = public
     //STATS
-    viewCount :   { type: Number, required:true, default:0},
-    favouriteCount :   { type: Number, required:true, default:0},
-    commentCount :   { type: Number, required:true, default:0},
+    viewCount           :   { type: Number, required:true, default:0},
+    favouriteCount      :   { type: Number, required:true, default:0},
+    commentCount        :   { type: Number, required:true, default:0},
     //
-    shortlink   :   { type: String, required: false}
-
-
+    shortlink           :   { type: String, required: false}
 });
 
 itemSchema.index({created:-1});
@@ -124,7 +124,7 @@ var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 ///------------------------
 
 
-service.create = function(message,mediaId,templateId,markId,userId){
+service.create = function(message,mediaId,templateId,markId,replyItemId,userId){
     var promise = Q.defer();
 
     var item = new Item();
@@ -135,9 +135,12 @@ service.create = function(message,mediaId,templateId,markId,userId){
     if(templateId){
         item.templateId = templateId;
     }
-
+    if(replyItemId){
+        item.replyItemId = replyItemId;
+    }
     item.userId = userId;
     item.markId = markId;
+
 
 
     //TODO check owner exists!
@@ -156,6 +159,7 @@ function createProcess(promise,item){
         .then(createItemAssignTeaserMedia)
         .then(createItemAssignMedia)
         .then(createItemCount1ItemInMark)
+        .then(createItemCount1ReplyCount)
         .then(UserService.addPostHandler)
         .then(function(item){
             promise.resolve(item);
@@ -168,7 +172,26 @@ function createProcess(promise,item){
 }
 
 
+function createItemCount1ReplyCount(item){
+    var promise = Q.defer();
 
+    if(item.replyItemId && item.status == STATUS_OK){
+        Item.findOneAndUpdate(
+            {_id:item.replyItemId},
+            {$inc: {replyCount: 1}},
+          function(err){
+            if(err) {
+                promise.reject(err);
+            } else {
+                promise.resolve(item);
+            }
+        });
+    }else{
+        promise.resolve(item);
+    }
+
+    return promise.promise;
+}
 function createItemGeneratePreviewImage(item){
     var promise = Q.defer();
 
@@ -497,6 +520,9 @@ service.fillItem = function(item,longitude,latitude,userId,callback){
         if (err) return callback(err);
 
         if (canView) {
+
+            publicItem.replyItemId = item.replyItemId;
+            publicItem.replyCount = item.replyCount;
             publicItem.message = item.message;
             publicItem.mediaId = item.mediaId,
                 publicItem.renderParameters = item.renderParameters;

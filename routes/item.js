@@ -15,6 +15,7 @@ exports.create = function(req, res) {
         var message = req.body.message;
         var mediaId = req.body.mediaId;
         var templateId = req.body.templateId;
+        var replyItemId = req.body.replyItemId;
 
         //MARK
         var mapIconId = req.body.mapIconId;
@@ -28,7 +29,7 @@ exports.create = function(req, res) {
         var markDescription = req.body.markDescription;
 
 
-        var promise
+        var promise;
         if(!markId){
             promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,markDescription,locationName,locationAddress,mapIconId);
         } else {
@@ -36,7 +37,7 @@ exports.create = function(req, res) {
         }
 
         promise.then(function(markId){
-            return ItemService.create(message,mediaId,templateId,markId,user._id);
+            return ItemService.create(message,mediaId,templateId,markId,replyItemId,user._id);
         })
         .then(function(item){
             markId = item.markId;

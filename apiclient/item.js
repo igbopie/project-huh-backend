@@ -32,6 +32,23 @@ exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitud
 	    }
     });
 }
+exports.reply = function(message,templateId,mediaId,itemId,markId,token,callback){
+    var params ={
+        message:message,
+        templateId:templateId,
+        mediaId:mediaId,
+        markId:markId,
+        replyItemId:itemId,
+        token:token};
+
+    apiClientBase.post('/api/mark/item/create',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
 
 exports.addMedia = function(mediaId,itemId,token,callback){
     var params ={

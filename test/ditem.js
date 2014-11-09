@@ -130,7 +130,28 @@ describe('Item', function(){
             });
         });
     });
+    describe('#createAndReply', function(){
+        it('should create an item object',function (done) {
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,firstItem){
+                if (err) return done(err);
+                Item.reply("reply",templateId,null,firstItem.itemId,firstItem.markId,users[0].token,function(err,replyItem){
+                    if (err) return done(err);
 
+                    Item.view(firstItem.itemId,41.2,41.2,users[0].token,function(err,firstItemComplete){
+                        if (err) return done(err);
+                        firstItemComplete.replyCount.should.be.equal(1);
+
+                        Item.view(replyItem.itemId,41.2,41.2,users[0].token,function(err,replyItemComplete){
+                            if (err) return done(err);
+
+                            replyItemComplete.replyItemId.should.be.equal(firstItem.itemId);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
     describe('#createPrivateAndSearchMark', function(){
         it('should create an item object',function (done) {
             Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
