@@ -28,6 +28,7 @@ var itemSchema = new Schema({
     markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
+    members          :   [{ type: Schema.Types.ObjectId, ref: 'User' }], //users, no users = public
     //STATS
     viewCount :   { type: Number, required:true, default:0},
     favouriteCount :   { type: Number, required:true, default:0},
@@ -38,11 +39,10 @@ var itemSchema = new Schema({
 
 });
 
+itemSchema.index({created:-1});
 itemSchema.index({markId:1,created:-1});
-itemSchema.index({userId:1,status:1,visibility:1});
-itemSchema.index({created:-1,markId:1});
+itemSchema.index({userId:1,status:1,visibility:1,members:1});
 itemSchema.index({status:1});
-
 
 var Item = mongoose.model('Item', itemSchema);
 
@@ -190,6 +190,7 @@ function createItemAssignVisibility(item) {
             promise.reject(err);
         } else {
             item.visibility = mark.visibility;
+            item.members = mark.members;
             promise.resolve(item);
         }
     })
@@ -406,22 +407,11 @@ service.public = function(userId,longitude,latitude,callback){
     });
 }
 service.private = function(userId,longitude,latitude,callback){
-    Mark.find({members:userId,userId:{$ne:userId}},function(err,list){
-        if(err) return callback(err);
-        var markIdsArray = [];
-        for(var i = 0; i < list.length; i++){
-            markIdsArray.push(list[i]._id);
-        }
-
-        finishItemQuery(
-            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
-                .sort({created:-1}
-            )
-            ,longitude,latitude,userId,callback);
-    });
-
-
-
+    finishItemQuery(
+        Item.find({userId:{$ne:userId},status:STATUS_OK,visibility:VISIBILITY_PRIVATE,members:userId})
+            .sort({created:-1}
+        )
+        ,longitude,latitude,userId,callback);
 }
 
 service.sent = function(userId,longitude,latitude,callback){

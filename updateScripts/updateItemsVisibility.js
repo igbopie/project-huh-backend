@@ -27,6 +27,7 @@ db.open("mongodb://nacho:123456@kahana.mongohq.com:10090/app29908048",function(e
                     }else {
                         console.log("item " + item._id + " mark:" + mark._id);
                         item.visibility = mark.visibility;
+                        item.members = mark.members;
                         db.collection("items").save(item, function (err) {
                             if (err) {
                                 console.log("failed to write item:" + err);
