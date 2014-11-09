@@ -5,7 +5,10 @@ var mongoose = require('mongoose')
     , STATUS = [STATUS_PENDING,STATUS_OK]
     , STATUS_PENDING = 0
     , STATUS_OK = 1
-    , NUM_MARK_ITEM_CACHE = 1;
+    , NUM_MARK_ITEM_CACHE = 1
+    , VISIBILITY_PRIVATE = 0
+    , VISIBILITY_PUBLIC = 1
+    , VISIBILITY = [VISIBILITY_PRIVATE,VISIBILITY_PUBLIC];
 
 
 
@@ -24,6 +27,7 @@ var itemSchema = new Schema({
     //
     markId     :   { type: Schema.Types.ObjectId, required: true, ref:"Mark"},
     status      :   { type: Number, enum: STATUS,required:true, default:STATUS_PENDING },
+    visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
     //STATS
     viewCount :   { type: Number, required:true, default:0},
     favouriteCount :   { type: Number, required:true, default:0},
@@ -35,7 +39,7 @@ var itemSchema = new Schema({
 });
 
 itemSchema.index({markId:1,created:-1});
-itemSchema.index({userId:1,status:1});
+itemSchema.index({userId:1,status:1,visibility:1});
 itemSchema.index({created:-1,markId:1});
 itemSchema.index({status:1});
 
@@ -145,6 +149,7 @@ service.create = function(message,mediaId,templateId,markId,userId){
 
 function createProcess(promise,item){
     createItemGeneratePreviewImage(item)
+        .then(createItemAssignVisibility)
         .then(createItemSave)
         .then(createItemShortenUrl)
         .then(createItemSave)
@@ -177,7 +182,20 @@ function createItemGeneratePreviewImage(item){
 
     return promise.promise;
 }
+function createItemAssignVisibility(item) {
+    var promise = Q.defer();
 
+    MarkService.findById(item.markId,function(err,mark){
+        if (err) {
+            promise.reject(err);
+        } else {
+            item.visibility = mark.visibility;
+            promise.resolve(item);
+        }
+    })
+
+    return promise.promise;
+}
 function createItemSave(item) {
     var promise = Q.defer();
 
@@ -420,22 +438,12 @@ service.listUserPublic = function(searchUsername,longitude,latitude,userId,callb
             return callback(err);
         }
         finishItemQuery(
-            Item.find({userId:user._id,status:STATUS_OK}).sort({created:-1})
+            Item.find({userId:user._id,status:STATUS_OK,visibility:VISIBILITY_PUBLIC}).sort({created:-1})
           ,longitude,latitude,userId,function(err,items){
               if(err){
                   return callback(err);
               }
-
-              //TODO fix query...
-              var publicItems = [];
-
-              for(var i = 0;i < items.length; i++){
-                  if(items[i].mark.visibility == 1){
-                      publicItems.push(items[i]);
-                  }
-              }
-
-              callback(null,publicItems);
+              callback(null,items);
 
           });
     });
