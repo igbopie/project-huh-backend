@@ -193,3 +193,21 @@ exports.findIconPacks = function(req, res){
     });
 };
 
+exports.findIconAndIconPacks = function(req, res){
+    var timestamp = req.body.timestamp || req.query.timestamp;
+
+    MapIconService.findPacks(timestamp,function(err,packs){
+        if(err){
+            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+        }else{
+            MapIconService.find(timestamp,function(err,icons){
+                if(err){
+                    ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                }else{
+                    ApiUtils.api(req,res,ApiUtils.OK,null,{icons:icons,packs:packs});
+                }
+            });
+
+        }
+    });
+};

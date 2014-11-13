@@ -33,3 +33,13 @@ exports.list = function(timestamp,token,callback){
 	    }
     });
 }
+
+exports.listAll = function(timestamp,token,callback){
+	apiClientBase.post('/api/mapiconandpack',{timestamp:timestamp,token:token},function(code,headers,data){
+		if(code != 200){
+			callback("The server responded with an invalid code:"+code+" : "+data);
+		} else {
+			callback(null,JSON.parse(data).response);
+		}
+	});
+}

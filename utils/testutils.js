@@ -46,14 +46,21 @@ exports.cleanMapIcons = function(callback){
                 callback(err);
                 return;
             }
-
-            db.close(function (err) {
+            db.collection('mapiconpacks').remove(	function(err) {
                 if (err) {
                     console.log(err);
                     callback(err);
                     return;
                 }
-                callback();
+
+                db.close(function (err) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                        return;
+                    }
+                    callback();
+                });
             });
         });
     });

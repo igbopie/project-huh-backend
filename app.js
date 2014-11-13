@@ -150,6 +150,8 @@ app.post('/api/template/create',template.create);
 app.post('/api/template/remove',template.removeById);
 
 
+app.get('/api/mapiconandpack',mapicon.findIconAndIconPacks);
+app.post('/api/mapiconandpack',mapicon.findIconAndIconPacks);
 app.get('/api/mapicon',mapicon.findIcons);
 app.post('/api/mapicon',mapicon.findIcons);
 app.post('/api/mapicon/update',mapicon.update);

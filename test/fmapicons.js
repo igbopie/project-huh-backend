@@ -66,7 +66,14 @@ describe('MapIcons', function(){
                                 if (err) return done(err);
 
                                 list.length.should.be.equal(2);
-                                done();
+                                MapIcon.listAll(null,users[0].token,function(err,iconsAndPacks) {
+                                    if (err) return done(err);
+
+                                    iconsAndPacks.icons.length.should.be.equal(2);
+                                    iconsAndPacks.packs.length.should.be.equal(1);
+
+                                    done();
+                                });
                             });
                         });
                     });
