@@ -2,6 +2,7 @@
 var User = require('../models/user').User; 
 var UserService = require('../models/user').Service;
 var MediaService = require('../models/media').Service;
+var FriendService = require('../models/friend').Service;
 var MediaVars = require('../models/media');
 var ApiUtils = require('../utils/apiutils'); 
 var SMS = require('../utils/sms');
@@ -113,12 +114,13 @@ exports.profile = function(req, res) {
             backgroundMediaId:1
         };
         var username = req.body.username;
-
+        var isMe = false;
         if(username.toLowerCase() == user.username){
             //is me?
             fields.phone = 1;
             fields.facebookId = 1;
             fields.email = 1;
+            isMe = true;
         }
         UserService.findUserProfile(username,fields,function(err,userProfile){
             if(err){
@@ -126,7 +128,19 @@ exports.profile = function(req, res) {
             } else if (userProfile == null){
                 ApiUtils.api(req,res,ApiUtils.CLIENT_ENTITY_NOT_FOUND,null,null);
             } else {
-                ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
+                if(!isMe){
+                    FriendService.isFriend(user._id,userProfile._id,function(err,isFriend){
+                        if(err){
+                            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+                        } else {
+                            userProfile = userProfile.toJSON(); //hack to add more properties
+                            userProfile.isFriend = isFriend;
+                            ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
+                        }
+                    });
+                } else {
+                    ApiUtils.api(req, res, ApiUtils.OK, null, userProfile);
+                }
             }
         });
     });

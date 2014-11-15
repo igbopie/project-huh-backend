@@ -25,12 +25,22 @@ describe('Friend', function(){
 
     describe('#addFriend()', function(){
         it('should send a request to a user',function (done) {
-            Friend.addFriend(users[1].username,users[0].token,function(err){
-                if(err) return done(err);
-                done();
-			});
-		});
-	});
+            User.profile(users[1].username,users[0].token,function(err,profile){
+                if (err) return done(err);
+
+                profile.isFriend.should.not.be.ok;
+                Friend.addFriend(users[1].username,users[0].token,function(err) {
+                    if (err) return done(err);
+                    User.profile(users[1].username,users[0].token,function(err,profile) {
+                        if (err) return done(err);
+
+                        profile.isFriend.should.be.ok;
+                        done();
+                    });
+                });
+			      });
+		    });
+	  });
 
     describe('#addFriendTwice()', function(){
         it('shouldnt send a friend request to someone who is already a friend',function (done) {
