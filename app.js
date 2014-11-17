@@ -57,6 +57,7 @@ var item = require('./routes/item');
 var template = require('./routes/template');
 var mark = require('./routes/mark');
 var mapicon = require('./routes/mapicon');
+var report = require('./routes/report');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/seem');
 
@@ -165,6 +166,9 @@ app.post('/api/mapicon/pack/update',mapicon.updatePack);
 app.post('/api/mapicon/pack/view',mapicon.findPackById);
 app.post('/api/mapicon/pack/create',mapicon.createPack);
 app.post('/api/mapicon/pack/remove',mapicon.removePackById);
+
+app.post('/api/report/create',report.report);
+app.post('/api/report/list',report.list);
 
 
 http.createServer(app).listen(app.get('port'), function(){
