@@ -2,6 +2,7 @@
 .navbar-default {
     background-color: #13c79b;
     border-color: #00ac82;
+    border-radius:  0px;
 }
 
 .navbar-default .navbar-brand {
@@ -20,6 +21,10 @@
     width: auto;
     margin-top: -10px;
     float: left;
+}
+
+.btn {
+    border-radius: 2px;
 }
 
 .btn-success {
