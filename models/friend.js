@@ -42,6 +42,18 @@ service.findFriends = function(userId,callback){
         });
 }
 
+service.findFriendsNoPopulate = function(userId,callback){
+    Friend.find({userId:userId,status:FRIEND_STATUS_FRIENDSHIP})
+          .exec(function(err,docs){
+
+              docs = docs.map(function(friend) {
+                  return friend.friendUserId;
+              });
+
+              callback(err,docs);
+          });
+}
+
 service.addFriend = function(username,userId,callback){
     UserService.findUserByUsername(username,function(err,friendUser){
         if(err){

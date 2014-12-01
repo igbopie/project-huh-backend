@@ -423,11 +423,20 @@ service.public = function(userId,longitude,latitude,callback){
             markIdsArray.push(list[i].markId);
         }
 
-        finishItemQuery(
-            Item.find({markId:{ $in:markIdsArray},status:STATUS_OK})
-                .sort({created:-1}
-            )
-            ,longitude,latitude,userId,callback);
+        FriendService.findFriendsNoPopulate(userId,function(err,friendsIdsArray) {
+            if(err) return callback(err);
+
+            finishItemQuery(
+              Item.find({
+                  $or: [
+                      {markId: {$in: markIdsArray}},
+                      {userId: {$in: friendsIdsArray}}
+                  ], status: STATUS_OK, visibility: VISIBILITY_PUBLIC
+              })
+                .sort({created: -1}
+              )
+              , longitude, latitude, userId, callback);
+        });
     });
 }
 service.private = function(userId,longitude,latitude,callback){

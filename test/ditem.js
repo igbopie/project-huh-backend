@@ -802,4 +802,25 @@ describe('Item', function(){
             });
         });
     });
+
+    describe('#streamWithFriends()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create( u.extend({},baseMark), function (err) {
+                if (err) return done(err);
+
+                Friend.addFriend(users[0].username,users[1].token, function (err) {
+                    if (err) return done(err);
+
+                    Item.favStream(users[1].token, function (err,data) {
+                        if (err) return done(err);
+
+                        data.length.should.be.equal(1);
+                        done();
+
+                    });
+                });
+            });
+        });
+    });
 });
