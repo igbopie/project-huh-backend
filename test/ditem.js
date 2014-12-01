@@ -778,4 +778,28 @@ describe('Item', function(){
 
         });
     });
+
+    describe('#inRangeList()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create( u.extend({},baseMark,{to:[users[1].id]}), function (err) {
+                if (err) return done(err);
+
+                Item.create( u.extend({},baseMark,{}), function (err) {
+                    if (err) return done(err);
+
+                    Item.create( u.extend({},baseMark,{longitude:-40,latitude:-40}), function (err) {
+                        if (err) return done(err);
+
+                        Mark.search(41.2, 41.2, 100, null, 41.2, 41.2, users[1].token, function (err, data) {
+                            if (err) return done(err);
+
+                            data.length.should.be.equal(2);
+                            done()
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

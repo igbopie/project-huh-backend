@@ -173,6 +173,10 @@ service.findByIdForWeb = function(markId,callback){
         });
 }
 
+service.inRange = function(userLatitude,userLongitude,userId,callback){
+    return service.search(userLatitude,userLongitude,POST_RADIUS,null,userLatitude,userLongitude,userId,callback);
+}
+
 service.search = function(latitude,longitude,radius,text,userLatitude,userLongitude,userId,callback){
 
     var locationArray = [];

@@ -1,6 +1,21 @@
 var apiClientBase = require('./apiclientbase');
 
 
+exports.inRange = function(latitude,longitude,token,callback){
+    var params ={
+        latitude:latitude,
+        longitude:longitude,
+        token:token};
+
+    apiClientBase.post('/api/mark/inrange',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 
 exports.search = function(latitude,longitude,radius,text,userLatitude,userLongitude,token,callback){
 	var params ={

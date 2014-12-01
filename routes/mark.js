@@ -20,6 +20,20 @@ exports.search = function(req, res) {
     });
 };
 
+exports.inRange = function(req, res) {
+    ApiUtils.auth(req,res,function(user) {
+        var latitude = req.body.latitude;
+        var longitude = req.body.longitude;
+        MarkService.inRange(latitude,longitude,user._id,function(err,results){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,results);
+            }
+        });
+    });
+};
+
 exports.view = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
         var markId = req.body.markId;
