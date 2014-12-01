@@ -7,10 +7,8 @@ var Q = require("q");
 
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
-        //message,mediaId,templateId,mapIconId,latitude,longitude,radius,to,locationName,locationAddress,aliasName,aliasId,userId
 
         //ITEM
-
         var markId = req.body.markId;
         var message = req.body.message;
         var mediaId = req.body.mediaId;
@@ -21,7 +19,6 @@ exports.create = function(req, res) {
         var mapIconId = req.body.mapIconId;
         var latitude = req.body.latitude;
         var longitude = req.body.longitude;
-        var radius = req.body.radius;
         var to = req.body.to;
         var locationName = req.body.locationName;
         var locationAddress = req.body.locationAddress;
@@ -31,7 +28,7 @@ exports.create = function(req, res) {
 
         var promise;
         if(!markId){
-            promise = MarkService.create(user._id,latitude,longitude,radius,to,markName,markDescription,locationName,locationAddress,mapIconId);
+            promise = MarkService.create(user._id,latitude,longitude,to,markName,markDescription,locationName,locationAddress,mapIconId);
         } else {
             promise = Q.when(markId);
         }

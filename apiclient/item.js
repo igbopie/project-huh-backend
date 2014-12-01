@@ -8,7 +8,7 @@ exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
 
-exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,radius,to,locationAddress,locationName,markName,markId,token,callback){
+exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,to,locationAddress,locationName,markName,markId,token,callback){
 	var params ={
                 message:message,
                 templateId:templateId,
@@ -16,7 +16,6 @@ exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitud
                 mediaId:mediaId,
                 latitude:latitude,
                 longitude:longitude,
-                radius:radius,
                 to:to,
                 locationAddress:locationAddress,
                 locationName:locationName,

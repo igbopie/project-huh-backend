@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
     , Geolib = require('geolib')
     , Utils = require('../utils/utils')
     , UrlShortener = require('../utils/urlshortener')
+    , POST_RADIUS = 1000
     ;
 
 
@@ -25,7 +26,6 @@ var markSchema = new Schema({
     location    :   { type: [Number], required:true,index: '2dsphere'},
     locationName:   { type: String, required: false},
     locationAddress:   { type: String, required: false},
-    radius      :   { type: Number, required:true},
     visibility  :   { type: Number, enum: VISIBILITY,required:true, default:VISIBILITY_PRIVATE },
     mapIconId   :   { type: Schema.Types.ObjectId, required: true},
     mapIconMediaId   :   { type: Schema.Types.ObjectId, required: true},
@@ -95,7 +95,7 @@ var Item = require ('../models/item').Item
     , ItemService = require ('../models/item').Service
     , UserService = require("../models/user").Service;
 
-service.create = function(userId,latitude,longitude,radius,to,name,description,locationName,locationAddress,mapIconId){
+service.create = function(userId,latitude,longitude,to,name,description,locationName,locationAddress,mapIconId){
     var promise = Q.defer();
 
     var alias = new Mark();
@@ -104,7 +104,6 @@ service.create = function(userId,latitude,longitude,radius,to,name,description,l
     locationArray[LOCATION_LONGITUDE] = longitude;
     locationArray[LOCATION_LATITUDE] = latitude;
     alias.location = locationArray;
-    alias.radius = radius;
     alias.name = name;
     alias.locationAddress = locationAddress;
     alias.locationName = locationName;
@@ -301,6 +300,7 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
 
 
         var canSee = false;
+        var canPost = false;
         var containsTo = false;
         var ownerUserId;
 
@@ -334,37 +334,26 @@ service.canViewMark = function (markId,userId,userLongitude,userLatitude,callbac
         }
 
         //The item is public and I am in range
-        if (dbMark.visibility == VISIBILITY_PUBLIC && userLongitude && userLatitude && markInRange) {
+        if (dbMark.visibility == VISIBILITY_PUBLIC) {
             canSee = true;
         }
 
-        if (dbMark.visibility == VISIBILITY_PUBLIC && dbMark.radius == 0) {
+        if (dbMark.visibility == VISIBILITY_PRIVATE && containsTo) {
             canSee = true;
         }
 
-        if (dbMark.visibility == VISIBILITY_PRIVATE && containsTo && dbMark.radius == 0) {
-            canSee = true;
-        }
-
-        if (dbMark.visibility == VISIBILITY_PRIVATE && containsTo && userLongitude && userLatitude && markInRange) {
-            canSee = true;
+        if (markInRange) {
+            canPost = true;
         }
 
         if(dbMark.visibility == VISIBILITY_PRIVATE && !containsTo && String(ownerUserId) != String(userId)){
             return callback(new Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Not authorized"));
         }
 
-        ViewMark.findOne({userId:userId,markId:dbMark._id},function(err,viewMark){
-            if(err) return callback(err);
-            var lastViewed;
-            if(viewMark){
-               lastViewed = viewMark.lastViewed;
-            }
-            callback(null,{
-                canView:canSee,
-                distance:markDistance,
-                lastViewed: lastViewed
-            });
+        callback(null,{
+            canView:canSee,
+            canPost:canPost,
+            distance:markDistance
         });
 
     });
@@ -498,10 +487,7 @@ service.listUserPublic = function(searchUsername,longitude,latitude,userId,callb
 
 
 function inRange(mark,longitude,latitude){
-    if(mark.radius == 0){
-        return true;
-    }
-    if(distance(mark,longitude,latitude) > mark.radius){
+    if(distance(mark,longitude,latitude) > POST_RADIUS){
         return false;
     }else{
         return true;
@@ -537,6 +523,7 @@ service.fillMark = function(dbMark,userId,userLongitude,userLatitude,includeLate
             mapIconId: dbMark.mapIconId,
             itemCount: dbMark.itemCount,
             canView: permissions.canView,
+            canPost: permissions.canPost,
             favouriteCount: dbMark.favouriteCount,
             locationName: dbMark.locationName,
             locationAddress: dbMark.locationAddress,

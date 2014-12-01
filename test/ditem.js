@@ -57,7 +57,7 @@ describe('Item', function(){
 
     describe('#createPublic', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
 
                 data.should.have.property("markId");
@@ -65,7 +65,7 @@ describe('Item', function(){
                 data.should.have.property("itemShortlink");
                 data.should.have.property("itemId");
 
-                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err,data) {
+                Item.create("Test",templateId,mapIconId,null,41.2,41.2,[],null,null,null,data.markId,users[0].token,function(err,data) {
                     if (err) return done(err)
 
                     data.should.have.property("itemId");
@@ -79,9 +79,9 @@ describe('Item', function(){
 	});
     describe('#createPublicAndListFromUserProfile', function(){
         it('should create an item object',function (done) {
-            Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, 10, [], null, null, "Nacho's house", null, users[0].token, function (err, data) {
+            Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, [], null, null, "Nacho's house", null, users[0].token, function (err, data) {
                 if (err) return done(err);
-                Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, 10, [users[1].id], null, null, "Nacho's house", null, users[0].token, function (err, data) {
+                Item.create("Test", templateId, mapIconId, null, 41.2, 41.2, [users[1].id], null, null, "Nacho's house", null, users[0].token, function (err, data) {
                     if (err) return done(err);
                     Mark.search(41.2, 41.2, 100, null, 41.2, 41.2, users[0].token, function (err, results) {
                         if (err) return done(err);
@@ -110,9 +110,9 @@ describe('Item', function(){
     });
     describe('#createPublicAndSearchMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,null,data.markId,users[0].token,function(err) {
+                Item.create("Test",templateId,mapIconId,null,41.2,41.2,[],null,null,null,data.markId,users[0].token,function(err) {
                     if (err) return done(err);
                     Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
                         if (err) return done(err);
@@ -132,7 +132,7 @@ describe('Item', function(){
     });
     describe('#createAndReply', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,firstItem){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,firstItem){
                 if (err) return done(err);
                 Item.reply("reply",templateId,null,firstItem.itemId,firstItem.markId,users[0].token,function(err,replyItem){
                     if (err) return done(err);
@@ -154,7 +154,7 @@ describe('Item', function(){
     });
     describe('#createPrivateAndSearchMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
                 Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
                     if (err) return done(err);
@@ -183,9 +183,9 @@ describe('Item', function(){
 
     describe('#createMixedAndSearchMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test1",templateId,mapIconId,null,41.2,41.2, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test2",templateId,mapIconId,null,41.2,41.2,10, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                Item.create("Test2",templateId,mapIconId,null,41.2,41.2, [users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,data){
                     if (err) return done(err);
                     Mark.search(41.2,41.2,100,null,41.2,41.2,users[0].token,function(err,results){
                         if (err) return done(err);
@@ -206,7 +206,7 @@ describe('Item', function(){
             this.timeout(20000);//S3 requires longer timeout
             Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
                 if(err) return done(err);
-                Item.create("Test2",null,mapIconId,mediaId,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
+                Item.create("Test2",null,mapIconId,mediaId,41.2,41.2, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                     if (err) return done(err);
                     done();
                 });
@@ -217,7 +217,7 @@ describe('Item', function(){
 
     describe('#viewPublicMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,[],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
                 Mark.view(data.markId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
@@ -246,7 +246,7 @@ describe('Item', function(){
 
     describe('#viewPrivateMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
                 if (err) return done(err);
                 Mark.view(createResponse.markId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
@@ -265,7 +265,7 @@ describe('Item', function(){
 
     describe('#viewItemMark', function(){
         it('should create an item object',function (done) {
-            Item.create("Test",templateId,mapIconId,null,41.2,41.2,10,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
+            Item.create("Test",templateId,mapIconId,null,41.2,41.2,[users[1].id],null,null,"Nacho's house",null,users[0].token,function(err,createResponse){
                 if (err) return done(err);
                 Item.view(createResponse.itemId,41.2,41.2,users[0].token,function(err,data){
                     if(err) return done(err);
@@ -288,7 +288,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
                 if (err) return done(err);
                 Item.addComment(item.itemId,"Hello comment", users[0].token, function (err) {
                     if (err) return done(err);
@@ -310,9 +310,9 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Test1",templateId,mapIconId,null,41.2,41.2,10, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
+            Item.create("Test1",templateId,mapIconId,null,41.2,41.2, [],null,null,"Nacho's house",null,users[0].token,function(err,data){
                 if (err) return done(err);
-                Item.create("Test2",templateId,null,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
+                Item.create("Test2",templateId,null,null,null,null,[],null,null,null,data.markId,users[0].token,function(err){
                     if (err) return done(err);
                     Item.listItems(data.markId,41.2,41.2,users[0].token, function (err, items) {
                         if (err) return done(err);
@@ -330,30 +330,13 @@ describe('Item', function(){
     });
 
 
-    describe('#viewNotAllowed()', function(){
-        it('shouldnt view',function (done) {
-            //LAT       LONG
-            //40.665006, -3.779096
-            //40.665350, -3.778955
-            // 40 m
-            Item.create("Test",templateId,mapIconId,null,40.665006,-3.779096,10,[],null,null,"Nacho's house",null,users[0].token,function(err,item){
-                if(err) return done(err);
-                Item.view(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
-                    if(err) return done(err);
-                    obj.should.not.have.property("message");
-                    done();
-                })
-            });
-        });
-    });
-
     describe('#viewAllowed()', function(){
         it('should view',function (done) {
             //LAT       LONG
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create("Test",templateId,mapIconId,null,40.665006,-3.779096,50,[],null,null,"Nacho's house",null,users[0].token,function(err,item){
+            Item.create("Test",templateId,mapIconId,null,40.665006,-3.779096,[],null,null,"Nacho's house",null,users[0].token,function(err,item){
                 if(err) return done(err);
                 Item.view(item.itemId,40.665350,-3.778955,users[1].token,function(err,obj){
                     if(err) return done(err);
@@ -375,7 +358,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],null,null,"Nacho's house",null, users[0].token, function (err, item) {
                 if (err) return done(err);
                 Item.view(item.itemId,40.665350,-3.778955, users[1].token, function (err, data) {
                     if (err) return done(err);
@@ -396,7 +379,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [users[0].id],null,null,"home",null, users[0].token, function (err, item) {
+                Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [users[0].id],null,null,"home",null, users[0].token, function (err, item) {
                     if (err) return done(err);
                     Item.view(item.itemId,40.665350,-3.778955, users[1].token, function (err, code) {
                         if (err && code == 401) return done();
@@ -407,29 +390,6 @@ describe('Item', function(){
         });
     });
 
-
-    describe('#addCommentUnAuth()', function(){
-        it('should add a comment',function (done) {
-            //LAT       LONG
-            //40.665006, -3.779096
-            //40.665350, -3.778955
-            // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 100, [],null,null,"Home",null, users[0].token, function (err, item) {
-                if (err) return done(err);
-                Item.addComment(item.itemId,"Hello comment", users[1].token, function (err,code) {
-                    if (err && code == 401) return done();
-                    done("Should return 401 error");
-
-                });
-            });
-        });
-    });
-
-
-
-
-
-
     describe('#listSentToMe()', function(){
         it('should search',function (done) {
             Friend.addFriend(users[1].username,users[0].token,function(err) {
@@ -438,7 +398,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [users[1].id],null,null,"Home",null, users[0].token, function (err, itemId) {
+                Item.create("Test",templateId,mapIconId, null, 40.665006, -3.779096, [users[1].id],null,null,"Home",null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentToMe(users[1].token, function (err,data) {
                         if (err) return done(err);
@@ -462,7 +422,7 @@ describe('Item', function(){
                 //40.665006, -3.779096
                 //40.665350, -3.778955
                 // 40 m
-                Item.create("Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [users[1].id],null,null,"Home",null, users[0].token, function (err, itemId) {
+                Item.create("Test",templateId,mapIconId, null, 40.665006, -3.779096, [users[1].id],null,null,"Home",null, users[0].token, function (err, itemId) {
                     if (err) return done(err);
                     Item.listSentByMe(users[0].token, function (err,data) {
                         if (err) return done(err);
@@ -483,7 +443,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Item.favourite(item.itemId,users[0].token,function(err){
@@ -510,7 +470,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Item.favourite(item.itemId,users[0].token,function(err){
@@ -542,7 +502,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Item.favourite(item.itemId,users[0].token,function(err){
@@ -575,7 +535,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Mark.favourite(item.markId,users[0].token,function(err){
@@ -609,7 +569,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Mark.favourite(item.markId,users[0].token,function(err){
@@ -641,7 +601,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Mark.favourite(item.markId,users[0].token,function(err){
@@ -672,7 +632,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Mark.favourite(item.markId,users[0].token,function(err){
@@ -698,7 +658,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [users[1].id],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [users[1].id],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Mark.favourite(item.markId,users[0].token,function(err){
@@ -725,7 +685,7 @@ describe('Item', function(){
             //40.665006, -3.779096
             //40.665350, -3.778955
             // 40 m
-            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, 50, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
+            Item.create( "Test",templateId,mapIconId, null, 40.665006, -3.779096, [],"Calle badajo","Colegio Uno","Departamento de fisica",null, users[0].token, function (err, item) {
                 if (err) return done(err);
 
                 Item.favourite(item.itemId,users[0].token,function(err){
@@ -748,7 +708,7 @@ describe('Item', function(){
     describe('#createWithImageTwoSteps()', function(){
         it('should create a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Item.create( "I am here in starbucks",null,mapIconId, null, 41.2, 41.2, 10, [users[1].id],null,null,"Hola",null, users[0].token, function (err,item) {
+            Item.create( "I am here in starbucks",null,mapIconId, null, 41.2, 41.2, [users[1].id],null,null,"Hola",null, users[0].token, function (err,item) {
                 if (err) return done(err);
                 Media.create("test/resources/testreal.jpeg",users[0].token,function(err,mediaId){
                     if(err) return done(err);
@@ -766,10 +726,10 @@ describe('Item', function(){
     describe('#createWithImageTwoStepsAndFail()', function(){
         it('should create a media object',function (done) {
             this.timeout(20000);//S3 requires longer timeout
-            Item.create( "I am here in starbucks",templateId,mapIconId, null, 41.2, 41.2, 10, [users[1].id],null,null,"Hola",null, users[0].token, function (err,mark) {
+            Item.create( "I am here in starbucks",templateId,mapIconId, null, 41.2, 41.2, [users[1].id],null,null,"Hola",null, users[0].token, function (err,mark) {
                 if (err) return done(err);
 
-                Item.create( "I am here in starbucks",null,null, null, null, null, null,[],null,null,null,mark.markId, users[0].token, function (err,twoStepsItem) {
+                Item.create( "I am here in starbucks",null,null, null, null, null,[],null,null,null,mark.markId, users[0].token, function (err,twoStepsItem) {
                     if (err) return done(err);
                     Mark.search(41.2, 41.2,100,null,41.2, 41.2, users[0].token,function(err,data) {
                         if (err) return done(err);

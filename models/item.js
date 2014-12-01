@@ -512,19 +512,20 @@ service.fillItem = function(item,longitude,latitude,userId,callback){
     publicItem.renderParameters = item.renderParameters;
     publicItem.templateId = item.templateId;
     publicItem.canView = false;
+    publicItem.canPost = false;
 
 
-    service.allowedToSeeContent(item._id,longitude,latitude,userId,function(err,canView) {
+    service.allowedToSeeContent(item._id,longitude,latitude,userId,function(err,canView,canPost) {
         if (err) return callback(err);
 
         if (canView) {
-
             publicItem.replyItemId = item.replyItemId;
             publicItem.replyCount = item.replyCount;
             publicItem.message = item.message;
             publicItem.mediaId = item.mediaId,
                 publicItem.renderParameters = item.renderParameters;
             publicItem.canView = canView;
+            publicItem.canPost = canPost;
         }
 
         FavouriteItem.findOne({userId: userId, itemId: item._id}, function (err, fav) {
@@ -704,8 +705,7 @@ service.allowedToSeeContent = function(itemId,longitude,latidude,userId,callback
         MarkService.canViewMark(item.markId,userId,longitude,latidude,function(err,permissions){
             if(err) return callback(err);
 
-            var canView = permissions.canView || permissions.lastViewed > item.created;
-            callback(null,canView);
+            callback(null,permissions.canView,permissions.canPost);
 
         });
 
