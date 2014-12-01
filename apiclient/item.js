@@ -7,45 +7,29 @@ exports.TYPE_IMAGE = 1;
 exports.TYPE_VIDEO = 2;
 exports.VISIBILITY_PRIVATE = 0;
 exports.VISIBILITY_PUBLIC = 1;
+/*
+* 	var params ={
+ message:message,
+ templateId:templateId,
+ mapIconId:mapIconId,
+ mediaId:mediaId,
+ latitude:latitude,
+ longitude:longitude,
+ to:to,
+ locationAddress:locationAddress,
+ locationName:locationName,
+ markName:markName,
+ markId:markId,
+ token:token};
 
-exports.create = function(message,templateId,mapIconId,mediaId,latitude,longitude,to,locationAddress,locationName,markName,markId,token,callback){
-	var params ={
-                message:message,
-                templateId:templateId,
-                mapIconId:mapIconId,
-                mediaId:mediaId,
-                latitude:latitude,
-                longitude:longitude,
-                to:to,
-                locationAddress:locationAddress,
-                locationName:locationName,
-                markName:markName,
-                markId:markId,
-                token:token};
-
+ * */
+exports.create = function(params,callback){
 	apiClientBase.post('/api/mark/item/create',params,function(code,headers,data){
 		if(code != 200){
 			callback("The server responded with an invalid code: "+code+" : "+data,code);
 		} else {
 	    	callback(null,JSON.parse(data).response);
 	    }
-    });
-}
-exports.reply = function(message,templateId,mediaId,itemId,markId,token,callback){
-    var params ={
-        message:message,
-        templateId:templateId,
-        mediaId:mediaId,
-        markId:markId,
-        replyItemId:itemId,
-        token:token};
-
-    apiClientBase.post('/api/mark/item/create',params,function(code,headers,data){
-        if(code != 200){
-            callback("The server responded with an invalid code: "+code+" : "+data,code);
-        } else {
-            callback(null,JSON.parse(data).response);
-        }
     });
 }
 

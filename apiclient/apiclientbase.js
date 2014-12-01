@@ -5,11 +5,12 @@ var FormData = require('form-data');
 var fs = require('fs');
 var PORT = 3000;
 var HOST = 'localhost';
+var u = require("underscore");
 
 exports.post = function(method,params,callback) {
 	// Build the post string from an object
 	var postData = querystring.stringify(params);
-
+  params = u.extend({},params); //clone
 
 	var headers = {
         'Content-Type': 'application/x-www-form-urlencoded',

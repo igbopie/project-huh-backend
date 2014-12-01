@@ -8,6 +8,10 @@ var Q = require("q");
 exports.create = function(req, res) {
     ApiUtils.auth(req,res,function(user) {
 
+        //COMMON
+        var latitude = req.body.latitude;
+        var longitude = req.body.longitude;
+
         //ITEM
         var markId = req.body.markId;
         var message = req.body.message;
@@ -17,8 +21,6 @@ exports.create = function(req, res) {
 
         //MARK
         var mapIconId = req.body.mapIconId;
-        var latitude = req.body.latitude;
-        var longitude = req.body.longitude;
         var to = req.body.to;
         var locationName = req.body.locationName;
         var locationAddress = req.body.locationAddress;
@@ -34,7 +36,7 @@ exports.create = function(req, res) {
         }
 
         promise.then(function(markId){
-            return ItemService.create(message,mediaId,templateId,markId,replyItemId,user._id);
+            return ItemService.create(message,mediaId,templateId,markId,replyItemId,user._id,latitude,longitude);
         })
         .then(function(item){
             markId = item.markId;
@@ -46,7 +48,11 @@ exports.create = function(req, res) {
                 }
             });
         }).catch(function(err){
-            ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            if(err && err.code == Utils.ERROR_CODE_UNAUTHORIZED) {
+              ApiUtils.api(req,res,ApiUtils.CLIENT_ERROR_UNAUTHORIZED,err,null);
+            }else {
+              ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+            }
         }).done();
 
 

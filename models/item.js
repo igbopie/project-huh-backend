@@ -122,28 +122,31 @@ var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 ///------------------------
 
 
-service.create = function(message,mediaId,templateId,markId,replyItemId,userId){
+service.create = function(message,mediaId,templateId,markId,replyItemId,userId,longitude,latitude){
     var promise = Q.defer();
 
-    var item = new Item();
-    item.message = message;
-    if(mediaId){
-        item.mediaId = mediaId;
-    }
-    if(templateId){
-        item.templateId = templateId;
-    }
-    if(replyItemId){
-        item.replyItemId = replyItemId;
-    }
-    item.userId = userId;
-    item.markId = markId;
+    MarkService.canViewMark(markId,userId,longitude,latitude,function(err,permissions){
+        if(err) return promise.reject(err);
+        if(!permissions.canPost) return promise.reject(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED,"Out of range"));
 
+        var item = new Item();
+        item.message = message;
+        if(mediaId && mediaId != null){
+            item.mediaId = mediaId;
+        }
+        if(templateId && templateId != null){
+            item.templateId = templateId;
+        }
+        if(replyItemId && replyItemId != null){
+            item.replyItemId = replyItemId;
+        }
+        item.userId = userId;
+        item.markId = markId;
 
-
-    //TODO check owner exists!
-    //TODO check templateId
-    createProcess(promise,item);
+        //TODO check owner exists!
+        //TODO check templateId
+        createProcess(promise,item);
+    });
 
     return promise.promise;
 }
@@ -347,9 +350,9 @@ function createBackground(item){
 service.addMedia = function(itemId,mediaId,userId){
     var promise = Q.defer();
     Item.findOne({_id:itemId,status:STATUS_PENDING},function(err,item){
-        if(err) return callback(err);
-        if(!item) return callback("Not found");
-        if(!userId.equals(item.userId)) return callback("Not allowed");
+        if(err) return promise.reject(err);
+        if(!item) return promise.reject("Not found");
+        if(!userId.equals(item.userId)) return promise.reject("Not allowed");
 
         item.mediaId = mediaId;
 
