@@ -122,7 +122,7 @@ var ViewItemStats = mongoose.model('ViewItemStats', viewItemStatsSchema);
 ///------------------------
 
 
-service.create = function(message,mediaId,templateId,markId,replyItemId,userId,longitude,latitude){
+service.create = function(message,mediaId,templateId,markId,replyItemId,userId,latitude,longitude){
     var promise = Q.defer();
 
     MarkService.canViewMark(markId,userId,longitude,latitude,function(err,permissions){

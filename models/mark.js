@@ -293,7 +293,8 @@ function processResults(results,userId,userLatitude,userLongitude,transformCallb
 
 service.canViewMark = function (markId,userId,userLongitude,userLatitude,callback){
     Mark.findOne({_id:markId},function(error,dbMark){
-        if(error) return callback(error);
+        if(error) return callback(error)
+        if(!dbMark) return callback("Mark not found");
 
         var markDistance;
         var markInRange;
@@ -502,9 +503,10 @@ function inRange(mark,longitude,latitude){
 function distance(mark,longitude,latitude){
     //Check location
     //distance in meters
+    console.log(latitude);
     var distance = Geolib.getDistance(
         {latitude: mark.location[LOCATION_LATITUDE], longitude: mark.location[LOCATION_LONGITUDE] },
-        {latitude: latitude, longitude: longitude});
+        {latitude: Number(latitude), longitude: Number(longitude)});
     return distance;
 }
 
