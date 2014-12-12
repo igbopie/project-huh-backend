@@ -31,6 +31,25 @@ exports.listMyMarks = function(latitude,longitude,token,callback){
     });
 }
 
+exports.update = function(markId, name, description, locationName, locationAddress, mapIconId, token, callback){
+    var params ={
+        markId: markId,
+        name: name,
+        description: description,
+        locationName: locationName,
+        locationAddress: locationAddress,
+        mapIconId: mapIconId,
+        token: token};
+
+    apiClientBase.post('/api/mark/update',params,function(code,headers,data){
+        if(code != 200){
+            callback("The server responded with an invalid code: "+code+" : "+data,code);
+        } else {
+            callback(null,JSON.parse(data).response);
+        }
+    });
+}
+
 
 
 exports.search = function(latitude,longitude,radius,text,userLatitude,userLongitude,token,callback){

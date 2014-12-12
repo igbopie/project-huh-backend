@@ -847,4 +847,25 @@ describe('Item', function(){
             });
         });
     });
+
+    describe('#markUpdate()', function(){
+        it('should create a media object',function (done) {
+            this.timeout(20000);//S3 requires longer timeout
+            Item.create( u.extend({},baseMark,{to:[users[1].id]}), function (err, data) {
+                if (err) return done(err);
+
+                Mark.update(data.markId, "Changed", null, null, null, null, users[0].token, function(err){
+                    if (err) return done(err);
+
+                    Mark.view(data.markId, 41.2, 41.2, users[0].token, function (err, data) {
+                        if (err) return done(err);
+
+                        data.name.should.be.equal("Changed");
+                        done()
+                    });
+
+                });
+            });
+        });
+    });
 });

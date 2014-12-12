@@ -139,6 +139,7 @@ app.post('/api/mark/item/user/public/list',item.listUserPublic);
 app.post('/api/mark/search',mark.search);
 app.post('/api/mark/inrange',mark.inRange);
 app.post('/api/mark/mymarks',mark.listMyMarks);
+app.post('/api/mark/update',mark.update);
 app.post('/api/mark/item/public',item.public);
 app.post('/api/mark/item/find/by/stream',item.public);
 app.post('/api/mark/item/private',item.private);

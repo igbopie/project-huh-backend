@@ -91,9 +91,10 @@ var ViewMarkStats = mongoose.model('ViewMarkStats', viewMarkStatsSchema);
 
 
 // Now we can import
-var Item = require ('../models/item').Item
-    , ItemService = require ('../models/item').Service
-    , UserService = require("../models/user").Service;
+var Item = require ('../models/item').Item,
+    ItemService = require ('../models/item').Service,
+    UserService = require("../models/user").Service,
+    u = require("underscore");
 
 service.create = function(userId,latitude,longitude,to,name,description,locationName,locationAddress,mapIconId){
     var promise = Q.defer();
@@ -157,6 +158,52 @@ service.create = function(userId,latitude,longitude,to,name,description,location
     });
 
     return promise.promise;
+}
+
+service.update = function(userId, markId, name, description, locationName, locationAddress, mapIconId, callback) {
+    Mark.findOne({_id: markId}, function(err, mark) {
+        if (err) return callback(err);
+
+        if (!u.isEqual(userId, mark.userId)) {
+            return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED, "You are not the owner of this Mark"))
+        }
+
+        if (!u.isEmpty(name)){
+            mark.name = name;
+        }
+
+        if (!u.isEmpty(description)){
+            mark.description = description;
+        }
+
+        if (!u.isEmpty(locationName)){
+            mark.locationName = locationName;
+        }
+
+        if (!u.isEmpty(locationAddress)){
+            mark.locationAddress = locationAddress;
+        }
+
+        if (!u.isEmpty(mapIconId)){
+            mark.mapIconId = mapIconId;
+        }
+
+        mark.updated = Date.now();
+
+        MapIconService.findById(mark.mapIconId,function(err,mapIcon){
+            if(err){
+                callback(err);
+            } else if(!mapIcon){
+                callback("Map icon not found");
+            } else {
+                mark.mapIconMediaId = mapIcon.mediaId;
+                mark.save(function(err){
+                    if(err) return callback(err);
+                    callback();
+                });
+            }
+        });
+    });
 }
 
 service.findById = function(id,callback){

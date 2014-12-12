@@ -123,3 +123,23 @@ exports.listMyMarks = function(req,res){
     });
 }
 
+exports.update = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var markId = req.body.markId;
+        var name = req.body.name;
+        var description = req.body.description;
+        var locationName = req.body.locationName;
+        var locationAddress = req.body.locationAddress;
+        var mapIconId = req.body.mapIconId;
+        MarkService.update(user._id, markId, name, description, locationName, locationAddress, mapIconId,function(err){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,null);
+            }
+        });
+    });
+}
+
+
+
