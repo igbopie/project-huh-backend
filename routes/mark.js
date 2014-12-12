@@ -108,3 +108,18 @@ exports.listUserPublic = function(req,res){
         });
     });
 }
+
+exports.listMyMarks = function(req,res){
+    ApiUtils.auth(req,res,function(user) {
+        var longitude = req.body.longitude;
+        var latitude = req.body.latitude;
+        MarkService.listUserAll(user._id,longitude,latitude,function(err,data){
+            if(err){
+                ApiUtils.api(req,res,ApiUtils.SERVER_INTERNAL_ERROR,err,null);
+            }else{
+                ApiUtils.api(req,res,ApiUtils.OK,null,data);
+            }
+        });
+    });
+}
+

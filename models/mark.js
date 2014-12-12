@@ -459,37 +459,43 @@ service.listUserPublic = function(searchUsername,longitude,latitude,userId,callb
         if(err){
             return callback(err);
         }
-
-        Mark.find({visibility:VISIBILITY_PUBLIC,userId:user._id})
-          .sort({updated:-1})
-          .populate("userId",PUBLIC_USER_FIELDS)
-          .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
-          .populate({ path: 'members', model: 'User', select: PUBLIC_USER_FIELDS })
-          .exec(function(err,marks){
-              if(err) return callback(err);
-
-              Utils.map(
-                marks,
-                //Map Function
-                function(dbMark,mapCallback){
-                    service.fillMark(dbMark,userId,longitude,latitude,true,function(err,mark){
-                        if(err){
-                            console.err(err);
-                        }
-                        mapCallback(mark);
-                    });
-                }
-                ,
-                //Callback
-                function(marks){
-                    callback(null, marks);
-                }
-              )
-
-          });
+        execMarkQuery({visibility:VISIBILITY_PUBLIC,userId:user._id},userId, longitude, latitude, callback);
     });
 }
 
+service.listUserAll = function(userId,longitude,latitude,callback){
+    execMarkQuery({userId:userId},userId, longitude, latitude, callback);
+}
+
+function execMarkQuery(query, userId, longitude, latitude, callback) {
+    Mark.find(query)
+      .sort({updated:-1})
+      .populate("userId",PUBLIC_USER_FIELDS)
+      .populate({ path: 'to', model: 'User', select: PUBLIC_USER_FIELDS })
+      .populate({ path: 'members', model: 'User', select: PUBLIC_USER_FIELDS })
+      .exec(function(err,marks){
+          if(err) return callback(err);
+
+          Utils.map(
+            marks,
+            //Map Function
+            function(dbMark,mapCallback){
+                service.fillMark(dbMark,userId,longitude,latitude,true,function(err,mark){
+                    if(err){
+                        console.err(err);
+                    }
+                    mapCallback(mark);
+                });
+            }
+            ,
+            //Callback
+            function(marks){
+                callback(null, marks);
+            }
+          )
+
+      });
+}
 
 function inRange(mark,longitude,latitude){
     if(distance(mark,longitude,latitude) > POST_RADIUS){
