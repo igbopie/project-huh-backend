@@ -496,7 +496,7 @@ function finishItemQuery(query, longitude, latitude, userId, callback) {
 
           service.fillItem(dbItem, longitude, latitude, userId, function (err, item) {
             if (err) {
-              console.err(err);
+              console.error(err);
             }
             MarkService.fillMark(mark, userId, longitude, latitude, false, function (err, mark) {
               if (err) {
