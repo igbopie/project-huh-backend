@@ -212,7 +212,7 @@ service.update = function (userId, markId, name, description, locationName, loca
 }
 
 service.delete = function (markId, userId, callback) {
-  Mark.find({_id: markId}, function (err, mark) {
+  Mark.findOne({_id: markId}, function (err, mark) {
     if (err) return callback(err);
     if (!mark) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
     if (!mark.canDelete) return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED));
@@ -246,7 +246,7 @@ service.delete = function (markId, userId, callback) {
       };
 
       for(var i = 0; i < items.length; i++) {
-        ItemService.delete(item[i]._id, userId, function(err) {
+        ItemService.delete(items[i]._id, userId, function(err) {
           callbacked++;
           if (err) {
             console.error(err);
