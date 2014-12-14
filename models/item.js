@@ -36,7 +36,8 @@ var itemSchema = new Schema({
   favouriteCount: {type: Number, required: true, default: 0},
   commentCount: {type: Number, required: true, default: 0},
   //
-  shortlink: {type: String, required: false}
+  shortlink: {type: String, required: false},
+  location: {type: [Number], required: false, index: '2dsphere'}
 });
 
 itemSchema.index({created: -1});
@@ -143,7 +144,10 @@ service.create = function (message, mediaId, templateId, markId, replyItemId, us
     }
     item.userId = userId;
     item.markId = markId;
-
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = longitude;
+    locationArray[LOCATION_LATITUDE] = latitude;
+    item.location = locationArray;
     //TODO check owner exists!
     //TODO check templateId
     createProcess(promise, item);
@@ -536,6 +540,10 @@ service.fillItem = function (item, longitude, latitude, userId, callback) {
   publicItem.canView = false;
   publicItem.canPost = false;
   publicItem.canDelete = u.isEqual(userId, ownerUserId);
+  if (item.location) {
+    publicItem.longitude = item.location[LOCATION_LONGITUDE];
+    publicItem.latitude = item.location[LOCATION_LATITUDE];
+  }
 
 
   service.allowedToSeeContent(item._id, longitude, latitude, userId, function (err, canView, canPost) {
