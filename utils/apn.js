@@ -13,10 +13,15 @@ var devCert = join(__dirname, '../_certs/MarkDevCertificates.p12');
 //---------------------------------------
 //      Worker part
 //---------------------------------------
-function Apn(certificate) {
+function Apn(certificate, sandbox) {
 
   this.feedback = new apnagent.Feedback();
   this.agent = new apnagent.Agent();
+
+  if (sandbox) {
+    this.agent.enable('sandbox');
+  }
+
   this.feedback
     //.set('interval', '30s') // default is 30 minutes?
     .connect();
@@ -99,14 +104,14 @@ function Apn(certificate) {
     if (err) throw err;
 
     // it worked!
-    var env = agent.enabled('sandbox')
+    var env = this.agent.enabled('sandbox')
       ? 'sandbox'
       : 'production';
 
     console.log('apnagent [%s] gateway connected', env);
 
 
-  });
+  }.bind(this));
 
   this.send = function (token, message, data) {
 
@@ -118,7 +123,7 @@ function Apn(certificate) {
     //var dougToken ="<abf625ad 5b82741d ede97f6b e25c68e1 aee2c714 d5afff9f b7ee2bff 90542cc0>";
     //var azaToken="7ecf94e5dc0b627442b3b86897fb2332c7cfe533d0c50b3be13d7b2271b07926";
 
-    var message = agent.createMessage()
+    var message = this.agent.createMessage()
       .device(token)
       .alert(message)
       .expires(0);
@@ -145,8 +150,8 @@ function Apn(certificate) {
   }
 }
 
-var apnDev = new Apn(devCert);
-var apnProd = new Apn(prodCert)
+var apnDev = new Apn(devCert, true);
+var apnProd = new Apn(prodCert, false)
 
 exports.send = function (token, message, data) {
   apnDev.send(token ,message, data);
