@@ -1,43 +1,43 @@
 extends layout
 
 block content
-  div.container
-    div.row
-      div.col-xs-12.col-md-4.col-md-offset-4
-        img.mark-teaser-logo(src="/images/marklogo.png")
+    div.container
+        div.row
+            div.col-xs-12.col-md-4.col-md-offset-4
+                img.mark-teaser-logo(src="/images/marklogo.png")
 
-        div.mark-teaser
-            if item.teaserMediaId
-                img.seem-item(src="/api/media/get/thumb/#{item.teaserMediaId}")
-            else if item.teaserTemplateMediaId
-                img.seem-item(src="/api/media/get/thumb/#{item.teaserTemplateMediaId}")
-            else
-                div.mark-fake-image
-            div.mark-teaser-text.redacted #{item.teaserMessage}
+                div.mark-teaser
+                    if item.teaserMediaId
+                        img.seem-item(src="/api/media/get/thumb/#{item.teaserMediaId}")
+                    else if item.teaserTemplateMediaId
+                        img.seem-item(src="/api/media/get/thumb/#{item.teaserTemplateMediaId}")
+                    else
+                        div.mark-fake-image
+                    div.mark-teaser-text.redacted #{item.teaserMessage}
 
-        div.seem-item-caption
-          div.username.pull-left
-            if item.userId.mediaId
-              img.userimage(src="/api/media/get/thumb/#{item.userId.mediaId}")
-            else
-              img.userimage(src="/images/anonymous_user.png")
+                div.seem-item-caption
+                    div.username.pull-left
+                        if item.userId.mediaId
+                            img.userimage(src="/api/media/get/thumb/#{item.userId.mediaId}")
+                        else
+                            img.userimage(src="/images/anonymous_user.png")
 
-            span &nbsp;#{item.userId.username}
-          div
-            span.date.pull-right
-              time.timeago(datetime="#{ iso8601.fromDate(item.created) }")
-          div.clearfix
-        div.bottom-rounded#map_canvas(data-longitude="#{item.markId.location[0]}",data-latitude="#{item.markId.location[1]}",data-map-icon-media-id="#{item.markId.mapIconMediaId}")
-        div.seem-item-info
-          i.fa.fa-eye.seem-item-info-thing  #{item.viewCount}
-          i.fa.fa-heart.seem-item-info-thing  #{item.favouriteCount}
-          i.fa.fa-comments.seem-item-info-thing  #{item.commentCount}
-        br
-        a.open-in-the-app(href="mark://itemId/#{item._id}")
-          img(src="/images/markapplogo.png")
-          span Open in the app
+                        span &nbsp;#{item.userId.username}
+                    div
+                        span.date.pull-right
+                            time.timeago(datetime="#{ iso8601.fromDate(item.created) }")
+                    div.clearfix
+                div.bottom-rounded#map_canvas(data-longitude="#{item.markId.location[0]}",data-latitude="#{item.markId.location[1]}",data-map-icon-media-id="#{item.markId.mapIconMediaId}")
+                div.seem-item-info
+                    i.fa.fa-eye.seem-item-info-thing  #{item.viewCount}
+                    i.fa.fa-heart.seem-item-info-thing  #{item.favouriteCount}
+                    i.fa.fa-comments.seem-item-info-thing  #{item.commentCount}
+                br
+                a.open-in-the-app(href="mark://itemId/#{item._id}")
+                    img(src="/images/markapplogo.png")
+                    span Open in the app
 
-        script(src="https://maps.googleapis.com/maps/api/js")
-        script(src="/javascripts/map.js")
+                script(src="https://maps.googleapis.com/maps/api/js")
+                script(src="/javascripts/map.js")
 
 

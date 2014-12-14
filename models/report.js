@@ -2,12 +2,12 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema;
 
 var reportSchema = new Schema({
-    fromUserId  : {	type: Schema.Types.ObjectId, required: true}
-  , itemId      : {	type: Schema.Types.ObjectId, required: false}
-  , markId	    : {	type: Schema.Types.ObjectId, required: false}
-  , userId	    : {	type: Schema.Types.ObjectId, required: false}
-  , message     : { type: String, required: true }
-  , created     : { type: Date, required: true, default: Date.now }
+  fromUserId: {type: Schema.Types.ObjectId, required: true}
+  , itemId: {type: Schema.Types.ObjectId, required: false}
+  , markId: {type: Schema.Types.ObjectId, required: false}
+  , userId: {type: Schema.Types.ObjectId, required: false}
+  , message: {type: String, required: true}
+  , created: {type: Date, required: true, default: Date.now}
 });
 
 
@@ -23,7 +23,7 @@ var Report = mongoose.model('Report', reportSchema);
 //Service?
 var service = {};
 
-service.createReport = function(fromUserId,itemId,markId,userId,message,callback){
+service.createReport = function (fromUserId, itemId, markId, userId, message, callback) {
 
   var report = new Report();
   report.fromUserId = fromUserId;
@@ -37,30 +37,30 @@ service.createReport = function(fromUserId,itemId,markId,userId,message,callback
   if (userId) {
     report.userId = userId;
   }
-  report.save(function(err) {
-        if(err) {
-            callback(err);
-        } else {
-            callback(null,report);
-        }
+  report.save(function (err) {
+    if (err) {
+      callback(err);
+    } else {
+      callback(null, report);
+    }
   });
 };
 
-service.list = function(callback){
+service.list = function (callback) {
 
-  Report.find({}).sort({created:-1}).exec(
-    function(err,docs) {
-      if(err) {
+  Report.find({}).sort({created: -1}).exec(
+    function (err, docs) {
+      if (err) {
         callback(err);
       } else {
-        callback(null,docs);
+        callback(null, docs);
       }
-  });
+    });
 
 };
 
 
 module.exports = {
   Report: Report,
-  Service:service
+  Service: service
 };

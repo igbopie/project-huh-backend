@@ -2,16 +2,16 @@
  * Created by igbopie on 11/16/14.
  */
 
-define(['angular','controllers'], function (angular,controllers) {
+define(['angular', 'controllers'], function (angular, controllers) {
 
-/* Controllers */
+  /* Controllers */
 
   return controllers
 
-    .controller('ListReportsCtrl', ['$scope', '$routeParams',"ReportService",
-      function($scope, $routeParams,ReportService) {
+    .controller('ListReportsCtrl', ['$scope', '$routeParams', "ReportService",
+      function ($scope, $routeParams, ReportService) {
 
-        $scope.list = function() {
+        $scope.list = function () {
           $scope.loading = true;
           ReportService.list(function (err, data) {
             $scope.reports = data;

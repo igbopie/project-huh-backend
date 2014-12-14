@@ -13,28 +13,28 @@ require.config({
     angularFileUpload: '../libs/danialfarid-angular-file-upload/dist/angular-file-upload.min'
   },
   shim: {
-    'angular' : {
-      'exports' : 'angular'
+    'angular': {
+      'exports': 'angular'
     },
 
     'angularRoute': {
-      deps:['angular'],
-      'exports' : 'angular.route'
+      deps: ['angular'],
+      'exports': 'angular.route'
     },
 
     'angularCookies': {
-      deps:['angular'],
-      'exports' : 'angular.cookies'
+      deps: ['angular'],
+      'exports': 'angular.cookies'
     },
 
     'angularFileUploadShim': {
-      deps:['angular'],
-      'exports':'angularFileUploadShim'
+      deps: ['angular'],
+      'exports': 'angularFileUploadShim'
     },
 
     'angularFileUpload': {
       deps: ['angular', 'angularFileUploadShim'],
-      'exports':'angular.fileUpload'
+      'exports': 'angular.fileUpload'
 
     }
   },
@@ -46,13 +46,14 @@ require.config({
 //http://code.angularjs.org/1.2.1/docs/guide/bootstrap#overview_deferred-bootstrap
 window.name = "NG_DEFER_BOOTSTRAP!";
 
-require( [
+require([
   'angular',
   'app',
   'routes'
-], function(angular, app, routes) {
+], function (angular, app, routes) {
   var $html = angular.element(document.getElementsByTagName('html')[0]);
 
-  angular.element().ready(function() {  angular.resumeBootstrap([app['name']]);
+  angular.element().ready(function () {
+    angular.resumeBootstrap([app['name']]);
   });
 });

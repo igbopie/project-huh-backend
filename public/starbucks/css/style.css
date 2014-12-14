@@ -2,20 +2,22 @@
 .navbar-default {
     background-color: #13c79b;
     border-color: #00ac82;
-    border-radius:  0px;
+    border-radius: 0px;
 }
 
 .navbar-default .navbar-brand {
     color: white;
 }
 
-.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
+.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
     color: #fafafa;
     background-color: #434041;
 }
-.navbar-default .navbar-nav>li>a {
+
+.navbar-default .navbar-nav > li > a {
     color: #fafafa;
 }
+
 .navbarlogo {
     height: 43px;
     width: auto;
@@ -33,7 +35,7 @@
     border-color: #00ac82;
 }
 
-.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open>.dropdown-toggle.btn-success {
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open > .dropdown-toggle.btn-success {
     color: #fff;
     background-color: #00ac82;
     border-color: #00ac82;
@@ -51,11 +53,11 @@
     border-color: #ff5a54;
 }
 
-.template-image{
-    max-width:100px;
+.template-image {
+    max-width: 100px;
     height: auto;
 }
 
-body,h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
-    color:#434041;
+body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #434041;
 }

@@ -3,43 +3,43 @@
  */
 
 var BITLY_USERNAME = process.env.BITLY_USERNAME
-    , BITLY_TOKEN = process.env.BITLY_TOKEN
-    , BITLY_DOMAIN = process.env.BITLY_DOMAIN
-    , BITLY_DOMAIN_REDIRECT = process.env.BITLY_DOMAIN_REDIRECT
-    , BITLY_DOMAIN_MARK_REDIRECT = "/m/"
-    , BITLY_DOMAIN_ITEM_REDIRECT = "/i/"
-    , Bitly = require("bitly");
+  , BITLY_TOKEN = process.env.BITLY_TOKEN
+  , BITLY_DOMAIN = process.env.BITLY_DOMAIN
+  , BITLY_DOMAIN_REDIRECT = process.env.BITLY_DOMAIN_REDIRECT
+  , BITLY_DOMAIN_MARK_REDIRECT = "/m/"
+  , BITLY_DOMAIN_ITEM_REDIRECT = "/i/"
+  , Bitly = require("bitly");
 
 var bitly;
-if(BITLY_TOKEN){
-    bitly = new Bitly(BITLY_USERNAME,BITLY_TOKEN);
-    console.log("BITLY initialized");
+if (BITLY_TOKEN) {
+  bitly = new Bitly(BITLY_USERNAME, BITLY_TOKEN);
+  console.log("BITLY initialized");
 }
 
-exports.shortenItem = function(itemId,callback){
-    if(bitly) {
-        bitly.shorten(BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_ITEM_REDIRECT + itemId, BITLY_DOMAIN, function (err, response) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, response.data.url);
+exports.shortenItem = function (itemId, callback) {
+  if (bitly) {
+    bitly.shorten(BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_ITEM_REDIRECT + itemId, BITLY_DOMAIN, function (err, response) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, response.data.url);
 
-        });
-    }else{
-        callback(null,BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_ITEM_REDIRECT + itemId); // no shortlink
-    }
+    });
+  } else {
+    callback(null, BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_ITEM_REDIRECT + itemId); // no shortlink
+  }
 }
 
-exports.shortenMark = function(markId,callback){
-    if(bitly) {
-        bitly.shorten(BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_MARK_REDIRECT + markId, BITLY_DOMAIN, function (err, response) {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, response.data.url);
+exports.shortenMark = function (markId, callback) {
+  if (bitly) {
+    bitly.shorten(BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_MARK_REDIRECT + markId, BITLY_DOMAIN, function (err, response) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, response.data.url);
 
-        });
-    }else{
-        callback(null,BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_MARK_REDIRECT + markId); // no shortlink
-    }
+    });
+  } else {
+    callback(null, BITLY_DOMAIN_REDIRECT + BITLY_DOMAIN_MARK_REDIRECT + markId); // no shortlink
+  }
 }

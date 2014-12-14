@@ -1,14 +1,14 @@
 <div>
     <div class="container">
         <div class="row">
-            <form role="form" >
+            <form role="form">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" ng-model="name"  placeholder="Name">
+                    <input type="text" class="form-control" id="name" ng-model="name" placeholder="Name">
                 </div>
                 <div class="form-group">
                     <label for="price">Price</label>
-                    <input type="text" class="form-control" id="price"  ng-model="price" placeholder="Price">
+                    <input type="text" class="form-control" id="price" ng-model="price" placeholder="Price">
                 </div>
                 <div class="form-group">
                     <label for="mediaId">Background Image
@@ -17,9 +17,13 @@
                                 ng-show="imgSrc && !loading"
                                 class="btn btn-danger btn-xs"><i class="fa fa-trash"></i> Remove Image</span>
                     </label>
-                    <input type="hidden" name="mediaId" id="mediaId" ng-model="mediaId" />
-                    <div style="border:2px dashed gray;width:100%;height:100px;text-align: center;line-height: 100px" ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="optional-css-class-name-or-function"
-                         ng-show="dropSupported  && !imgSrc && !loading">Drop file here</div>
+                    <input type="hidden" name="mediaId" id="mediaId" ng-model="mediaId"/>
+
+                    <div style="border:2px dashed gray;width:100%;height:100px;text-align: center;line-height: 100px"
+                         ng-file-drop="onFileSelect($files)"
+                         ng-file-drag-over-class="optional-css-class-name-or-function"
+                         ng-show="dropSupported  && !imgSrc && !loading">Drop file here
+                    </div>
 
                     <div ng-file-drop-available="dropSupported=true"
                          ng-show="!dropSupported && !imgSrc == '' && !loading">
@@ -34,7 +38,6 @@
 
                 <button type="submit" class="btn btn-primary" ng-click="save(name,price,mediaId)">Submit</button>
             </form>
-
 
 
         </div>

@@ -1,42 +1,42 @@
 extends layout
 
 block content
-  div.container
-    div.row
-      div.col-xs-12.col-md-4.col-md-offset-4
-        img.mark-teaser-logo(src="/images/marklogo.png")
-
-        div.top-rounded#map_canvas(data-longitude="#{mark.location[0]}",data-latitude="#{mark.location[1]}",data-map-icon-media-id="#{mark.mapIconMediaId}")
-        div.seem-item-caption
-          div.username.pull-left
-            if mark.userId.mediaId
-              img.userimage(src="/api/media/get/thumb/#{mark.userId.mediaId}")
-            else
-              img.userimage(src="/images/anonymous_user.png")
-
-            span &nbsp;#{mark.userId.username}
-          div
-            span.date.pull-right
-              time.timeago(datetime="#{ iso8601.fromDate(mark.created) }")
-          div.clearfix
-        div.mark-info
-          h2 #{mark.name}
-          p #{mark.description}
+    div.container
         div.row
-          for item in items
-            div.item.col-xs-4
-              img(src="/api/media/get/thumb/#{item.teaserMediaId}")
-          else
-            div sorry, no items...
-        div.seem-item-info
-          i.fa.fa-eye.seem-item-info-thing  #{mark.viewCount}
-          i.fa.fa-heart.seem-item-info-thing  #{mark.favouriteCount}
-        br
-        a.open-in-the-app(href="mark://markId/#{mark._id}")
-          img(src="/images/markapplogo.png")
-          span Open in the app
+            div.col-xs-12.col-md-4.col-md-offset-4
+                img.mark-teaser-logo(src="/images/marklogo.png")
 
-        script(src="https://maps.googleapis.com/maps/api/js")
-        script(src="/javascripts/map.js")
+                div.top-rounded#map_canvas(data-longitude="#{mark.location[0]}",data-latitude="#{mark.location[1]}",data-map-icon-media-id="#{mark.mapIconMediaId}")
+                div.seem-item-caption
+                    div.username.pull-left
+                        if mark.userId.mediaId
+                            img.userimage(src="/api/media/get/thumb/#{mark.userId.mediaId}")
+                        else
+                            img.userimage(src="/images/anonymous_user.png")
+
+                        span &nbsp;#{mark.userId.username}
+                    div
+                        span.date.pull-right
+                            time.timeago(datetime="#{ iso8601.fromDate(mark.created) }")
+                    div.clearfix
+                div.mark-info
+                    h2 #{mark.name}
+                    p #{mark.description}
+                div.row
+                for item in items
+                    div.item.col-xs-4
+                        img(src="/api/media/get/thumb/#{item.teaserMediaId}")
+                else
+                    div sorry, no items...
+                div.seem-item-info
+                    i.fa.fa-eye.seem-item-info-thing  #{mark.viewCount}
+                    i.fa.fa-heart.seem-item-info-thing  #{mark.favouriteCount}
+                br
+                a.open-in-the-app(href="mark://markId/#{mark._id}")
+                    img(src="/images/markapplogo.png")
+                    span Open in the app
+
+                script(src="https://maps.googleapis.com/maps/api/js")
+                script(src="/javascripts/map.js")
 
 

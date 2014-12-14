@@ -4,9 +4,9 @@
 
 'use strict';
 
-define(['angular', 'app'], function(angular, app) {
+define(['angular', 'app'], function (angular, app) {
 
-  return app.config(['$routeProvider', function($routeProvider) {
+  return app.config(['$routeProvider', function ($routeProvider) {
     $routeProvider.
       when('/login', {
         templateUrl: 'partials/login.html',
