@@ -40,7 +40,19 @@ exports.profile = function (username, token, callback) {
       callback(null, JSON.parse(data).response);
     }
   });
-}
+};
+
+
+exports.search = function (username, token, callback) {
+  apiClientBase.post('/api/user/search', {text: username, token: token}, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code:" + code + " : " + data);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};
+
 exports.update = function (email, facebookId, mediaId, bio, name, token, callback) {
   apiClientBase.post('/api/user/update', {
     email: email,

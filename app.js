@@ -93,6 +93,7 @@ app.post('/api/user/profile', user.profile);
 app.post('/api/user/update', user.update);
 app.post('/api/user/addphone', user.addPhone);
 app.post('/api/user/verifyphone', user.verifyPhone);
+app.post('/api/user/search', user.search);
 
 app.post('/api/user/addapntoken', user.addApnToken);
 app.post('/api/user/removeapntoken', user.removeApnToken);

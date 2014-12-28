@@ -347,4 +347,50 @@ describe('User', function () {
       });
     });
   });
+
+  describe('#search()', function () {
+    it('should get user details', function (done) {
+      var a = {email:"a@a.com", username: "A", password: "p"};
+      var aza = {email:"aza@a.com", username: "aza", password: "p"};
+      var azah = {email:"azah@a.com", username: "azah", password: "p"};
+      var azaha = {email:"azaha@a.com", username: "azaha", password: "p"};
+      var azahar = {email:"azahar@a.com", username: "Azahar", password: "p"};
+      var azahara = {email:"azahara@a.com", username: "Azahara", password: "p"};
+      var users = [a,
+                  aza,
+                  azah,
+                  azaha,
+                  azahar,
+                  azahara];
+      TestUtils.createUsers(users, function(err){
+        if (err) {
+          return done(err);
+        }
+        TestUtils.loginUsers(users, function(err){
+          if (err) {
+            return done(err);
+          }
+          User.search("a", users[0].token, function (err, data) {
+            if (err) return done(err);
+
+            console.log(data);
+
+
+            User.search("aza", users[0].token, function (err, data) {
+              if (err) return done(err);
+
+              console.log(data);
+
+              User.search("azah", users[0].token, function (err, data) {
+                if (err) return done(err);
+
+                console.log(data);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 });

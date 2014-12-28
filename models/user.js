@@ -325,10 +325,18 @@ service.search = function (text, callback) {
    callback(null,output.results);
 
    });*/
-
-  User.find({"username": {$regex: new RegExp(text, "i")}}, {_id: 1, username: 1}).limit(20).exec(function (err, docs) {
-    callback(err, docs);
-  });
+  if (text.length < 4) {
+    User.findOne({"username": text.toLowerCase()}, {_id: 1, username: 1}, function (err, doc) {
+      callback(err, [doc]);
+    });
+  } else {
+    User.find({"username": {$regex: new RegExp(text, "i")}}, {
+      _id: 1,
+      username: 1
+    }).limit(20).exec(function (err, docs) {
+      callback(err, docs);
+    });
+  }
 }
 
 service.addMarkHandler = function (mark, callback) {
