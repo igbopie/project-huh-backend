@@ -326,14 +326,11 @@ service.search = function (text, callback) {
 
    });*/
   if (text.length < 4) {
-    User.findOne({"username": text.toLowerCase()}, {_id: 1, username: 1}, function (err, doc) {
+    User.findOne({"username": text.toLowerCase()}, PUBLIC_USER_FIELDS, function (err, doc) {
       callback(err, [doc]);
     });
   } else {
-    User.find({"username": {$regex: new RegExp(text, "i")}}, {
-      _id: 1,
-      username: 1
-    }).limit(20).exec(function (err, docs) {
+    User.find({"username": {$regex: new RegExp(text, "i")}}, PUBLIC_USER_FIELDS).limit(20).exec(function (err, docs) {
       callback(err, docs);
     });
   }

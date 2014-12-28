@@ -373,18 +373,18 @@ describe('User', function () {
           User.search("a", users[0].token, function (err, data) {
             if (err) return done(err);
 
-            console.log(data);
-
+            data.length.should.be.equal(1);
 
             User.search("aza", users[0].token, function (err, data) {
               if (err) return done(err);
 
-              console.log(data);
+              data.length.should.be.equal(1);
 
               User.search("azah", users[0].token, function (err, data) {
                 if (err) return done(err);
 
-                console.log(data);
+                data.length.should.be.equal(4);
+
                 done();
               });
             });
