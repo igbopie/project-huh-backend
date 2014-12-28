@@ -214,6 +214,30 @@ describe('User', function () {
     });
   });
 
+  describe('#profileBug()', function () {
+    it('should get user details', function (done) {
+      var azahara = {email:"aza@a.com", username: "Azahara", password: "p"};
+      var z = {email:"z@a.com", username: "Z", password: "p"};
+      var users = [azahara, z];
+      TestUtils.createUsers(users, function(err){
+        if (err) {
+          return done(err);
+        }
+        TestUtils.loginUsers(users, function(err){
+          if (err) {
+            return done(err);
+          }
+          User.profile("z", users[0].token, function (err, data) {
+            if (err) return done(err);
+
+            should(data._id.toLowerCase()).be.eql(z.id.toLowerCase());
+            done();
+          });
+        });
+      });
+    });
+  });
+
 
   describe('#addPhone()', function () {
     it('should add a phone to 1 user', function (done) {

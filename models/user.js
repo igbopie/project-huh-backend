@@ -28,6 +28,7 @@ var tokenSchema = new Schema({
 
 var userSchema = new Schema({
   username: {type: String, required: true, trim: true, index: {unique: true}}
+  , usernameCaseSensitive: {type: String, required: false, trim: true}
   , password: {type: String, required: true}
   , email: {type: String, required: true, index: {unique: true}}
   , superadmin: {type: Boolean, required: true, default: false}
@@ -63,7 +64,11 @@ userSchema.index({username: 'text', name: 'text'});
 userSchema.pre('save', function (next) {
   var user = this;
 
-  user.username = user.username.toLowerCase();
+  if (user.isModified('username') || !user.usernameCaseSensitive) {
+    user.usernameCaseSensitive = user.username;
+    user.username = user.username.toLowerCase();
+  }
+
   user.email = user.email.toLowerCase();
 
   // only hash the password if it has been modified (or is new)
@@ -198,7 +203,7 @@ var User = mongoose.model('User', userSchema);
 var service = {};
 
 service.findUserProfile = function (username, fields, callback) {
-  User.findOne({username: {$regex: new RegExp(username, "i")}}, fields, function (err, doc) {
+  User.findOne({username: username.toLowerCase()}, fields, function (err, doc) {
     if (err) {
       callback(err);
     } else {
