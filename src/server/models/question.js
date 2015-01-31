@@ -32,10 +32,16 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
   question.type = type;
   question.text = text;
   question.userId = userId;
-  var locationArray = [];
-  locationArray[LOCATION_LONGITUDE] = longitude;
-  locationArray[LOCATION_LATITUDE] = latitude;
-  question.location = locationArray;
+
+  if (latitude !== undefined &&
+    latitude !== null &&
+    longitude !== undefined &&
+    longitude !== null) {
+    var locationArray = [];
+    locationArray[LOCATION_LONGITUDE] = longitude;
+    locationArray[LOCATION_LATITUDE] = latitude;
+    question.location = locationArray;
+  }
 
   question.save(function(err) {
     callback(err, question);
