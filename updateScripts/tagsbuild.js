@@ -2,7 +2,7 @@
 //  mongoexport -h troup.mongohq.com:10033 -d app22601356 -u nacho -p 123456 -o seembk.json
 // mongodump -h troup.mongohq.com:10033 -d app22601356 -u nacho -p 123456 -o bk
 var mongoose = require('mongoose');
-var Utils = require('../utils/Utils');
+var Utils = require('./Utils');
 
 var globalCount = 0;
 

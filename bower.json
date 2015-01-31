@@ -4,15 +4,15 @@
   "authors": [
     "Ignacio Bona <igbopie@gmail.com>"
   ],
-  "description": "Admin panel for mark",
-  "main": "public/starbucks/",
+  "description": "Admin panel for huh",
+  "main": "src/public/starbucks/",
   "license": "MIT",
   "private": true,
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
-    "public/starbucks/libs",
+    "src/public/starbucks/libs",
     "test",
     "tests"
   ],
