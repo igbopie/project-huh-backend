@@ -11,7 +11,7 @@ var questionSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
   updated: {type: Date, required: true, default: Date.now},
-  location: {type: [Number], required: true, index: '2dsphere'}
+  location: {type: [Number], required: false, index: '2dsphere'}
 });
 
 questionSchema.index({userId: 1});
