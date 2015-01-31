@@ -1,5 +1,5 @@
 body {
-    background: #13c79b;
+    background: #FFAE00;
     color: white;
     text-align: center;
     font-family: "quicksandlight";
@@ -114,8 +114,8 @@ html, body {
 
 .btn-primary {
     color: #fff;
-    background-color: #14c89b;
-    border-color: #14c89b;
+    background-color: #13c79b;
+    border-color: #13c79b;
 }
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
@@ -157,7 +157,7 @@ html, body {
 }
 
 .indexsquare {
-    background: rgba(0, 0, 0, 0.3);
+    /*background: rgba(255, 0, 0, 0.17);*/
 
 }
 
@@ -170,3 +170,8 @@ html, body {
         max-width: 455px;
     }
 }*/
+
+.title-logo {
+    font-size: 100px;
+    font-family: 'Gloria Hallelujah', cursive;
+}

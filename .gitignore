@@ -16,6 +16,6 @@ build
 
 node_modules
 .idea
-
+db
 public/libs
 public/libs/**
