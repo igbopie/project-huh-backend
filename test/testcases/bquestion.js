@@ -24,7 +24,7 @@ describe('Question', function () {
       Question.create(
         {
           userId: users[0]._id,
-          type: "What",
+          type: "WHAT",
           text: "time is it",
           latitude: 0,
           longitude: 0
@@ -42,7 +42,7 @@ describe('Question', function () {
       Question.create(
         {
           userId: users[0]._id,
-          type: "What",
+          type: "WHAT",
           text: "time is it",
           latitude: 0,
           longitude: 0
@@ -54,6 +54,8 @@ describe('Question', function () {
             if (err) return done(err);
 
             docs.length.should.be.equal(1);
+
+            console.log(docs);
 
             done();
           });

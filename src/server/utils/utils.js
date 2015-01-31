@@ -109,13 +109,13 @@ utils.map = function (array, mapFunction, callback) {
   }
 }
 //ERROR HANDLING
-function MarkError(code, message) {
+function HuhError(code, message) {
   this.code = code;
   this.message = message;
 }
-utils.MarkError = MarkError;
+utils.HuhError = HuhError;
 utils.error = function (code, message) {
-  return new MarkError(code, message);
+  return new HuhError(code, message);
 }
 
 utils.ERROR_CODE_UNAUTHORIZED = 400100;

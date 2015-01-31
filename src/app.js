@@ -52,6 +52,7 @@ var app = express();
 var index = require('./server/routes/index');
 var user = require('./server/routes/user');
 var question = require('./server/routes/question');
+var questionType = require('./server/routes/questionType');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
 
@@ -85,6 +86,9 @@ app.post('/api/user/removegcmtoken', user.removeGcmToken);
 
 app.post('/api/question/create', question.create);
 app.post('/api/question/list', question.list);
+
+
+app.post('/api/questiontype/list', questionType.list);
 
 
 
