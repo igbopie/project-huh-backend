@@ -67,7 +67,9 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
     if(!qType) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND, "Question Type not found"));
     question.typeId = qType._id;
     question.save(function(err) {
-      callback(err, question);
+
+      question.typeId = qType;
+      callback(err, processQuestion(question));
     });
   });
 };

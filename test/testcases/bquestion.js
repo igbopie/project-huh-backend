@@ -55,8 +55,6 @@ describe('Question', function () {
 
             docs.length.should.be.equal(1);
 
-            console.log(docs);
-
             done();
           });
         }
