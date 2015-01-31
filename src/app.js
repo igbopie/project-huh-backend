@@ -88,6 +88,7 @@ app.post('/api/question/create', question.create);
 app.post('/api/question/list', question.list);
 
 
+app.get('/api/questiontype/list', questionType.list);
 app.post('/api/questiontype/list', questionType.list);
 
 
