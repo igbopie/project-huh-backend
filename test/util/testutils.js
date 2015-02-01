@@ -86,8 +86,29 @@ exports.cleanDatabase = function (callback) {
           callback(err);
           return;
         }
-        callback();
+        db.collection('comment').remove(function (err) {
+          if (err) {
+            console.log(err);
+            callback(err);
+            return;
+          }
 
+          db.collection('questionVote').remove(function (err) {
+            if (err) {
+              console.log(err);
+              callback(err);
+              return;
+            }
+            db.collection('commentVote').remove(function (err) {
+              if (err) {
+                console.log(err);
+                callback(err);
+                return;
+              }
+              callback();
+            });
+          });
+        });
       });
     });
   });

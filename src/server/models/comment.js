@@ -10,7 +10,8 @@ var commentSchema = new Schema({
   questionId: {type: Schema.Types.ObjectId, required: true, ref: "Question"},
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
-  updated: {type: Date, required: true, default: Date.now}
+  updated: {type: Date, required: true, default: Date.now},
+  voteScore: {type: Number, required: true, default: 0}
 });
 
 commentSchema.index({userId: 1});
@@ -58,6 +59,17 @@ CommentService.listByQuestion = function (questionId, callback) {
 
       callback(undefined,comments);
   });
+};
+
+CommentService.updateVoteScore = function (voteIncrement, commentId, callback) {
+  var conditions = { _id: commentId }
+    , update = { $inc: { voteScore: voteIncrement }}
+    , options = { multi: false };
+
+  Comment.update(conditions, update, options,
+    function (err) {
+      callback(err);
+    });
 };
 
 

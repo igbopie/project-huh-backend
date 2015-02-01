@@ -14,7 +14,9 @@ var questionSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
   updated: {type: Date, required: true, default: Date.now},
-  location: {type: [Number], required: false, index: '2dsphere'}
+  location: {type: [Number], required: false, index: '2dsphere'},
+  voteScore: {type: Number, required: true, default: 0},
+  nComments: {type: Number, required: true, default: 0}
 });
 
 questionSchema.index({userId: 1});
@@ -38,6 +40,8 @@ var processQuestion = function (dbQuestion) {
   question.type = dbQuestion.typeId;
   question.created = dbQuestion.created;
   question.updated = dbQuestion.updated;
+
+  //TODO add my vote
 
   return question;
 };
@@ -84,6 +88,17 @@ service.list = function (callback) {
 
       callback(undefined,questions);
   });
+};
+
+service.updateVoteScore = function (voteIncrement, questionId, callback) {
+  var conditions = { _id: questionId }
+    , update = { $inc: { voteScore: voteIncrement }}
+    , options = { multi: false };
+
+  Question.update(conditions, update, options,
+    function (err) {
+      callback(err);
+    });
 };
 
 

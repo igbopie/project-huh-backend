@@ -54,6 +54,7 @@ var user = require('./server/routes/user');
 var question = require('./server/routes/question');
 var questionType = require('./server/routes/questionType');
 var comment = require('./server/routes/comment');
+var vote = require('./server/routes/vote');
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
 
@@ -88,12 +89,14 @@ app.post('/api/user/removegcmtoken', user.removeGcmToken);
 app.post('/api/question/create', question.create);
 app.post('/api/question/list', question.list);
 
-
 app.get('/api/questiontype/list', questionType.list);
 app.post('/api/questiontype/list', questionType.list);
 
 app.post('/api/comment/create', comment.create);
 app.post('/api/comment/list', comment.list);
+
+app.post('/api/vote/up', vote.up);
+app.post('/api/vote/down', vote.down);
 
 
 
