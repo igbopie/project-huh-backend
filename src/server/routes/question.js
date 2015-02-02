@@ -25,7 +25,10 @@ exports.list = function (req, res) {
     page = 0;
   }
 
-  if (!numItems || numItems < 10) {
+  if (!numItems) {
+    numItems = 50;
+  }
+  if (numItems < 10) {
     numItems = 10;
   }
 
