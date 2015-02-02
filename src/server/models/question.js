@@ -128,5 +128,17 @@ service.updateVoteScore = function (voteIncrement, questionId, callback) {
     });
 };
 
+service.incCommentCount = function (questionId, callback) {
+  var conditions = { _id: questionId }
+    , update = { $inc: { nComments: 1 }}
+    , options = { multi: false };
+
+  Question.update(conditions, update, options,
+    function (err) {
+      callback(err);
+    });
+};
+
+
 
 

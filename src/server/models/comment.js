@@ -29,6 +29,7 @@ module.exports = {
 
 
 var CommentVoteService = require('../models/commentVote').Service;
+var QuestionService = require('../models/question').Service;
 
 var process = function (dbComment, userId, callback) {
   var comment = {};
@@ -62,7 +63,13 @@ CommentService.create = function (text, userId, questionId, callback) {
 
   //TODO Validation
   comment.save(function(err) {
-    callback(err, comment);
+    if(err) return callback(err);
+
+    QuestionService.incCommentCount(questionId, function(err){
+      if(err) return callback(err);
+
+      callback(undefined, comment);
+    });
   });
 };
 
