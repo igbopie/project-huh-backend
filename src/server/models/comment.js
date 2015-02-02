@@ -37,6 +37,7 @@ var process = function (dbComment, userId, callback) {
   comment.text = dbComment.text;
   comment.created = dbComment.created;
   comment.updated = dbComment.updated;
+  comment.voteScore = dbComment.voteScore;
   if (userId) {
     console.log("HEy");
     CommentVoteService.findVote(dbComment._id, userId, function(err, vote) {
