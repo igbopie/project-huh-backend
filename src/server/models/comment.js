@@ -27,13 +27,30 @@ module.exports = {
   Service: CommentService
 };
 
-var process = function (dbComment) {
+
+var CommentVoteService = require('../models/commentVote').Service;
+
+var process = function (dbComment, userId, callback) {
   var comment = {};
   comment._id = dbComment._id;
   comment.text = dbComment.text;
   comment.created = dbComment.created;
   comment.updated = dbComment.updated;
-  return comment;
+  if (userId) {
+    console.log("HEy");
+    CommentVoteService.findVote(dbComment._id, userId, function(err, vote) {
+      console.log("HEy2");
+      if(err){
+        console.error("Could not fetch my score");
+      }
+      if(vote){
+        comment.myVote = vote.score;
+      }
+      callback(undefined, comment);
+    });
+  } else {
+    callback(undefined, comment);
+  }
 };
 
 
@@ -49,16 +66,19 @@ CommentService.create = function (text, userId, questionId, callback) {
   });
 };
 
-CommentService.listByQuestion = function (questionId, callback) {
+CommentService.listByQuestion = function (questionId, userId, callback) {
   Comment.find({questionId:questionId})
     .sort({ field: 'desc', created: -1 })
     .exec(function (err, comments) {
       if(err) return callback(err);
 
-      //TODO add my vote
-      comments = comments.map(process);
-
-      callback(undefined,comments);
+      Utils.map(
+        comments,
+        function(dbComment, mapCallback) {
+          process(dbComment, userId, mapCallback);
+        },
+        callback
+      );
   });
 };
 

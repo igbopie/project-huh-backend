@@ -43,7 +43,6 @@ var processQuestion = function (dbQuestion, userId, callback) {
   question.updated = dbQuestion.updated;
   question.voteScore = dbQuestion.voteScore;
   question.nComments = dbQuestion.nComments;
-  //TODO add my vote
   if (userId) {
     QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
       if(err){

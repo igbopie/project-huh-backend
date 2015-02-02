@@ -92,7 +92,7 @@ describe('Vote', function () {
         if (err) return done(err);
         Vote.up({commentId: comment._id, userId: users[0]._id}, function(err) {
           if (err) return done(err);
-          Comment.list({userId:users[0]._id}, function(err, comments){
+          Comment.list({questionId:question._id, userId:users[0]._id}, function(err, comments){
             if (err) return done(err);
 
             comments[0].myVote.should.be.equal(1);
@@ -104,7 +104,23 @@ describe('Vote', function () {
     })
   });
 
-  //TODO improve test cases
+  describe('#downVoteComment()', function () {
+    it('should down vote a comment', function (done) {
+      Vote.down({commentId: comment._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
+        Vote.down({commentId: comment._id, userId: users[0]._id}, function(err) {
+          if (err) return done(err);
+          Comment.list({questionId:question._id, userId:users[0]._id}, function(err, comments){
+            if (err) return done(err);
+
+            comments[0].myVote.should.be.equal(-1);
+
+            done();
+          });
+        });
+      });
+    })
+  });
 
 
 });

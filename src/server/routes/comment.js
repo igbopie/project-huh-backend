@@ -16,7 +16,8 @@ exports.create = function (req, res) {
 
 exports.list = function (req, res) {
   var questionId = req.body.questionId;
-  CommentService.listByQuestion(questionId, function (err, results) {
+  var userId = req.body.userId;
+  CommentService.listByQuestion(questionId, userId,  function (err, results) {
     if (err) {
       ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
     } else {

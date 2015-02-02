@@ -91,7 +91,7 @@ utils.joinToUser = function (schema, userProp, userIdPropName, usernamePropName)
  */
 utils.map = function (array, mapFunction, callback) {
   if (array.length == 0) {
-    callback(array);
+    callback(undefined, array);
   } else {
     var callbacked = 0;
     var errors = [];
