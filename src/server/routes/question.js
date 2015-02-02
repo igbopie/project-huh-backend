@@ -18,7 +18,18 @@ exports.create = function (req, res) {
 
 exports.list = function (req, res) {
   var userId = req.body.userId;
-  QuestionService.list(userId, function (err, results) {
+  var page = req.body.page;
+  var numItems = req.body.numItems;
+
+  if (!page) {
+    page = 0;
+  }
+
+  if (!numItems || numItems < 10) {
+    numItems = 10;
+  }
+
+  QuestionService.list(userId, page, numItems, function (err, results) {
     if (err) {
       ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
     } else {

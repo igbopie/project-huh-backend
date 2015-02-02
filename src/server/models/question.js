@@ -20,6 +20,7 @@ var questionSchema = new Schema({
 });
 
 questionSchema.index({userId: 1});
+questionSchema.index({created: -1});
 
 var Question = mongoose.model('Question', questionSchema);
 
@@ -91,8 +92,16 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
   });
 };
 
-service.list = function (userId, callback) {
-  Question.find({})
+service.list = function (userId, page, numItems, callback) {
+  Question.find({},
+    null,
+    {
+      limit: numItems,
+      skip: numItems * page,
+      sort: {
+        'created': -1
+      }
+    })
     .populate("typeId")
     .exec(function (err, questions) {
       if(err) return callback(err);

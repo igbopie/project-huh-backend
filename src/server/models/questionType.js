@@ -25,7 +25,7 @@ QuestionTypeService.find = function(word, callback) {
 };
 
 QuestionTypeService.list = function (callback) {
-  QuestionType.find({}).sort({ field: 'asc', weight: 1 }).exec(callback);
+  QuestionType.find({}).sort({ weight: 1 }).exec(callback);
 };
 
 // The exports is here to avoid cyclic dependency problem
