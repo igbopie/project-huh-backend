@@ -55,6 +55,7 @@ CommentService.listByQuestion = function (questionId, callback) {
     .exec(function (err, comments) {
       if(err) return callback(err);
 
+      //TODO add my vote
       comments = comments.map(process);
 
       callback(undefined,comments);

@@ -15,7 +15,7 @@ exports.up = function (req, res) {
         }
       });
     } else if (commentId) {
-      CommentVoteService.upVote(questionId, userId, function (err) {
+      CommentVoteService.upVote(commentId, userId, function (err) {
         if (err) {
           ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
         } else {
@@ -41,7 +41,7 @@ exports.down = function (req, res) {
       }
     });
   } else if (commentId) {
-    CommentVoteService.downVote(questionId, userId, function (err) {
+    CommentVoteService.downVote(commentId, userId, function (err) {
       if (err) {
         ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
       } else {

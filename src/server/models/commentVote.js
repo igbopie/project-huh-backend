@@ -32,15 +32,15 @@ CommentVoteService.findVote = function (commentId, userId, callback) {
 }
 
 CommentVoteService.upVote = function (commentId, userId, callback) {
-  CommentVote.vote(1, commentId, userId, callback);
+  CommentVoteService.vote(1, commentId, userId, callback);
 };
 
 CommentVoteService.downVote = function (commentId, userId, callback) {
-  CommentVote.vote(-1, commentId, userId, callback);
+  CommentVoteService.vote(-1, commentId, userId, callback);
 };
 
 CommentVoteService.vote = function (score, commentId, userId, callback) {
-  CommentVote.findVote(commentId, userId, function(err, vote){
+  CommentVoteService.findVote(commentId, userId, function(err, vote){
     if(err) return callback(err);
 
     var oldScore;

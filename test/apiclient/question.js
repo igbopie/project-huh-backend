@@ -10,8 +10,8 @@ exports.create = function (params, callback) {
   });
 }
 
-exports.list = function ( callback) {
-  apiClientBase.post('/api/question/list', {}, function (code, headers, data) {
+exports.list = function (params, callback) {
+  apiClientBase.post('/api/question/list', params, function (code, headers, data) {
     if (code != 200) {
       callback("The server responded with an invalid code: " + code + " : " + data, code);
     } else {

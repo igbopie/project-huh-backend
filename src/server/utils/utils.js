@@ -94,13 +94,21 @@ utils.map = function (array, mapFunction, callback) {
     callback(array);
   } else {
     var callbacked = 0;
+    var errors = [];
     for (var i = 0; i < array.length; i++) {
       (function (index) {
-        mapFunction(array[index], function (newArrayItem) {
+        mapFunction(array[index], function (err, newArrayItem) {
+          if (err) {
+            errors.push(err);
+          }
           array[index] = newArrayItem;
           callbacked++;
           if (callbacked == array.length) {
-            callback(array);
+            if(errors.length > 0) {
+              callback(errors);
+            } else {
+              callback(undefined, array);
+            }
           }
 
         });

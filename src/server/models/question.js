@@ -32,18 +32,31 @@ module.exports = {
 };
 
 var QuestionTypeService = require('../models/questionType').Service;
+var QuestionVoteService = require('../models/questionVote').Service;
 
-var processQuestion = function (dbQuestion) {
+var processQuestion = function (dbQuestion, userId, callback) {
   var question = {};
   question._id = dbQuestion._id;
   question.text = dbQuestion.text;
   question.type = dbQuestion.typeId;
   question.created = dbQuestion.created;
   question.updated = dbQuestion.updated;
-
+  question.voteScore = dbQuestion.voteScore;
+  question.nComments = dbQuestion.nComments;
   //TODO add my vote
-
-  return question;
+  if (userId) {
+    QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
+      if(err){
+        console.error("Could not fetch my score");
+      }
+      if(vote){
+        question.myVote = vote.score;
+      }
+      callback(undefined, question);
+    });
+  } else {
+    callback(undefined, question);
+  }
 };
 
 
@@ -71,22 +84,28 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
     if(!qType) return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND, "Question Type not found"));
     question.typeId = qType._id;
     question.save(function(err) {
+      if(err) return callback(err);
 
       question.typeId = qType;
-      callback(err, processQuestion(question));
+      processQuestion(question, userId, callback);
     });
   });
 };
 
-service.list = function (callback) {
+service.list = function (userId, callback) {
   Question.find({})
     .populate("typeId")
     .exec(function (err, questions) {
       if(err) return callback(err);
 
-      questions = questions.map(processQuestion);
+      Utils.map(
+        questions,
+        function(dbQuestion, mapCallback) {
+          processQuestion(dbQuestion, userId, mapCallback);
+        },
+        callback
+      );
 
-      callback(undefined,questions);
   });
 };
 

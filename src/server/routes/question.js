@@ -17,7 +17,8 @@ exports.create = function (req, res) {
 };
 
 exports.list = function (req, res) {
-  QuestionService.list( function (err, results) {
+  var userId = req.body.userId;
+  QuestionService.list(userId, function (err, results) {
     if (err) {
       ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
     } else {

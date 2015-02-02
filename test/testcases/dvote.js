@@ -53,8 +53,16 @@ describe('Vote', function () {
   describe('#upVoteQuestion()', function () {
     it('should up vote a question', function (done) {
       Vote.up({questionId: question._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
         Vote.up({questionId: question._id, userId: users[0]._id}, function(err) {
-          done(err);
+          if (err) return done(err);
+          Question.list({userId:users[0]._id}, function(err, questions){
+            if (err) return done(err);
+
+            questions[0].myVote.should.be.equal(1);
+
+            done();
+          });
         });
       });
     })
@@ -63,8 +71,34 @@ describe('Vote', function () {
   describe('#downVoteQuestion()', function () {
     it('should down vote a question', function (done) {
       Vote.down({questionId: question._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
         Vote.down({questionId: question._id, userId: users[0]._id}, function(err) {
-          done(err);
+          if (err) return done(err);
+          Question.list({userId:users[0]._id}, function(err, questions){
+            if (err) return done(err);
+
+            questions[0].myVote.should.be.equal(-1);
+
+            done();
+          });
+        });
+      });
+    })
+  });
+
+  describe('#upVoteComment()', function () {
+    it('should up vote a comment', function (done) {
+      Vote.up({commentId: comment._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
+        Vote.up({commentId: comment._id, userId: users[0]._id}, function(err) {
+          if (err) return done(err);
+          Comment.list({userId:users[0]._id}, function(err, comments){
+            if (err) return done(err);
+
+            comments[0].myVote.should.be.equal(1);
+
+            done();
+          });
         });
       });
     })
