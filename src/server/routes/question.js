@@ -90,3 +90,53 @@ exports.popular = function (req, res) {
     }
   });
 };
+
+exports.mine = function (req, res) {
+  var userId = req.body.userId;
+  var page = req.body.page;
+  var numItems = req.body.numItems;
+
+  if (!page) {
+    page = 0;
+  }
+
+  if (!numItems) {
+    numItems = 50;
+  }
+  if (numItems < 10) {
+    numItems = 10;
+  }
+
+  QuestionService.mine(userId, page, numItems, function (err, results) {
+    if (err) {
+      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+    } else {
+      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+    }
+  });
+};
+
+exports.commented = function (req, res) {
+  var userId = req.body.userId;
+  var page = req.body.page;
+  var numItems = req.body.numItems;
+
+  if (!page) {
+    page = 0;
+  }
+
+  if (!numItems) {
+    numItems = 50;
+  }
+  if (numItems < 10) {
+    numItems = 10;
+  }
+
+  QuestionService.commented(userId, page, numItems, function (err, results) {
+    if (err) {
+      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+    } else {
+      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+    }
+  });
+};

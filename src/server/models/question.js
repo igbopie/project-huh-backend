@@ -94,8 +94,8 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
   });
 };
 
-var execQuery = function (sort, userId, page, numItems, callback) {
-  Question.find({},
+var execQuery = function (query, sort, userId, page, numItems, callback) {
+  Question.find(query,
     null,
     {
       limit: numItems,
@@ -118,21 +118,39 @@ var execQuery = function (sort, userId, page, numItems, callback) {
 };
 
 service.recent = function ( userId, page, numItems, callback) {
-  execQuery({
+  execQuery({},{
     'created': -1
   }, userId, page, numItems, callback);
 };
 
 service.trending = function ( userId, page, numItems, callback) {
-  execQuery({
+  execQuery({},{
     'voteScore': -1
   }, userId, page, numItems, callback);
 };
 
 service.popular = function ( userId, page, numItems, callback) {
-  execQuery({
+  execQuery({},{
     'nComments': -1
   }, userId, page, numItems, callback);
+};
+
+service.mine = function ( userId, page, numItems, callback) {
+  execQuery(
+    {userId: userId},
+    {
+      'created': -1
+    },
+    userId, page, numItems, callback);
+};
+
+service.commented = function ( userId, page, numItems, callback) {
+  execQuery(
+    {userId: userId},
+    {
+      'created': -1
+    },
+    userId, page, numItems, callback);
 };
 
 service.updateVoteScore = function (voteIncrement, questionId, callback) {
