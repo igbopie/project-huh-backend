@@ -16,7 +16,7 @@ exports.create = function (req, res) {
     });
 };
 
-exports.list = function (req, res) {
+exports.recent = function (req, res) {
   var userId = req.body.userId;
   var page = req.body.page;
   var numItems = req.body.numItems;
@@ -32,7 +32,57 @@ exports.list = function (req, res) {
     numItems = 10;
   }
 
-  QuestionService.list(userId, page, numItems, function (err, results) {
+  QuestionService.recent(userId, page, numItems, function (err, results) {
+    if (err) {
+      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+    } else {
+      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+    }
+  });
+};
+
+exports.trending = function (req, res) {
+  var userId = req.body.userId;
+  var page = req.body.page;
+  var numItems = req.body.numItems;
+
+  if (!page) {
+    page = 0;
+  }
+
+  if (!numItems) {
+    numItems = 50;
+  }
+  if (numItems < 10) {
+    numItems = 10;
+  }
+
+  QuestionService.trending(userId, page, numItems, function (err, results) {
+    if (err) {
+      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+    } else {
+      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+    }
+  });
+};
+
+exports.popular = function (req, res) {
+  var userId = req.body.userId;
+  var page = req.body.page;
+  var numItems = req.body.numItems;
+
+  if (!page) {
+    page = 0;
+  }
+
+  if (!numItems) {
+    numItems = 50;
+  }
+  if (numItems < 10) {
+    numItems = 10;
+  }
+
+  QuestionService.popular(userId, page, numItems, function (err, results) {
     if (err) {
       ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
     } else {

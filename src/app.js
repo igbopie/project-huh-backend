@@ -87,7 +87,10 @@ app.post('/api/user/addgcmtoken', user.addGcmToken);
 app.post('/api/user/removegcmtoken', user.removeGcmToken);
 
 app.post('/api/question/create', question.create);
-app.post('/api/question/list', question.list);
+app.post('/api/question/list', question.recent);
+app.post('/api/question/recent', question.recent);
+app.post('/api/question/popular', question.popular);
+app.post('/api/question/trending', question.trending);
 
 app.get('/api/questiontype/list', questionType.list);
 app.post('/api/questiontype/list', questionType.list);

@@ -21,6 +21,8 @@ var questionSchema = new Schema({
 
 questionSchema.index({userId: 1});
 questionSchema.index({created: -1});
+questionSchema.index({voteScore: -1});
+questionSchema.index({nComments: -1});
 
 var Question = mongoose.model('Question', questionSchema);
 
@@ -92,15 +94,13 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
   });
 };
 
-service.list = function (userId, page, numItems, callback) {
+var execQuery = function (sort, userId, page, numItems, callback) {
   Question.find({},
     null,
     {
       limit: numItems,
       skip: numItems * page,
-      sort: {
-        'created': -1
-      }
+      sort: sort
     })
     .populate("typeId")
     .exec(function (err, questions) {
@@ -114,7 +114,25 @@ service.list = function (userId, page, numItems, callback) {
         callback
       );
 
-  });
+    });
+};
+
+service.recent = function ( userId, page, numItems, callback) {
+  execQuery({
+    'created': -1
+  }, userId, page, numItems, callback);
+};
+
+service.trending = function ( userId, page, numItems, callback) {
+  execQuery({
+    'voteScore': -1
+  }, userId, page, numItems, callback);
+};
+
+service.popular = function ( userId, page, numItems, callback) {
+  execQuery({
+    'nComments': -1
+  }, userId, page, numItems, callback);
 };
 
 service.updateVoteScore = function (voteIncrement, questionId, callback) {

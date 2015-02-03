@@ -56,7 +56,7 @@ describe('Vote', function () {
         if (err) return done(err);
         Vote.up({questionId: question._id, userId: users[0]._id}, function(err) {
           if (err) return done(err);
-          Question.list({userId:users[0]._id}, function(err, questions){
+          Question.recent({userId:users[0]._id}, function(err, questions){
             if (err) return done(err);
 
             questions[0].myVote.should.be.equal(1);
@@ -74,7 +74,7 @@ describe('Vote', function () {
         if (err) return done(err);
         Vote.down({questionId: question._id, userId: users[0]._id}, function(err) {
           if (err) return done(err);
-          Question.list({userId:users[0]._id}, function(err, questions){
+          Question.recent({userId:users[0]._id}, function(err, questions){
             if (err) return done(err);
 
             questions[0].myVote.should.be.equal(-1);

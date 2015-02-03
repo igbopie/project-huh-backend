@@ -50,12 +50,24 @@ describe('Question', function () {
         function (err) {
           if (err) return done(err);
 
-          Question.list({},function(err, docs) {
+          Question.recent({},function(err, docs) {
             if (err) return done(err);
 
             docs.length.should.be.equal(1);
 
-            done();
+            Question.popular({},function(err, docs) {
+              if (err) return done(err);
+
+              docs.length.should.be.equal(1);
+
+              Question.trending({},function(err, docs) {
+                if (err) return done(err);
+
+                docs.length.should.be.equal(1);
+
+                done();
+              });
+            });
           });
         }
       );

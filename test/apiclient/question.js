@@ -10,12 +10,33 @@ exports.create = function (params, callback) {
   });
 }
 
-exports.list = function (params, callback) {
-  apiClientBase.post('/api/question/list', params, function (code, headers, data) {
+exports.recent = function (params, callback) {
+  apiClientBase.post('/api/question/recent', params, function (code, headers, data) {
     if (code != 200) {
       callback("The server responded with an invalid code: " + code + " : " + data, code);
     } else {
       callback(null, JSON.parse(data).response);
     }
   });
-}
+};
+
+exports.popular = function (params, callback) {
+  apiClientBase.post('/api/question/popular', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};
+
+
+exports.trending = function (params, callback) {
+  apiClientBase.post('/api/question/trending', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};
