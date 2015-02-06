@@ -84,12 +84,18 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
       CommentService.listByQuestionInternal(questionId, function(err, comments) {
         if (err || !comments) return;
 
+        var doNotSendAgain = {};
+
         // Send notification to author
         sendNotification(question.userId, "Hey! "+eyes+" you have a new comment: "+ comment.text, {questionId: questionId, commentId:commentId});
 
-        comments.forEach(function(comment){
-          if (!comment.userId.equals(question.userId)) {
-            sendNotification(comment.userId, "A question you commented has a new comment: " + comment.text, {
+        doNotSendAgain[question.userId] = true;
+        doNotSendAgain[comment.userId] = true;
+        comments.forEach(function(otherComment){
+          if (!doNotSendAgain[otherComment.userId]) {
+
+            doNotSendAgain[otherComment.userId] = true;
+            sendNotification(otherComment.userId, "A question you commented has a new comment: " + otherComment.text, {
               questionId: questionId,
               commentId: commentId
             });
