@@ -30,6 +30,7 @@ module.exports = {
 
 var CommentVoteService = require('../models/commentVote').Service;
 var QuestionService = require('../models/question').Service;
+var NotificationService = require('../models/notification').Service;
 
 var process = function (dbComment, userId, callback) {
   var comment = {};
@@ -68,14 +69,14 @@ CommentService.create = function (text, userId, questionId, callback) {
       if(err) return callback(err);
 
       callback(undefined, comment);
+
+      NotificationService.onQuestionCommented(questionId, comment._id);
     });
   });
 };
 
 CommentService.listByQuestion = function (questionId, userId, callback) {
-  Comment.find({questionId:questionId})
-    .sort({ field: 'desc', created: -1 })
-    .exec(function (err, comments) {
+  CommentService.listByQuestionInternal(questionId, function(err, comments){
       if(err) return callback(err);
 
       Utils.map(
@@ -88,6 +89,8 @@ CommentService.listByQuestion = function (questionId, userId, callback) {
   });
 };
 
+
+
 CommentService.updateVoteScore = function (voteIncrement, commentId, callback) {
   var conditions = { _id: commentId }
     , update = { $inc: { voteScore: voteIncrement }}
@@ -98,6 +101,15 @@ CommentService.updateVoteScore = function (voteIncrement, commentId, callback) {
       callback(err);
     });
 };
+// INTERNALS
+CommentService.listByQuestionInternal = function (questionId, callback) {
+  Comment.find({questionId:questionId})
+    .sort({ field: 'desc', created: -1 })
+    .exec(callback);
+};
 
+CommentService.findById = function (commentId, callback) {
+  Comment.findOne({ _id: commentId }, callback);
+};
 
 

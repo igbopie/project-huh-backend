@@ -26,6 +26,7 @@ module.exports = {
 };
 
 var CommentService = require('../models/comment').Service;
+var NotificationService = require('../models/notification').Service;
 
 CommentVoteService.findVote = function (commentId, userId, callback) {
   CommentVote.findOne({commentId: commentId, userId: userId}, callback);
@@ -33,10 +34,12 @@ CommentVoteService.findVote = function (commentId, userId, callback) {
 
 CommentVoteService.upVote = function (commentId, userId, callback) {
   CommentVoteService.vote(1, commentId, userId, callback);
+  NotificationService.onCommentUpVoted(commentId);
 };
 
 CommentVoteService.downVote = function (commentId, userId, callback) {
   CommentVoteService.vote(-1, commentId, userId, callback);
+  NotificationService.onCommentDownVoted(commentId);
 };
 
 CommentVoteService.vote = function (score, commentId, userId, callback) {

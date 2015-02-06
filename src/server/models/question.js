@@ -36,6 +36,7 @@ module.exports = {
 
 var QuestionTypeService = require('../models/questionType').Service;
 var QuestionVoteService = require('../models/questionVote').Service;
+var NotificationService = require('../models/notification').Service;
 
 var processQuestion = function (dbQuestion, userId, callback) {
   var question = {};
@@ -90,6 +91,8 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
 
       question.typeId = qType;
       processQuestion(question, userId, callback);
+
+      NotificationService.onQuestionCreated(question._id, qType);
     });
   });
 };
@@ -174,6 +177,12 @@ service.incCommentCount = function (questionId, callback) {
       callback(err);
     });
 };
+
+service.findById = function (questionId, callback) {
+  Question.findOne({ _id: questionId }, callback);
+};
+
+
 
 
 

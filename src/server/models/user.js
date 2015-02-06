@@ -25,6 +25,14 @@ service.create = function (callback) {
   });
 };
 
+service.findById = function (id, callback) {
+  User.findOne({_id: id}, callback);
+};
+
+service.findAll = function (callback) {
+  User.find({}, callback);
+};
+
 service.addApnToken = function(apnToken, userId, callback) {
   User.findById(userId, function(err, user) {
     if (err) return callback(err);

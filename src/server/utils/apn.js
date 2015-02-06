@@ -5,7 +5,7 @@
 var join = require('path').join;
 // Create a new agent
 var apnagent = require('apnagent');
-var User = require('./user').User;
+var User = require('../models/user').User;
 var prodCert = join(__dirname, '../../../_certs/HuhAPNProd.p12');
 var devCert = join(__dirname, '../../../_certs/HuhAPNDev.p12');
 
