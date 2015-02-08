@@ -42,13 +42,20 @@ CommentVoteService.downVote = function (commentId, userId, callback) {
   NotificationService.onCommentDownVoted(commentId);
 };
 
+CommentVoteService.clearVote = function (commentId, userId, callback) {
+  CommentVoteService.vote(0, commentId, userId, callback);
+  NotificationService.onCommentDownVoted(commentId);
+};
+
 CommentVoteService.vote = function (score, commentId, userId, callback) {
   CommentVoteService.findVote(commentId, userId, function(err, vote){
     if(err) return callback(err);
 
     var oldScore;
+    var newVote = false;
 
     if (!vote) {
+      newVote = true;
       vote = new CommentVote();
       vote.commentId = commentId;
       vote.userId = userId;
@@ -59,14 +66,23 @@ CommentVoteService.vote = function (score, commentId, userId, callback) {
     }
 
     vote.score = score;
+    var diffScore = vote.score - oldScore;
 
-    vote.save(function(err) {
-      if(err) return callback(err);
+    if (diffScore === 0){
+      callback();
+    } else if (score !== 0) {
+      vote.save(function (err) {
+        if (err) return callback(err);
 
-      var diffScore = vote.score - oldScore;
+        CommentService.updateVoteScore(diffScore, score, newVote, commentId, callback);
+      });
+    } else if (score === 0){
+      vote.remove(function(err){
+        if (err) return callback(err);
 
-      CommentService.updateVoteScore(diffScore, commentId, callback);
-    });
+        CommentService.updateVoteScore(diffScore, score, newVote, commentId, callback);
+      })
+    }
   });
 };
 

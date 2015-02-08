@@ -42,13 +42,21 @@ QuestionVoteService.downVote = function (questionId, userId, callback) {
   NotificationService.onQuestionDownVoted(questionId);
 };
 
+
+QuestionVoteService.clearVote = function (questionId, userId, callback) {
+  QuestionVoteService.vote(0, questionId, userId, callback);
+  NotificationService.onQuestionDownVoted(questionId);
+};
+
 QuestionVoteService.vote = function (score, questionId, userId, callback) {
   QuestionVoteService.findVote(questionId, userId, function(err, vote){
     if(err) return callback(err);
 
     var oldScore;
+    var newVote = false;
 
     if (!vote) {
+      newVote = true;
       vote = new QuestionVote();
       vote.questionId = questionId;
       vote.userId = userId;
@@ -59,14 +67,23 @@ QuestionVoteService.vote = function (score, questionId, userId, callback) {
     }
 
     vote.score = score;
+    var diffScore = vote.score - oldScore;
 
-    vote.save(function(err) {
-      if(err) return callback(err);
+    if (diffScore === 0){
+      callback();
+    } else if (score !== 0) {
+      vote.save(function (err) {
+        if (err) return callback(err);
 
-      var diffScore = vote.score - oldScore;
+        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, callback);
+      });
+    } else if (score === 0){
+      vote.remove(function(err){
+        if (err) return callback(err);
 
-      QuestionService.updateVoteScore(diffScore, questionId, callback);
-    });
+        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, callback);
+      })
+    }
   });
 };
 

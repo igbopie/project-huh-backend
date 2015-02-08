@@ -19,3 +19,13 @@ exports.down = function (params, callback) {
     }
   });
 }
+
+exports.clear = function (params, callback) {
+  apiClientBase.post('/api/vote/clear', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+}

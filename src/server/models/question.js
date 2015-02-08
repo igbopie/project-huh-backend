@@ -16,6 +16,9 @@ var questionSchema = new Schema({
   updated: {type: Date, required: true, default: Date.now},
   location: {type: [Number], required: false, index: '2dsphere'},
   voteScore: {type: Number, required: true, default: 0},
+  nVotes: {type: Number, required: true, default: 0},
+  nUpVotes: {type: Number, required: true, default: 0},
+  nDownVotes: {type: Number, required: true, default: 0},
   nComments: {type: Number, required: true, default: 0}
 });
 
@@ -47,6 +50,10 @@ var processQuestion = function (dbQuestion, userId, callback) {
   question.updated = dbQuestion.updated;
   question.voteScore = dbQuestion.voteScore;
   question.nComments = dbQuestion.nComments;
+  question.nVotes = dbQuestion.nVotes;
+  question.nUpVotes = dbQuestion.nUpVotes;
+  question.nDownVotes = dbQuestion.nDownVotes;
+
   if (userId) {
     QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
       if(err){
@@ -156,10 +163,38 @@ service.commented = function ( userId, page, numItems, callback) {
     userId, page, numItems, callback);
 };
 
-service.updateVoteScore = function (voteIncrement, questionId, callback) {
+service.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
+  console.log(voteIncrement);
   var conditions = { _id: questionId }
     , update = { $inc: { voteScore: voteIncrement }}
     , options = { multi: false };
+
+  if (newVote) {
+    update.$inc.nVotes = 1;
+
+    if (score > 0) {
+      update.$inc.nUpVotes = 1;
+    } else {
+      update.$inc.nDownVotes = 1;
+    }
+  } else {
+    if (score > 0) {
+      update.$inc.nUpVotes = 1;
+      update.$inc.nDownVotes = -1;
+    } else if (score < 0) {
+      update.$inc.nUpVotes = -1;
+      update.$inc.nDownVotes = 1;
+    } else {
+      //clear score
+      update.$inc.nVotes = -1;
+
+      if (voteIncrement > 0) {
+        update.$inc.nDownVotes = -1;
+      } else {
+        update.$inc.nUpVotes = -1;
+      }
+    }
+  }
 
   Question.update(conditions, update, options,
     function (err) {

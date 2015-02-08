@@ -11,7 +11,10 @@ var commentSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
   updated: {type: Date, required: true, default: Date.now},
-  voteScore: {type: Number, required: true, default: 0}
+  voteScore: {type: Number, required: true, default: 0},
+  nVotes: {type: Number, required: true, default: 0},
+  nUpVotes: {type: Number, required: true, default: 0},
+  nDownVotes: {type: Number, required: true, default: 0}
 });
 
 commentSchema.index({userId: 1});
@@ -39,6 +42,10 @@ var process = function (dbComment, userId, callback) {
   comment.created = dbComment.created;
   comment.updated = dbComment.updated;
   comment.voteScore = dbComment.voteScore;
+  comment.nVotes = dbComment.nVotes;
+  comment.nUpVotes = dbComment.nUpVotes;
+  comment.nDownVotes = dbComment.nDownVotes;
+
   if (userId) {
     CommentVoteService.findVote(dbComment._id, userId, function(err, vote) {
       if(err){
@@ -91,10 +98,37 @@ CommentService.listByQuestion = function (questionId, userId, callback) {
 
 
 
-CommentService.updateVoteScore = function (voteIncrement, commentId, callback) {
+CommentService.updateVoteScore = function (voteIncrement, score, newVote, commentId, callback) {
   var conditions = { _id: commentId }
     , update = { $inc: { voteScore: voteIncrement }}
     , options = { multi: false };
+
+  if (newVote) {
+    update.$inc.nVotes = 1;
+
+    if (score > 0) {
+      update.$inc.nUpVotes = 1;
+    } else {
+      update.$inc.nDownVotes = 1;
+    }
+  } else {
+    if (score > 0) {
+      update.$inc.nUpVotes = 1;
+      update.$inc.nDownVotes = -1;
+    } else if (score < 0) {
+      update.$inc.nUpVotes = -1;
+      update.$inc.nDownVotes = 1;
+    } else {
+      //clear score
+      update.$inc.nVotes = -1;
+
+      if (voteIncrement > 0) {
+        update.$inc.nDownVotes = -1;
+      } else {
+        update.$inc.nUpVotes = -1;
+      }
+    }
+  }
 
   Comment.update(conditions, update, options,
     function (err) {

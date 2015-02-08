@@ -100,6 +100,7 @@ app.post('/api/comment/list', comment.list);
 
 app.post('/api/vote/up', vote.up);
 app.post('/api/vote/down', vote.down);
+app.post('/api/vote/clear', vote.clear);
 
 
 

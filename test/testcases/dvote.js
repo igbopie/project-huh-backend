@@ -3,6 +3,7 @@ var TestUtils = require('../util/testutils');
 var Question = require('../apiclient/question');
 var Comment = require('../apiclient/comment');
 var Vote = require('../apiclient/vote');
+var should = require('should');
 var nUsers = 5;
 var users = null;
 var question = {
@@ -59,6 +60,10 @@ describe('Vote', function () {
           Question.recent({userId:users[0]._id}, function(err, questions){
             if (err) return done(err);
 
+            questions[0].nVotes.should.be.equal(1);
+            questions[0].nUpVotes.should.be.equal(1);
+            questions[0].nDownVotes.should.be.equal(0);
+            questions[0].voteScore.should.be.equal(1);
             questions[0].myVote.should.be.equal(1);
 
             done();
@@ -77,9 +82,48 @@ describe('Vote', function () {
           Question.recent({userId:users[0]._id}, function(err, questions){
             if (err) return done(err);
 
+            questions[0].nVotes.should.be.equal(1);
+            questions[0].nUpVotes.should.be.equal(0);
+            questions[0].nDownVotes.should.be.equal(1);
+            questions[0].voteScore.should.be.equal(-1);
             questions[0].myVote.should.be.equal(-1);
 
             done();
+          });
+        });
+      });
+    })
+  });
+
+  describe('#changeVoteQuestion()', function () {
+    it('should clear vote a question', function (done) {
+      Vote.up({questionId: question._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
+        Vote.down({questionId: question._id, userId: users[0]._id}, function(err) {
+          if (err) return done(err);
+          Question.recent({userId:users[0]._id}, function(err, questions){
+            if (err) return done(err);
+
+            questions[0].nVotes.should.be.equal(1);
+            questions[0].nUpVotes.should.be.equal(0);
+            questions[0].nDownVotes.should.be.equal(1);
+            questions[0].voteScore.should.be.equal(-1);
+            questions[0].myVote.should.be.equal(-1);
+
+            Vote.clear({questionId: question._id, userId: users[0]._id}, function(err) {
+              if (err) return done(err);
+              Question.recent({userId:users[0]._id}, function(err, questions) {
+                if (err) return done(err);
+
+                questions[0].nVotes.should.be.equal(0);
+                questions[0].nUpVotes.should.be.equal(0);
+                questions[0].nDownVotes.should.be.equal(0);
+                questions[0].voteScore.should.be.equal(0);
+                should.not.exist(questions[0].myVote);
+
+                done();
+              });
+            });
           });
         });
       });
@@ -95,6 +139,10 @@ describe('Vote', function () {
           Comment.list({questionId:question._id, userId:users[0]._id}, function(err, comments){
             if (err) return done(err);
 
+            comments[0].nVotes.should.be.equal(1);
+            comments[0].nUpVotes.should.be.equal(1);
+            comments[0].nDownVotes.should.be.equal(0);
+            comments[0].voteScore.should.be.equal(1);
             comments[0].myVote.should.be.equal(1);
 
             done();
@@ -113,7 +161,12 @@ describe('Vote', function () {
           Comment.list({questionId:question._id, userId:users[0]._id}, function(err, comments){
             if (err) return done(err);
 
-            comments[0].myVote.should.be.equal(-1);
+
+            comments[0].nVotes.should.be.equal(1);
+            comments[0].nUpVotes.should.be.equal(0);
+            comments[0].nDownVotes.should.be.equal(1);
+            comments[0].voteScore.should.be.equal(-1);
+            comments[0].myVote.should.be.equal(-1);;
 
             done();
           });
@@ -121,7 +174,40 @@ describe('Vote', function () {
       });
     })
   });
+  describe('#changeVoteComment()', function () {
+    it('should clear vote a comment', function (done) {
+      Vote.up({commentId: comment._id, userId: users[0]._id}, function(err) {
+        if (err) return done(err);
+        Vote.down({commentId: comment._id, userId: users[0]._id}, function(err) {
+          if (err) return done(err);
+          Comment.list({questionId:question._id,userId:users[0]._id}, function(err, comments){
+            if (err) return done(err);
 
+            comments[0].nVotes.should.be.equal(1);
+            comments[0].nUpVotes.should.be.equal(0);
+            comments[0].nDownVotes.should.be.equal(1);
+            comments[0].voteScore.should.be.equal(-1);
+            comments[0].myVote.should.be.equal(-1);
+
+            Vote.clear({commentId: comment._id, userId: users[0]._id}, function(err) {
+              if (err) return done(err);
+              Comment.list({questionId:question._id,userId:users[0]._id}, function(err, comments) {
+                if (err) return done(err);
+
+                comments[0].nVotes.should.be.equal(0);
+                comments[0].nUpVotes.should.be.equal(0);
+                comments[0].nDownVotes.should.be.equal(0);
+                comments[0].voteScore.should.be.equal(0);
+                should.not.exist(comments[0].myVote);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    })
+  });
 
 });
 
