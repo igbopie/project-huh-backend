@@ -77,6 +77,25 @@ describe('Comment', function () {
     })
   });
 
+  describe('#trim()', function () {
+    it('should list all comment', function (done) {
+      var comment1 = {
+        text: "       hello1     ",
+        questionId: question._id,
+        userId: users[0]._id
+      };
+      Comment.create(comment1, function(err){
+        Comment.list({questionId:question._id}, function(err, comments){
+          if(err) return done(err);
+
+          comments[0].text.should.be.equal("hello1");
+
+          done();
+        });
+      });
+    })
+  });
+
 });
 
 

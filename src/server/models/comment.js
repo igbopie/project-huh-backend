@@ -64,7 +64,7 @@ var process = function (dbComment, userId, callback) {
 
 CommentService.create = function (text, userId, questionId, callback) {
   var comment = new Comment();
-  comment.text = text;
+  comment.text = text.trim();
   comment.questionId = questionId;
   comment.userId = userId;
 
