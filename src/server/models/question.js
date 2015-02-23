@@ -3,7 +3,9 @@ var mongoose = require('mongoose'),
   Schema = mongoose.Schema,
   Utils = require('../utils/utils'),
   LOCATION_LONGITUDE = 0,
-  LOCATION_LATITUDE = 1
+  LOCATION_LATITUDE = 1,
+  DATE_CONSTANT = new Date(2015,01,01,00,00,00,00).getTime();
+//Date(year, month, day, hours, minutes, seconds, milliseconds);
   ;
 
 
@@ -19,13 +21,20 @@ var questionSchema = new Schema({
   nVotes: {type: Number, required: true, default: 0},
   nUpVotes: {type: Number, required: true, default: 0},
   nDownVotes: {type: Number, required: true, default: 0},
-  nComments: {type: Number, required: true, default: 0}
+  nComments: {type: Number, required: true, default: 0},
+  activity: {type: Number, required: true, default: 0}, // nComments + nVotes
+  createdScore: {type: Number, required: true, default: 0},
+  trendingScore: {type: Number, required: true, default: 0}, // activity * (timeCreated - constant)
+  popularScore: {type: Number, required: true, default: 0} // voteScore * (timeCreated - constant)
 });
 
 questionSchema.index({userId: 1});
 questionSchema.index({created: -1});
 questionSchema.index({voteScore: -1});
 questionSchema.index({nComments: -1});
+questionSchema.index({trendingScore: -1});
+questionSchema.index({popularScore: -1});
+
 
 var Question = mongoose.model('Question', questionSchema);
 
@@ -75,6 +84,8 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
   question.type = type;
   question.text = text;
   question.userId = userId;
+  question.created = Date.now();
+  question.createdScore = Math.round((question.created.getTime() - DATE_CONSTANT) / 1000);
 
   if (latitude !== undefined &&
     latitude !== null &&
@@ -135,13 +146,13 @@ service.recent = function ( userId, page, numItems, callback) {
 
 service.trending = function ( userId, page, numItems, callback) {
   execQuery({},{
-    'voteScore': -1
+    'trendingScore': -1
   }, userId, page, numItems, callback);
 };
 
 service.popular = function ( userId, page, numItems, callback) {
   execQuery({},{
-    'nComments': -1
+    'popularScore': -1
   }, userId, page, numItems, callback);
 };
 
@@ -167,10 +178,11 @@ service.updateVoteScore = function (voteIncrement, score, newVote, questionId, c
   console.log(voteIncrement);
   var conditions = { _id: questionId }
     , update = { $inc: { voteScore: voteIncrement }}
-    , options = { multi: false };
+    , options = { multi: false, new: true };
 
   if (newVote) {
     update.$inc.nVotes = 1;
+    update.$inc.activity = 1;
 
     if (score > 0) {
       update.$inc.nUpVotes = 1;
@@ -196,20 +208,25 @@ service.updateVoteScore = function (voteIncrement, score, newVote, questionId, c
     }
   }
 
-  Question.update(conditions, update, options,
-    function (err) {
-      callback(err);
+  Question.findOneAndUpdate(conditions, update, options,
+    function (err, question) {
+      question.popularScore = question.voteScore * question.createdScore;
+      question.trendingScore = question.activity * question.createdScore;
+      question.save(callback(err));
     });
 };
 
 service.incCommentCount = function (questionId, callback) {
   var conditions = { _id: questionId }
     , update = { $inc: { nComments: 1 }}
-    , options = { multi: false };
+    , options = { multi: false, new: true };
 
-  Question.update(conditions, update, options,
-    function (err) {
-      callback(err);
+  update.$inc.activity = 1;
+
+  Question.findOneAndUpdate(conditions, update, options,
+    function (err, question) {
+      question.trendingScore = question.activity * question.createdScore;
+      question.save(callback(err));
     });
 };
 
