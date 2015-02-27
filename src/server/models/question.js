@@ -13,6 +13,7 @@ var questionSchema = new Schema({
   typeId: {type: Schema.Types.ObjectId, required: true, ref: "QuestionType"},
   //type: {type: String, required: true},
   text: {type: String, required: false},
+  username: {type: String, required: false},
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
   updated: {type: Date, required: true, default: Date.now},
@@ -48,34 +49,57 @@ module.exports = {
 
 var QuestionTypeService = require('../models/questionType').Service;
 var QuestionVoteService = require('../models/questionVote').Service;
+var QuestionNameService = require('../models/questionName').Service;
 var NotificationService = require('../models/notification').Service;
 
 var processQuestion = function (dbQuestion, userId, callback) {
-  var question = {};
-  question._id = dbQuestion._id;
-  question.text = dbQuestion.text;
-  question.type = dbQuestion.typeId;
-  question.created = dbQuestion.created;
-  question.updated = dbQuestion.updated;
-  question.voteScore = dbQuestion.voteScore;
-  question.nComments = dbQuestion.nComments;
-  question.nVotes = dbQuestion.nVotes;
-  question.nUpVotes = dbQuestion.nUpVotes;
-  question.nDownVotes = dbQuestion.nDownVotes;
 
-  if (userId) {
-    QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
-      if(err){
-        console.error("Could not fetch my score");
-      }
-      if(vote){
-        question.myVote = vote.score;
-      }
+
+  var process = function() {
+    var question = {};
+    question._id = dbQuestion._id;
+    question.text = dbQuestion.text;
+    question.type = dbQuestion.typeId;
+    question.created = dbQuestion.created;
+    question.updated = dbQuestion.updated;
+    question.voteScore = dbQuestion.voteScore;
+    question.nComments = dbQuestion.nComments;
+    question.nVotes = dbQuestion.nVotes;
+    question.nUpVotes = dbQuestion.nUpVotes;
+    question.nDownVotes = dbQuestion.nDownVotes;
+    question.username = dbQuestion.username;
+
+    if (userId) {
+      QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
+        if(err){
+          console.error("Could not fetch my score");
+        }
+        if(vote){
+          question.myVote = vote.score;
+        }
+        callback(undefined, question);
+      });
+    } else {
       callback(undefined, question);
+    }
+  };
+
+  //Hack to fill oldQuestions
+  if (!dbQuestion.username) {
+    QuestionNameService.findOrCreate(dbQuestion._id, dbQuestion.userId, function(err, username) {
+      if (err) return callback(err);
+
+      dbQuestion.username = username;
+      dbQuestion.save(function(err){
+        if (err) return callback(err);
+
+        process();
+      });
     });
   } else {
-    callback(undefined, question);
+    process();
   }
+
 };
 
 
@@ -97,8 +121,6 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
     question.location = locationArray;
   }
 
-  console.log(QuestionTypeService);
-
   //Validation
   QuestionTypeService.find(question.type, function (err, qType) {
     if(err) return callback(err);
@@ -108,9 +130,18 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
       if(err) return callback(err);
 
       question.typeId = qType;
-      processQuestion(question, userId, callback);
+      QuestionNameService.findOrCreate(question._id, question.userId, function(err, username) {
+        if (err) return callback(err);
 
-      NotificationService.onQuestionCreated(question._id, qType);
+        question.username = username;
+        question.save(function(err){
+          if (err) return callback(err);
+
+          processQuestion(question, userId, callback);
+
+          NotificationService.onQuestionCreated(question._id, qType);
+        });
+      });
     });
   });
 };

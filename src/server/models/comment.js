@@ -9,6 +9,7 @@ var commentSchema = new Schema({
   text: {type: String, required: false},
   questionId: {type: Schema.Types.ObjectId, required: true, ref: "Question"},
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+  username: {type: String, required: false},
   created: {type: Date, required: true, default: Date.now},
   updated: {type: Date, required: true, default: Date.now},
   voteScore: {type: Number, required: true, default: 0},
@@ -34,30 +35,50 @@ module.exports = {
 var CommentVoteService = require('../models/commentVote').Service;
 var QuestionService = require('../models/question').Service;
 var NotificationService = require('../models/notification').Service;
+var QuestionNameService = require('../models/questionName').Service;
 
 var process = function (dbComment, userId, callback) {
-  var comment = {};
-  comment._id = dbComment._id;
-  comment.text = dbComment.text;
-  comment.created = dbComment.created;
-  comment.updated = dbComment.updated;
-  comment.voteScore = dbComment.voteScore;
-  comment.nVotes = dbComment.nVotes;
-  comment.nUpVotes = dbComment.nUpVotes;
-  comment.nDownVotes = dbComment.nDownVotes;
+  var processInternal = function() {
+    var comment = {};
+    comment._id = dbComment._id;
+    comment.text = dbComment.text;
+    comment.created = dbComment.created;
+    comment.updated = dbComment.updated;
+    comment.voteScore = dbComment.voteScore;
+    comment.nVotes = dbComment.nVotes;
+    comment.nUpVotes = dbComment.nUpVotes;
+    comment.nDownVotes = dbComment.nDownVotes;
+    comment.username = dbComment.username;
 
-  if (userId) {
-    CommentVoteService.findVote(dbComment._id, userId, function(err, vote) {
-      if(err){
-        console.error("Could not fetch my score");
-      }
-      if(vote){
-        comment.myVote = vote.score;
-      }
+    if (userId) {
+      CommentVoteService.findVote(dbComment._id, userId, function (err, vote) {
+        if (err) {
+          console.error("Could not fetch my score");
+        }
+        if (vote) {
+          comment.myVote = vote.score;
+        }
+        callback(undefined, comment);
+      });
+    } else {
       callback(undefined, comment);
+    }
+  };
+
+  //Hack to fill oldQuestions
+  if (!dbComment.username) {
+    QuestionNameService.findOrCreate(dbComment.questionId, dbComment.userId, function(err, username) {
+      if (err) return callback(err);
+
+      dbComment.username = username;
+      dbComment.save(function(err){
+        if (err) return callback(err);
+
+        processInternal();
+      });
     });
   } else {
-    callback(undefined, comment);
+    processInternal();
   }
 };
 
@@ -71,13 +92,21 @@ CommentService.create = function (text, userId, questionId, callback) {
   //TODO Validation
   comment.save(function(err) {
     if(err) return callback(err);
+    QuestionNameService.findOrCreate(comment.questionId, comment.userId, function(err, username) {
+      if (err) return callback(err);
 
-    QuestionService.incCommentCount(questionId, function(err){
-      if(err) return callback(err);
+      comment.username = username;
+      comment.save(function(err){
+        if (err) return callback(err);
 
-      callback(undefined, comment);
+        QuestionService.incCommentCount(questionId, function(err){
+          if(err) return callback(err);
 
-      NotificationService.onQuestionCommented(questionId, comment._id);
+          callback(undefined, comment);
+
+          NotificationService.onQuestionCommented(questionId, comment._id);
+        });
+      });
     });
   });
 };

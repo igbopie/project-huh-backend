@@ -86,7 +86,7 @@ exports.cleanDatabase = function (callback) {
           callback(err);
           return;
         }
-        db.collection('comment').remove(function (err) {
+        db.collection('comments').remove(function (err) {
           if (err) {
             console.log(err);
             callback(err);
