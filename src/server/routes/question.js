@@ -16,6 +16,19 @@ exports.create = function (req, res) {
     });
 };
 
+exports.view = function (req, res) {
+  var questionId = req.body.questionId;
+  var userId = req.body.userId;
+  QuestionService.view(questionId, userId, function (err, results) {
+    if (err) {
+      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+    } else {
+      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+    }
+  });
+};
+
+
 exports.recent = function (req, res) {
   var userId = req.body.userId;
   var page = req.body.page;

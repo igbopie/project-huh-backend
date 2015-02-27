@@ -234,6 +234,14 @@ service.findById = function (questionId, callback) {
   Question.findOne({ _id: questionId }, callback);
 };
 
+service.view = function (questionId, userId, callback) {
+  Question.findOne({ _id: questionId }, function(err, doc) {
+    if (err) return callback(err);
+
+    processQuestion(doc, userId, callback);
+  });
+};
+
 
 
 

@@ -37,6 +37,32 @@ describe('Question', function () {
     })
   });
 
+  describe('#view()', function () {
+    it('should view a question', function (done) {
+      Question.create(
+        {
+          userId: users[0]._id,
+          type: "WHAT",
+          text: "time is it",
+          latitude: 0,
+          longitude: 0
+        },
+        function (err, question) {
+          if (err) return done(err);
+
+          Question.view({questionId: question._id, userId:  users[0]._id}, function(err, questionViewed) {
+            if (err) return done(err);
+            if (!questionViewed) return done("no question");
+
+            questionViewed._id.should.be.equal(question._id);
+
+            done();
+          });
+        }
+      );
+    });
+  });
+
   describe('#list()', function () {
     it('should list a question', function (done) {
       Question.create(
@@ -50,17 +76,17 @@ describe('Question', function () {
         function (err) {
           if (err) return done(err);
 
-          Question.recent({},function(err, docs) {
+          Question.recent({}, function (err, docs) {
             if (err) return done(err);
 
             docs.length.should.be.equal(1);
 
-            Question.popular({},function(err, docs) {
+            Question.popular({}, function (err, docs) {
               if (err) return done(err);
 
               docs.length.should.be.equal(1);
 
-              Question.trending({},function(err, docs) {
+              Question.trending({}, function (err, docs) {
                 if (err) return done(err);
 
                 docs.length.should.be.equal(1);
@@ -75,7 +101,8 @@ describe('Question', function () {
   });
 
 
-});
+})
+;
 
 
 
