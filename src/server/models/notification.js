@@ -67,7 +67,7 @@ NotificationService.onQuestionCreated = function(questionId, qType) {
       if (err || !users) return;
       users.forEach(function(user){
         if (!user._id.equals(question.userId)) {
-          sendNotification(user._id, "WOOO! New question available: " + qType.word + " " + question.text, {
+          sendNotification(user._id, "WOOO! New question available @" + question.username+ ": "+ qType.word + " " + question.text, {
             questionId: questionId
           });
         }
@@ -87,7 +87,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
         var doNotSendAgain = {};
 
         // Send notification to author
-        sendNotification(question.userId, "Hey! "+eyes+" you have a new comment: "+ comment.text, {questionId: questionId, commentId:commentId});
+        sendNotification(question.userId, "Hey! "+eyes+" you have a new comment @" + comment.username + ": "+ comment.text, {questionId: questionId, commentId:commentId});
 
         doNotSendAgain[question.userId] = true;
         doNotSendAgain[comment.userId] = true;
@@ -95,7 +95,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
           if (!doNotSendAgain[otherComment.userId]) {
 
             doNotSendAgain[otherComment.userId] = true;
-            sendNotification(otherComment.userId, "A question you commented has a new comment: " + otherComment.text, {
+            sendNotification(otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ otherComment.text, {
               questionId: questionId,
               commentId: commentId
             });
