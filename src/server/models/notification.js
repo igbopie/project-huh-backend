@@ -95,7 +95,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
           if (!doNotSendAgain[otherComment.userId]) {
 
             doNotSendAgain[otherComment.userId] = true;
-            sendNotification(otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ otherComment.text, {
+            sendNotification(otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ comment.text, {
               questionId: questionId,
               commentId: commentId
             });
