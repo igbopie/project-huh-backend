@@ -66,7 +66,13 @@ describe('Vote', function () {
             questions[0].voteScore.should.be.equal(1);
             questions[0].myVote.should.be.equal(1);
 
-            done();
+            Question.favorites({userId:users[0]._id}, function(err, questions) {
+              if (err) return done(err);
+
+              questions[0]._id.should.be.equal(question._id);
+
+              done();
+            });
           });
         });
       });

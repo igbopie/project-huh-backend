@@ -51,3 +51,25 @@ exports.view = function (params, callback) {
     }
   });
 };
+
+
+exports.mine = function (params, callback) {
+  apiClientBase.post('/api/question/mine', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};
+
+
+exports.favorites = function (params, callback) {
+  apiClientBase.post('/api/question/favorites', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};

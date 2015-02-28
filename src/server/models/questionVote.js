@@ -13,7 +13,8 @@ var QuestionVoteSchema = new Schema({
   score: {type: Number, required: true, default: 0}
 });
 
-QuestionVoteSchema.index({ userId: 1, questionId: 1 }, { unique: true })
+QuestionVoteSchema.index({ userId: 1, questionId: 1 }, { unique: true });
+QuestionVoteSchema.index({ userId: 1, score: 1 });
 
 var QuestionVote = mongoose.model('QuestionVote', QuestionVoteSchema);
 
@@ -87,6 +88,22 @@ QuestionVoteService.vote = function (score, questionId, userId, callback) {
   });
 };
 
+QuestionVoteService.findUpVoteQuestionIds = function (userId, page, numItems, callback) {
+  QuestionVote.find(
+    {userId:userId, score:1},
+    "questionId",
+    {
+      limit: numItems,
+      skip: numItems * page
+    },
+    function(err, votes){
+      if(err) return callback(err);
+
+      var questionIds = votes.map(function(vote){return vote.questionId});
+      callback(null, questionIds);
+    }
+  );
+};
 
 
 

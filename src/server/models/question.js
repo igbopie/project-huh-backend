@@ -205,7 +205,14 @@ service.commented = function ( userId, page, numItems, callback) {
     userId, page, numItems, callback);
 };
 
-
+service.processQuestionIds = function (questionIds, userId, callback) {
+  execQuery(
+    {_id: { $in:questionIds } },
+    {
+      'created': -1
+    },
+    userId, 0, questionIds.length, callback);
+};
 
 service.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
   console.log(voteIncrement);
