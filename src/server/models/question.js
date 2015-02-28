@@ -205,6 +205,8 @@ service.commented = function ( userId, page, numItems, callback) {
     userId, page, numItems, callback);
 };
 
+
+
 service.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
   console.log(voteIncrement);
   var conditions = { _id: questionId }
