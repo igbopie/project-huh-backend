@@ -70,6 +70,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
     question.nUpVotes = dbQuestion.nUpVotes;
     question.nDownVotes = dbQuestion.nDownVotes;
     question.username = dbQuestion.username;
+    question.url = dbQuestion.url;
 
     if (userId) {
       QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
