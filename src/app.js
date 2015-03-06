@@ -36,6 +36,11 @@ if (!process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_TOKEN && !process.env
   console.log("WARNING: Twilio not configured: using log for SMS");
 }*/
 
+if (!process.env.BITLY_USERNAME && !process.env.BITLY_TOKEN && !process.env.BITLY_DOMAIN && !process.env.BITLY_DOMAIN_REDIRECT) {
+  console.log("WARNING: Bitly not configured");
+}
+
+
 console.log("STARTING UP ENV CHECKED.")
 /**
  * Module dependencies.
@@ -78,6 +83,8 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', index.index);
+
+app.get('/q/:questionId', index.question);
 
 //USER
 app.post('/api/user/create', user.create);

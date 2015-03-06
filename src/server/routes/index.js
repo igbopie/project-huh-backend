@@ -9,3 +9,8 @@ exports.index = function (req, res) {
   res.render('index', {title: 'Express'});
 };
 
+exports.question = function (req, res) {
+  res.render('q', {title: 'Express'});
+};
+
+

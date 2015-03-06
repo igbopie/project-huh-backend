@@ -1,5 +1,6 @@
 var mongoose = require('mongoose'),
   u = require('underscore'),
+  UrlShortener = require('../utils/urlshortener'),
   Schema = mongoose.Schema,
   Utils = require('../utils/utils'),
   LOCATION_LONGITUDE = 0,
@@ -13,6 +14,7 @@ var questionSchema = new Schema({
   typeId: {type: Schema.Types.ObjectId, required: true, ref: "QuestionType"},
   //type: {type: String, required: true},
   text: {type: String, required: false},
+  url: {type: String, required: false},
   username: {type: String, required: false},
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
@@ -84,22 +86,44 @@ var processQuestion = function (dbQuestion, userId, callback) {
     }
   };
 
-  //Hack to fill oldQuestions
-  if (!dbQuestion.username) {
-    QuestionNameService.findOrCreate(dbQuestion._id, dbQuestion.userId, function(err, username) {
-      if (err) return callback(err);
-
-      dbQuestion.username = username;
-      dbQuestion.save(function(err){
+  var processUserName = function(){
+    if (!dbQuestion.username) {
+      QuestionNameService.findOrCreate(dbQuestion._id, dbQuestion.userId, function (err, username) {
         if (err) return callback(err);
 
-        process();
-      });
-    });
-  } else {
-    process();
-  }
+        dbQuestion.username = username;
 
+        dbQuestion.save(function (err) {
+          if (err) return callback(err);
+
+          processShortLink();
+        });
+      });
+    } else {
+      processShortLink();
+    }
+  };
+
+  var processShortLink = function(){
+    if (!dbQuestion.url) {
+      UrlShortener.shortenQuestion(dbQuestion._id, function (err, url) {
+        if (err) console.error(err);
+
+        dbQuestion.url = url;
+
+        dbQuestion.save(function (err) {
+          if (err) return callback(err);
+
+          process();
+        });
+      });
+
+    } else {
+      process();
+    }
+  };
+
+  processUserName();
 };
 
 
@@ -134,13 +158,19 @@ service.create = function (type, text, latitude, longitude, userId, callback) {
         if (err) return callback(err);
 
         question.username = username;
-        question.save(function(err){
-          if (err) return callback(err);
+        UrlShortener.shortenQuestion(question._id, function(err, url){
+          if (err) console.error(err);
 
-          processQuestion(question, userId, callback);
+          question.url = url;
+          question.save(function(err){
+            if (err) return callback(err);
 
-          NotificationService.onQuestionCreated(question._id, qType);
+            processQuestion(question, userId, callback);
+
+            NotificationService.onQuestionCreated(question._id, qType);
+          });
         });
+
       });
     });
   });
