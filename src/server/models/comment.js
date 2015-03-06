@@ -18,7 +18,7 @@ var commentSchema = new Schema({
   nDownVotes: {type: Number, required: true, default: 0}
 });
 
-commentSchema.index({userId: 1});
+commentSchema.index({userId: 1, created: -1});
 commentSchema.index({questionId: 1, created: -1});
 
 var Comment = mongoose.model('Comment', commentSchema);
@@ -164,6 +164,28 @@ CommentService.updateVoteScore = function (voteIncrement, score, newVote, commen
       callback(err);
     });
 };
+
+CommentService.findCommentedQuestionIds = function(userId, page, numItems, callback) {
+  //TODO improve this
+  Comment.aggregate([
+    { $match: {
+      userId: new mongoose.Types.ObjectId(userId)
+    }},
+    { $sort : { created : -1 } },
+    { $group: {
+      _id: "$questionId"
+    }},
+    { $skip:numItems * page },
+    { $limit:numItems },
+  ], function (err, results) {
+    if (err) callback(err);
+
+    var questionIds = results.map(function(result){return result._id});
+    callback(null, questionIds);
+  });
+
+};
+
 // INTERNALS
 CommentService.listByQuestionInternal = function (questionId, callback) {
   Comment.find({questionId:questionId})

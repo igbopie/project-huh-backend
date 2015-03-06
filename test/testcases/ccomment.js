@@ -70,7 +70,11 @@ describe('Comment', function () {
 
             comments.length.should.be.equal(2);
 
-            done();
+            Question.commented({userId: users[0]._id}, function(err, questions){
+              //console.log(questions);
+              done(err);
+            })
+
           });
         });
       });

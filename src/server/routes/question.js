@@ -1,5 +1,6 @@
 var QuestionService = require('../models/question').Service;
 var QuestionVoteService = require('../models/questionVote').Service;
+var CommentService = require('../models/comment').Service;
 var ApiUtils = require('../utils/apiutils');
 
 exports.create = function (req, res) {
@@ -159,8 +160,6 @@ exports.favorites = function (req, res) {
       });
     }
   });
-
-
 };
 
 exports.commented = function (req, res) {
@@ -178,12 +177,17 @@ exports.commented = function (req, res) {
   if (numItems < 10) {
     numItems = 10;
   }
-
-  QuestionService.commented(userId, page, numItems, function (err, results) {
+  CommentService.findCommentedQuestionIds(userId, page, numItems, function (err, questionIds) {
     if (err) {
       ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
     } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
+      QuestionService.processQuestionIds(questionIds, userId, function (err, results) {
+        if (err) {
+          ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
+        } else {
+          ApiUtils.api(req, res, ApiUtils.OK, null, results);
+        }
+      });
     }
   });
 };
