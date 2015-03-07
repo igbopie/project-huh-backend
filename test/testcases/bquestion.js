@@ -1,6 +1,7 @@
 var assert = require("assert")
 var TestUtils = require('../util/testutils');
 var Question = require('../apiclient/question');
+var Flag = require('../apiclient/flag');
 var nUsers = 5;
 var users = null;
 
@@ -29,9 +30,14 @@ describe('Question', function () {
           latitude: 0,
           longitude: 0
         },
-        function (err) {
+        function (err, question) {
           if (err) return done(err);
-          done();
+
+          Flag.flag({questionId: question._id, userId: users[0]._id, reason: "HATE"}, function(err) {
+            if (err) return done(err);
+
+            done();
+          });
         }
       );
     })

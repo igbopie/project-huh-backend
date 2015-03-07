@@ -126,7 +126,7 @@ NotificationService.onCommentUpVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(comment.userId, "People love you "+heart+" Your comment has been up voted.", {commentId: commentId});
+    sendNotification(comment.userId, "People love you "+heart+" Your comment has been up voted.", {questionId: comment.questionId, commentId: commentId});
   });
 };
 
@@ -135,7 +135,7 @@ NotificationService.onCommentDownVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {commentId: commentId});
+    sendNotification(comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {questionId: comment.questionId, commentId: commentId});
   });
 
 };

@@ -60,6 +60,8 @@ var question = require('./server/routes/question');
 var questionType = require('./server/routes/questionType');
 var comment = require('./server/routes/comment');
 var vote = require('./server/routes/vote');
+var flag = require('./server/routes/flag');
+
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
 
@@ -102,6 +104,7 @@ app.post('/api/question/trending', question.trending);
 app.post('/api/question/mine', question.mine);
 app.post('/api/question/favorites', question.favorites);
 app.post('/api/question/commented', question.commented);
+app.post('/api/question/flag', flag.flag);
 
 app.get('/api/questiontype/list', questionType.list);
 app.post('/api/questiontype/list', questionType.list);
