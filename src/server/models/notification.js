@@ -81,10 +81,13 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
 
     CommentService.findById(commentId, function(err, comment){
       if(err || !comment) return;
-      CommentService.listByQuestionInternal(questionId, function(err, comments) {
-        if (err || !comments) return;
+      var page = 0;
+      var numItems = 1;
+      var nextBatch;
+      var doNotSendAgain = {};
 
-        var doNotSendAgain = {};
+      var sendNotificatonProcess = function(err, comments) {
+        if (err || !comments || comments.length === 0) return;
 
         // Send notification to author
         sendNotification(question.userId, "Hey! "+eyes+" you have a new comment @" + comment.username + ": "+ comment.text, {questionId: questionId, commentId:commentId});
@@ -101,7 +104,17 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
             });
           }
         });
-      });
+
+        nextBatch();
+      };
+
+      nextBatch = function() {
+        CommentService.listByQuestionInternal(questionId, page, numItems, sendNotificatonProcess);
+
+        page++;
+      };
+
+      nextBatch();
     });
   });
 };

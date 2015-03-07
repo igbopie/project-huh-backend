@@ -11,5 +11,7 @@ exports.create = function (req, res) {
 exports.list = function (req, res) {
   var questionId = req.body.questionId;
   var userId = req.body.userId;
-  CommentService.listByQuestion(questionId, userId, ApiUtils.handleResult(req, res));
+  var pagination = ApiUtils.getPaginationParams(req);
+
+  CommentService.listByQuestion(questionId, userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };

@@ -111,8 +111,8 @@ CommentService.create = function (text, userId, questionId, callback) {
   });
 };
 
-CommentService.listByQuestion = function (questionId, userId, callback) {
-  CommentService.listByQuestionInternal(questionId, function(err, comments){
+CommentService.listByQuestion = function (questionId, userId, page, numItems, callback) {
+  CommentService.listByQuestionInternal(questionId, page, numItems, function(err, comments){
       if(err) return callback(err);
 
       Utils.map(
@@ -187,8 +187,14 @@ CommentService.findCommentedQuestionIds = function(userId, page, numItems, callb
 };
 
 // INTERNALS
-CommentService.listByQuestionInternal = function (questionId, callback) {
-  Comment.find({questionId:questionId})
+CommentService.listByQuestionInternal = function (questionId, page, numItems, callback) {
+  Comment.find(
+    {questionId:questionId},
+    null,
+    {
+      limit: numItems,
+      skip: numItems * page
+    })
     .sort({ field: 'desc', created: -1 })
     .exec(callback);
 };
