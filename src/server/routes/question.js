@@ -9,185 +9,63 @@ exports.create = function (req, res) {
     var latitude = req.body.latitude;
     var longitude = req.body.longitude;
     var type = req.body.type;
-    QuestionService.create(type, text, latitude, longitude, userId, function (err, results) {
-      if (err) {
-        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-      } else {
-        ApiUtils.api(req, res, ApiUtils.OK, null, results);
-      }
-    });
+    QuestionService.create(type, text, latitude, longitude, userId, ApiUtils.handleResult(req, res));
 };
 
 exports.view = function (req, res) {
   var questionId = req.body.questionId;
   var userId = req.body.userId;
-  QuestionService.view(questionId, userId, function (err, results) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
-    }
-  });
+  QuestionService.view(questionId, userId, ApiUtils.handleResult(req, res));
 };
 
 
 exports.recent = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-
-  QuestionService.recent(userId, page, numItems, function (err, results) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
-    }
-  });
+  QuestionService.recent(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };
 
 exports.trending = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-
-  QuestionService.trending(userId, page, numItems, function (err, results) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
-    }
-  });
+  QuestionService.trending(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };
 
 exports.popular = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-
-  QuestionService.popular(userId, page, numItems, function (err, results) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
-    }
-  });
+  QuestionService.popular(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };
 
 exports.mine = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-
-  QuestionService.mine(userId, page, numItems, function (err, results) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      ApiUtils.api(req, res, ApiUtils.OK, null, results);
-    }
-  });
+  QuestionService.mine(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };
 
 
 exports.favorites = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-  QuestionVoteService.findUpVoteQuestionIds(userId, page, numItems, function(err, questionIds) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      QuestionService.processQuestionIds(questionIds, userId, function (err, results) {
-        if (err) {
-          ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-        } else {
-          ApiUtils.api(req, res, ApiUtils.OK, null, results);
-        }
-      });
-    }
-  });
+  QuestionVoteService.findUpVoteQuestionIds(userId, pagination.page, pagination.numItems,
+    ApiUtils.chainResult(req, res, function(questionIds) {
+      QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
+    })
+  );
 };
 
 exports.commented = function (req, res) {
   var userId = req.body.userId;
-  var page = req.body.page;
-  var numItems = req.body.numItems;
+  var pagination = ApiUtils.getPaginationParams(req);
 
-  if (!page) {
-    page = 0;
-  }
-
-  if (!numItems) {
-    numItems = 50;
-  }
-  if (numItems < 10) {
-    numItems = 10;
-  }
-  CommentService.findCommentedQuestionIds(userId, page, numItems, function (err, questionIds) {
-    if (err) {
-      ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-    } else {
-      QuestionService.processQuestionIds(questionIds, userId, function (err, results) {
-        if (err) {
-          ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
-        } else {
-          ApiUtils.api(req, res, ApiUtils.OK, null, results);
-        }
-      });
-    }
-  });
+  CommentService.findCommentedQuestionIds(userId, pagination.page, pagination.numItems,
+    ApiUtils.chainResult(req, res, function(questionIds) {
+      QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
+    })
+  );
 };

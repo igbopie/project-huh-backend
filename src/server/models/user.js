@@ -21,7 +21,7 @@ var service = {};
 service.create = function (callback) {
   var user = new User();
   user.save(function(err) {
-    callback(err, user);
+    callback(err, user._id);
   });
 };
 
