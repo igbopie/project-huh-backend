@@ -82,7 +82,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
     CommentService.findById(commentId, function(err, comment){
       if(err || !comment) return;
       var page = 0;
-      var numItems = 1;
+      var numItems = 1000;
       var nextBatch;
       var doNotSendAgain = {};
 
