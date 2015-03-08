@@ -74,6 +74,16 @@ exports.commented = function (params, callback) {
   });
 };
 
+exports.near = function (params, callback) {
+  apiClientBase.post('/api/question/near', params, function (code, headers, data) {
+    if (code != 200) {
+      callback("The server responded with an invalid code: " + code + " : " + data, code);
+    } else {
+      callback(null, JSON.parse(data).response);
+    }
+  });
+};
+
 exports.favorites = function (params, callback) {
   apiClientBase.post('/api/question/favorites', params, function (code, headers, data) {
     if (code != 200) {

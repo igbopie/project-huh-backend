@@ -97,7 +97,15 @@ describe('Question', function () {
 
                 docs.length.should.be.equal(1);
 
-                done();
+                Question.near({
+                  latitude: 0.01,
+                  longitude: 0.01}, function (err, docs) {
+                  if (err) return done(err);
+
+                  docs.length.should.be.equal(1);
+
+                  done();
+                });
               });
             });
           });

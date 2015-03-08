@@ -47,6 +47,14 @@ exports.mine = function (req, res) {
   QuestionService.mine(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
 };
 
+exports.near = function (req, res) {
+  var userId = req.body.userId;
+  var latitude = req.body.latitude;
+  var longitude = req.body.longitude;
+  var pagination = ApiUtils.getPaginationParams(req);
+
+  QuestionService.near(userId, latitude, longitude, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+};
 
 exports.favorites = function (req, res) {
   var userId = req.body.userId;

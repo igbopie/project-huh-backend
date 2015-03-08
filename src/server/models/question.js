@@ -5,7 +5,8 @@ var mongoose = require('mongoose'),
   Utils = require('../utils/utils'),
   LOCATION_LONGITUDE = 0,
   LOCATION_LATITUDE = 1,
-  DATE_CONSTANT = new Date(2015,01,01,00,00,00,00).getTime();
+  DATE_CONSTANT = new Date(2015,01,01,00,00,00,00).getTime(),
+  LOCATION_RADIUS = 10 * 1000; //meters
 //Date(year, month, day, hours, minutes, seconds, milliseconds);
   ;
 
@@ -42,11 +43,11 @@ questionSchema.index({popularScore: -1});
 var Question = mongoose.model('Question', questionSchema);
 
 //Service?
-var service = {};
+var QuestionService = {};
 
 // The exports is here to avoid cyclic dependency problem
 module.exports = {
-  Service: service
+  Service: QuestionService
 };
 
 var QuestionTypeService = require('../models/questionType').Service;
@@ -58,33 +59,51 @@ var processQuestion = function (dbQuestion, userId, callback) {
 
 
   var process = function() {
-    var question = {};
-    question._id = dbQuestion._id;
-    question.text = dbQuestion.text;
-    question.type = dbQuestion.typeId;
-    question.created = dbQuestion.created;
-    question.updated = dbQuestion.updated;
-    question.voteScore = dbQuestion.voteScore;
-    question.nComments = dbQuestion.nComments;
-    question.nVotes = dbQuestion.nVotes;
-    question.nUpVotes = dbQuestion.nUpVotes;
-    question.nDownVotes = dbQuestion.nDownVotes;
-    question.username = dbQuestion.username;
-    question.url = dbQuestion.url;
+    var subProcess = function () {
+      var question = {};
+      question._id = dbQuestion._id;
+      question.text = dbQuestion.text;
+      question.type = dbQuestion.typeId;
+      question.created = dbQuestion.created;
+      question.updated = dbQuestion.updated;
+      question.voteScore = dbQuestion.voteScore;
+      question.nComments = dbQuestion.nComments;
+      question.nVotes = dbQuestion.nVotes;
+      question.nUpVotes = dbQuestion.nUpVotes;
+      question.nDownVotes = dbQuestion.nDownVotes;
+      question.username = dbQuestion.username;
+      question.url = dbQuestion.url;
 
-    if (userId) {
-      QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
-        if(err){
-          console.error("Could not fetch my score");
-        }
-        if(vote){
-          question.myVote = vote.score;
-        }
+      if (userId) {
+        QuestionVoteService.findVote(dbQuestion._id, userId, function(err, vote) {
+          if(err){
+            console.error("Could not fetch my score");
+          }
+          if(vote){
+            question.myVote = vote.score;
+          }
+          callback(undefined, question);
+        });
+      } else {
         callback(undefined, question);
+      }
+    };
+
+    if (dbQuestion.typeId instanceof mongoose.Types.ObjectId){
+      var populate = [
+        { path: 'typeId' }
+      ];
+      Question.populate(dbQuestion, populate, function (err) {
+        if(err){
+          console.error("Could not populate typeId");
+        }
+
+        subProcess();
       });
     } else {
-      callback(undefined, question);
+      subProcess();
     }
+
   };
 
   var processUserName = function(){
@@ -128,7 +147,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
 };
 
 
-service.create = function (type, text, latitude, longitude, userId, callback) {
+QuestionService.create = function (type, text, latitude, longitude, userId, callback) {
   var question = new Question();
   question.type = type;
   question.text = text;
@@ -200,25 +219,25 @@ var execQuery = function (query, sort, userId, page, numItems, callback) {
     });
 };
 
-service.recent = function ( userId, page, numItems, callback) {
+QuestionService.recent = function ( userId, page, numItems, callback) {
   execQuery({},{
     'created': -1
   }, userId, page, numItems, callback);
 };
 
-service.trending = function ( userId, page, numItems, callback) {
+QuestionService.trending = function ( userId, page, numItems, callback) {
   execQuery({},{
     'trendingScore': -1
   }, userId, page, numItems, callback);
 };
 
-service.popular = function ( userId, page, numItems, callback) {
+QuestionService.popular = function ( userId, page, numItems, callback) {
   execQuery({},{
     'popularScore': -1
   }, userId, page, numItems, callback);
 };
 
-service.mine = function ( userId, page, numItems, callback) {
+QuestionService.mine = function ( userId, page, numItems, callback) {
   execQuery(
     {userId: userId},
     {
@@ -227,7 +246,7 @@ service.mine = function ( userId, page, numItems, callback) {
     userId, page, numItems, callback);
 };
 
-service.commented = function ( userId, page, numItems, callback) {
+QuestionService.commented = function ( userId, page, numItems, callback) {
   execQuery(
     {userId: userId},
     {
@@ -236,7 +255,42 @@ service.commented = function ( userId, page, numItems, callback) {
     userId, page, numItems, callback);
 };
 
-service.processQuestionIds = function (questionIds, userId, callback) {
+QuestionService.near = function ( userId, latitude, longitude, page, numItems, callback) {
+  var coordinates = [];
+  coordinates[LOCATION_LATITUDE] = Number(latitude);
+  coordinates[LOCATION_LONGITUDE] = Number(longitude);
+
+  Question.aggregate(
+    [
+      {
+        $geoNear: {
+          near: {type: "Point", coordinates: coordinates},
+          distanceField: "dist",
+          maxDistance: LOCATION_RADIUS,
+          query: {},
+          limit: 10000,
+          spherical: true
+        }
+      },
+      {$sort: {created: -1}},
+      {$skip: numItems * page},
+      {$limit: numItems},
+    ]
+  )
+  .exec(function (err, questions) {
+    if (err) callback(err);
+
+    Utils.map(
+      questions,
+      function(dbQuestion, mapCallback) {
+        processQuestion(dbQuestion, userId, mapCallback);
+      },
+      callback
+    );
+  });
+};
+
+QuestionService.processQuestionIds = function (questionIds, userId, callback) {
   execQuery(
     {_id: { $in:questionIds } },
     {
@@ -245,7 +299,7 @@ service.processQuestionIds = function (questionIds, userId, callback) {
     userId, 0, questionIds.length, callback);
 };
 
-service.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
+QuestionService.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
   console.log(voteIncrement);
   var conditions = { _id: questionId }
     , update = { $inc: { voteScore: voteIncrement }}
@@ -287,7 +341,7 @@ service.updateVoteScore = function (voteIncrement, score, newVote, questionId, c
     });
 };
 
-service.incCommentCount = function (questionId, callback) {
+QuestionService.incCommentCount = function (questionId, callback) {
   var conditions = { _id: questionId }
     , update = { $inc: { nComments: 1 }}
     , options = { multi: false, new: true };
@@ -301,11 +355,11 @@ service.incCommentCount = function (questionId, callback) {
     });
 };
 
-service.findById = function (questionId, callback) {
+QuestionService.findById = function (questionId, callback) {
   Question.findOne({ _id: questionId }, callback);
 };
 
-service.view = function (questionId, userId, callback) {
+QuestionService.view = function (questionId, userId, callback) {
   Question.findOne({ _id: questionId }, function(err, doc) {
     if (err) return callback(err);
 

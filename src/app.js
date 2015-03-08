@@ -105,6 +105,7 @@ app.post('/api/question/mine', question.mine);
 app.post('/api/question/favorites', question.favorites);
 app.post('/api/question/commented', question.commented);
 app.post('/api/question/flag', flag.flag);
+app.post('/api/question/near', question.near);
 
 app.get('/api/questiontype/list', questionType.list);
 app.post('/api/questiontype/list', questionType.list);
