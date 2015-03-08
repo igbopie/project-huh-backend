@@ -3,7 +3,7 @@
  */
 
 
-define(['../../libs/angular/angular.min', 'controllers'], function (angular, controllers) {
+define(['../../libs/angular/angular.min', '../controllers'], function (angular, controllers) {
 
   /* Controllers */
 

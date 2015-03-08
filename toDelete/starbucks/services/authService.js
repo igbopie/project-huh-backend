@@ -1,6 +1,6 @@
 'use strict';
 
-define(['../../libs/angular/angular.min', 'services'], function (angular, services) {
+define(['../../libs/angular/angular.min', '../services'], function (angular, services) {
   /* Services */
   return services
     .factory('AuthService', ['$http', '$cookieStore', function ($http, $cookieStore) {

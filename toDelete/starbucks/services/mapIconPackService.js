@@ -1,14 +1,14 @@
 'use strict';
 
-define(['../../libs/angular/angular.min', 'services'], function (angular, services) {
+define(['../../libs/angular/angular.min', '../services'], function (angular, services) {
   /* Services */
   return services
 
-    .service('TemplateService', ['$http', 'AuthService', function ($http, AuthService) {
+    .service('MapIconPackService', ['$http', 'AuthService', function ($http, AuthService) {
 
-      var urlBase = '/api/template';
+      var urlBase = '/api/mapicon/pack';
 
-      this.getTemplates = function (callback) {
+      this.list = function (callback) {
         $http.post(urlBase, {token: AuthService.getToken()}).success(function (data) {
           if (data.response) {
             callback(null, data.response);
@@ -20,7 +20,7 @@ define(['../../libs/angular/angular.min', 'services'], function (angular, servic
         });
       };
 
-      this.getTemplate = function (id, callback) {
+      this.view = function (id, callback) {
         $http.post(urlBase + '/view', {id: id, token: AuthService.getToken()}).success(function (data) {
           if (data.response) {
             callback(null, data.response);
@@ -32,13 +32,16 @@ define(['../../libs/angular/angular.min', 'services'], function (angular, servic
         });
       };
 
-      this.updateTemplate = function (id, name, price, mediaId, callback) {
+      this.update = function (id, name, tag, mediaId, pointsThreshold, isFree, appStoreCode, callback) {
         $http.post(urlBase + '/update', {
           id: id,
           name: name,
-          price: price,
+          tag: tag,
           mediaId: mediaId,
-          token: AuthService.getToken()
+          token: AuthService.getToken(),
+          pointsThreshold: pointsThreshold,
+          isFree: isFree,
+          appStoreCode: appStoreCode
         }).success(function (data) {
           if (data.response) {
             callback(null, data.response);
@@ -50,12 +53,15 @@ define(['../../libs/angular/angular.min', 'services'], function (angular, servic
         });
       };
 
-      this.createTemplate = function (name, price, mediaId, callback) {
+      this.create = function (name, tag, mediaId, pointsThreshold, isFree, appStoreCode, callback) {
         $http.post(urlBase + "/create", {
           token: AuthService.getToken(),
           name: name,
-          price: price,
-          mediaId: mediaId
+          tag: tag,
+          mediaId: mediaId,
+          pointsThreshold: pointsThreshold,
+          isFree: isFree,
+          appStoreCode: appStoreCode
         }).success(function (data) {
           if (data.response) {
             callback(null, data.response);
@@ -66,7 +72,7 @@ define(['../../libs/angular/angular.min', 'services'], function (angular, servic
           callback(error);
         });
       }
-      this.removeTemplate = function (id, callback) {
+      this.remove = function (id, callback) {
         $http.post(urlBase + "/remove", {token: AuthService.getToken(), id: id}).success(function (data) {
           if (data.code == 200) {
             callback(null);

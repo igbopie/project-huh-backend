@@ -17,15 +17,12 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "~3.2.0",
-    "angular": "~1.2.24",
-    "angular-route": "~1.2.24",
-    "angular-cookies": "~1.2.24",
     "danialfarid-angular-file-upload": "~1.6.5",
     "fontawesome": "~4.2.0",
     "blokk": "http://blokkfont.com/download.php?src=site",
     "redacted": "christiannaths/Redacted-Font",
     "jquery-timeago": "~1.4.1",
-    "requirejs": "~2.1.15"
+    "requirejs": "~2.1.15",
+    "angular-material": "~0.8.3"
   }
 }

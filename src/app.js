@@ -84,8 +84,6 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', index.index);
-
 app.get('/q/:questionId', index.question);
 
 //USER
