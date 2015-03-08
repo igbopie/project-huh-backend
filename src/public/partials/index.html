@@ -1,33 +1,36 @@
-<div layout="column" layout-fill>
-    <md-toolbar md-scroll-shrink>
-        <div class="md-toolbar-tools">
-            <h3>
-                <span>Huh?</span>
-            </h3>
-        </div>
-    </md-toolbar>
+
     <md-content>
         <md-list>
             <md-item ng-repeat="question in questions">
-                <md-item-content>
-                    <div class="md-tile-left"  style="background:{{question.type.color}}; text-align: center; color: white;">
+                <md-item-content class="question-container">
+                    <div class="md-tile-left question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
                         <!--img ng-src="{{item.face}}" alt="{{item.who}}" class="face" -->
                         <p>
                             {{question.type.word}}
                         </p>
                     </div>
-                    <div class="md-tile-content" >
-                        <span style="margin-left: 5px"> {{question.text}}?</span>
-                        <span> </span>
-                        <span>User: {{question.username}}</span>
-                        <span>Score: {{question.voteScore}}</span>
-                        <span>Replies: {{question.nComments}}</span>
-                        <!--span>{{question.created}}</span -->
+                    <div class="md-tile-content question-content" layout="column" layout-align="center">
+                        <div class="question-created"><span am-time-ago="question.created"></span></div>
+                        <div>
+                            <span class="question-text">{{question.text}}?</span>
 
+                        </div>
+                        <div>
+                            <span class="question-username">@{{question.username}}</span>
+                            <span class="question-replies">{{question.nComments}} Replies</span>
+                            <!--span>{{question.created}}</span -->
+                        </div>
+                    </div>
+                    <div  layout="column" layout-align="center">
+                        <span class="question-score" style="border-color:{{question.type.color}}">{{question.voteScore}}</span>
+                    </div>
+                    <div  layout="column" layout-align="center">
+                        <md-button class="md-fab md-primary" aria-label="See">
+                            <i class="fa fa-share-alt"></i>
+                        </md-button>
                     </div>
                 </md-item-content>
                 <md-divider inset></md-divider>
             </md-item>
         </md-list>
     </md-content>
-</div>

@@ -1,3 +1,42 @@
 body {
 }
+.question-container{
+    align-items: stretch;
+    padding-right: 20px;
+}
+.question-type-title{
+    text-align: right;
+    color: white;
+    padding-right: 5px;
+    padding-left: 20px;
+    font-size: 24px;
+}
 
+.question-content{
+    margin-left: 5px;
+}
+
+.question-score {
+    border: 1px solid #aaa;
+    border-radius: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: inline-block;
+    margin-right: 20px;
+}
+.question-created, .question-username, .question-replies{
+    color: #aaa;
+    font-size: 12px;
+}
+.question-text{
+
+}
+.md-button.md-default-theme.md-primary.md-raised, .md-button.md-default-theme.md-primary.md-fab {
+    font-size: 28px;
+}
+.inner-list{
+    width: 500px;
+    margin: auto;
+}
