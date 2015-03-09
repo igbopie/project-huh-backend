@@ -41,6 +41,11 @@ body {
     font-size: 28px;
 }
 .inner-list{
-    width: 500px;
-    margin: auto;
+    align-items: stretch;
+    justify-content: center;
+    display: flex;
+}
+.inner-list-child{
+    width: 100%;
+    max-width: 500px;
 }
