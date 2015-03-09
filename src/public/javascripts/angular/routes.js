@@ -12,8 +12,12 @@ define(['angular', 'app'], function (angular, app) {
         templateUrl: 'partials/index.html',
         controller: 'IndexCtrl'
       }).
+      when('/q/:questionId', {
+        templateUrl: 'partials/questiondetail.html',
+        controller: 'QuestionDetailCtrl'
+      }).
       otherwise({
-        redirectTo: '/templates'
+        redirectTo: '/'
       });
   }]);
 });

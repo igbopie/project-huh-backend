@@ -20,5 +20,17 @@ define(['angular', 'services'], function (angular, services) {
         });
       };
 
+      this.view = function (questionId, callback) {
+        $http.post(urlBase + "/view", {questionId: questionId}).success(function (data) {
+          if (data.response) {
+            callback(null, data.response);
+          } else {
+            callback(data.code);
+          }
+        }).error(function (error) {
+          callback(error);
+        });
+      };
+
     }]);
 });

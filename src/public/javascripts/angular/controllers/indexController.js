@@ -2,7 +2,7 @@
  * Created by igbopie on 11/16/14.
  */
 
-define(['angular', 'controllers', 'services/questionService'], function (angular, controllers) {
+define(['angular', 'controllers', 'services/questionService', 'services/commentService'], function (angular, controllers) {
 
   /* Controllers */
 
@@ -16,6 +16,34 @@ define(['angular', 'controllers', 'services/questionService'], function (angular
           console.log(list);
           $scope.questions = list;
         });
-      }]);
+
+        $scope.goToQuestion = function(question) {
+          $location.path("/q/" + question._id);
+        }
+
+      }])
+
+    .controller('QuestionDetailCtrl', ['$scope', '$http', "$location", "$routeParams", "QuestionService", "CommentService",
+      function ($scope, $http, $location, $routeParams, QuestionService, CommentService) {
+
+        $scope.question = {};
+        QuestionService.view($routeParams.questionId, function(err, question) {
+          console.log(question);
+          $scope.question = question;
+
+        });
+
+        CommentService.list($routeParams.questionId, function(err, comments) {
+          console.log(comments);
+          $scope.comments = comments;
+
+        });
+
+        /*$scope.goToQuestion = function(question) {
+          $location.path("/q/" + question._id);
+        }*/
+
+      }])
+    ;
 
 });

@@ -2,7 +2,7 @@
     <md-content>
         <md-list>
             <md-item ng-repeat="question in questions">
-                <md-item-content class="question-container">
+                <md-item-content class="question-container" ng-click="goToQuestion(question)">
                     <div class="md-tile-left question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
                         <!--img ng-src="{{item.face}}" alt="{{item.who}}" class="face" -->
                         <p>

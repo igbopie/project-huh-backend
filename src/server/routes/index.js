@@ -10,7 +10,7 @@ exports.index = function (req, res) {
 };
 
 exports.question = function (req, res) {
-  res.render('q', {title: 'Express'});
+  res.redirect('#/q/' + req.params.questionId);
 };
 
 
