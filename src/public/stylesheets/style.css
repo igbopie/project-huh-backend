@@ -2,6 +2,7 @@ body {
 }
 .question-container{
     align-items: stretch;
+    -webkit-align-items: stretch;
     padding-right: 20px;
 
 }
