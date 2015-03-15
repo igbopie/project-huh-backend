@@ -105,7 +105,14 @@ exports.cleanDatabase = function (callback) {
                 callback(err);
                 return;
               }
-              callback();
+              db.collection('notifications').remove(function (err) {
+                if (err) {
+                  console.log(err);
+                  callback(err);
+                  return;
+                }
+                callback();
+              });
             });
           });
         });

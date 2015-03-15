@@ -5,7 +5,20 @@ var mongoose = require('mongoose'),
   Apn = require("../utils/apn")
   ;
 
+var notificationSchema = new Schema({
+  message: {type: String, required: false},
+  userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+  created: {type: Date, required: true, default: Date.now},
+  read: {type: Boolean, required: true, default: false},
+  //DATA
+  questionId: {type: Schema.Types.ObjectId, required: false, ref: "Question"},
+  commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
+});
 
+notificationSchema.index({userId: 1, created: -1});
+notificationSchema.index({questionId: 1, created: -1});
+
+var Notification = mongoose.model('Notification', notificationSchema);
 
 //Service?
 var NotificationService = {};
@@ -38,25 +51,40 @@ var eyes = fixedFromCharCode(0x1F440);
 
 function sendNotification(userId, message, data) {
 
-  UserService.findById(userId, function (err, user) {
+  var notification = new Notification();
+  notification.message = message;
+  notification.userId = userId;
+  notification.commentId = data.commentId;
+  notification.questionId = data.questionId;
+
+  notification.save(function(err) {
     if (err) {
       console.error(err);
       return;
     }
-    if (!user) {
-      console.error("User not found:" + user);
-      return;
-    }
-    if (user.apnToken) {
-      Apn.send(user.apnToken, message, data);
-    }
-    /*if (user.gcmToken) {
-      Gcm.send(user.gcmToken, message, data);
-    }
-    if (user.email) {
-      //Email.send(user.email, message);
-    }*/
-    console.log("Notification To:" + userId + " Msg:" + message);
+
+    data.notificationId = notification._id;
+
+    UserService.findById(userId, function (err, user) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      if (!user) {
+        console.error("User not found:" + user);
+        return;
+      }
+      if (user.apnToken) {
+        Apn.send(user.apnToken, message, data);
+      }
+      /*if (user.gcmToken) {
+       Gcm.send(user.gcmToken, message, data);
+       }
+       if (user.email) {
+       //Email.send(user.email, message);
+       }*/
+      console.log("Notification To:" + userId + " Msg:" + message);
+    });
   });
 }
 NotificationService.onQuestionCreated = function(questionId, qType) {
@@ -150,5 +178,45 @@ NotificationService.onCommentDownVoted = function(commentId) {
 
     sendNotification(comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {questionId: comment.questionId, commentId: commentId});
   });
+};
 
+
+NotificationService.list = function (userId, page, numItems, callback) {
+  Notification.find(
+    {userId:userId},
+    null,
+    {
+      limit: numItems,
+      skip: numItems * page
+    })
+    .sort({ field: 'desc', created: -1 })
+    .exec(function(err, notifications){
+      if(err) return callback(err);
+
+      notifications = notifications.map(function(dbNot){
+        return {
+          message: dbNot.message,
+          questionId: dbNot.questionId,
+          commentId: dbNot.commentId,
+          created: dbNot.created,
+          read: dbNot.read
+
+        }
+      });
+
+      callback(null, notifications);
+
+    });
+};
+
+NotificationService.markAllAsRead = function (userId, callback) {
+  Notification.update(
+    {userId:userId},
+    {read: true},
+    {multi: true}, function (err, numberAffected, raw) {
+      if (err) return callback(err);
+      console.log('The number of updated documents was %d', numberAffected);
+      console.log('The raw response from Mongo was ', raw);
+      callback();
+    });
 };
