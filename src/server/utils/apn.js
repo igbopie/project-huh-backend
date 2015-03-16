@@ -113,7 +113,7 @@ function Apn(certificate, sandbox) {
 
   }.bind(this));
 
-  this.send = function (token, message, data) {
+  this.send = function (token, message, data, badge) {
 
     //b401a0af2b7edb04732cfb3575db3bdbbbd700ed940dbe0217b1d90329adc3a4
     //var nachoToken ="<b401a0af 2b7edb04 732cfb35 75db3bdb bbd700ed 940dbe02 17b1d903 29adc3a4>";
@@ -125,6 +125,7 @@ function Apn(certificate, sandbox) {
 
     var message = this.agent.createMessage()
       .device(token)
+      .badge(badge)
       .alert(message)
       .expires(0);
 

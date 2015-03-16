@@ -16,6 +16,7 @@ var notificationSchema = new Schema({
 });
 
 notificationSchema.index({userId: 1, created: -1});
+notificationSchema.index({userId: 1, read: 1});
 notificationSchema.index({questionId: 1, created: -1});
 
 var Notification = mongoose.model('Notification', notificationSchema);
@@ -65,25 +66,30 @@ function sendNotification(userId, message, data) {
 
     data.notificationId = notification._id;
 
-    UserService.findById(userId, function (err, user) {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      if (!user) {
-        console.error("User not found:" + user);
-        return;
-      }
-      if (user.apnToken) {
-        Apn.send(user.apnToken, message, data);
-      }
-      /*if (user.gcmToken) {
-       Gcm.send(user.gcmToken, message, data);
-       }
-       if (user.email) {
-       //Email.send(user.email, message);
-       }*/
-      console.log("Notification To:" + userId + " Msg:" + message);
+    Notification.count({ userId: userId, read: false }, function (err, badge) {
+        if (err) return console.error(err);
+
+
+      UserService.findById(userId, function (err, user) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        if (!user) {
+          console.error("User not found:" + user);
+          return;
+        }
+        if (user.apnToken) {
+          Apn.send(user.apnToken, message, data, badge);
+        }
+        /*if (user.gcmToken) {
+         Gcm.send(user.gcmToken, message, data);
+         }
+         if (user.email) {
+         //Email.send(user.email, message);
+         }*/
+        console.log("Notification To:" + userId + " Msg:" + message + " Badge: "+ badge);
+      });
     });
   });
 }
