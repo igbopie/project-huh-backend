@@ -154,7 +154,7 @@ function Apn(certificate, sandbox) {
 var apnDev = new Apn(devCert, true);
 var apnProd = new Apn(prodCert, false)
 
-exports.send = function (token, message, data) {
-  apnDev.send(token ,message, data);
-  apnProd.send(token ,message, data);
+exports.send = function (token, message, data, badge) {
+  apnDev.send(token ,message, data, badge);
+  apnProd.send(token ,message, data, badge);
 }
