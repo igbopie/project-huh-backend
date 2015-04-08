@@ -5,11 +5,22 @@ var mongoose = require('mongoose'),
   Apn = require("../utils/apn")
   ;
 
+var NOTIFICATION_TYPES = {
+  ON_QUESTION_POSTED: "OnQuestionPosted",
+  ON_COMMENT_ON_MY_QUESTION: "OnCommentOnMyQuestion",
+  ON_COMMENT_ON_MY_COMMENT: "OnCommentOnMyComment",
+  ON_UP_VOTE_ON_MY_QUESTION: "OnUpVoteOnMyQuestion",
+  ON_DOWN_VOTE_ON_MY_QUESTION: "OnDownVoteOnMyQuestion",
+  ON_UP_VOTE_ON_MY_COMMENT: "OnUpVoteOnMyComment",
+  ON_DOWN_VOTE_ON_MY_COMMENT: "OnDownVoteOnMyComment"
+};
+
 var notificationSchema = new Schema({
   message: {type: String, required: false},
   userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
   created: {type: Date, required: true, default: Date.now},
   read: {type: Boolean, required: true, default: false},
+  type: {type: String, required: true},
   //DATA
   questionId: {type: Schema.Types.ObjectId, required: false, ref: "Question"},
   commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
@@ -26,6 +37,7 @@ var NotificationService = {};
 
 // The exports is here to avoid cyclic dependency problem
 module.exports = {
+  NOTIFICATION_TYPES: NOTIFICATION_TYPES,
   Service: NotificationService
 };
 
@@ -33,6 +45,7 @@ module.exports = {
 var CommentService = require('../models/comment').Service;
 var QuestionService = require('../models/question').Service;
 var UserService = require('../models/user').Service;
+var SettingsService = require('../models/setting').Service;
 
 
 function fixedFromCharCode (codePt) {
@@ -50,9 +63,10 @@ var skull = fixedFromCharCode(0x1F480);
 var eyes = fixedFromCharCode(0x1F440);
 
 
-function sendNotification(userId, message, data) {
+function sendNotification(type, userId, message, data) {
 
   var notification = new Notification();
+  notification.type = type;
   notification.message = message;
   notification.userId = userId;
   notification.commentId = data.commentId;
@@ -79,16 +93,28 @@ function sendNotification(userId, message, data) {
           console.error("User not found:" + user);
           return;
         }
-        if (user.apnToken) {
-          Apn.send(user.apnToken, message, data, badge);
-        }
-        /*if (user.gcmToken) {
-         Gcm.send(user.gcmToken, message, data);
-         }
-         if (user.email) {
-         //Email.send(user.email, message);
-         }*/
-        console.log("Notification To:" + userId + " Msg:" + message + " Badge: "+ badge);
+        SettingsService.findOne(type, userId, function(err, setting){
+          if (err) {
+            console.error(err);
+            return;
+          }
+          if (!setting.value) {
+            console.log("Notification is off");
+            return;
+          }
+
+          if (user.apnToken) {
+            Apn.send(user.apnToken, message, data, badge);
+          }
+          /*if (user.gcmToken) {
+           Gcm.send(user.gcmToken, message, data);
+           }
+           if (user.email) {
+           //Email.send(user.email, message);
+           }*/
+          console.log("Notification To:" + userId + " Msg:" + message + " Badge: "+ badge);
+        });
+
       });
     });
   });
@@ -101,7 +127,7 @@ NotificationService.onQuestionCreated = function(questionId, qType) {
       if (err || !users) return;
       users.forEach(function(user){
         if (!user._id.equals(question.userId)) {
-          sendNotification(user._id, "WOOO! New question available @" + question.username+ ": "+ qType.word + " " + question.text, {
+          sendNotification(NOTIFICATION_TYPES.ON_QUESTION_POSTED, user._id, "WOOO! New question available @" + question.username+ ": "+ qType.word + " " + question.text, {
             questionId: questionId
           });
         }
@@ -124,7 +150,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
         if (err || !comments || comments.length === 0) return;
 
         // Send notification to author
-        sendNotification(question.userId, "Hey! "+eyes+" you have a new comment @" + comment.username + ": "+ comment.text, {questionId: questionId, commentId:commentId});
+        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, question.userId, "Hey! "+eyes+" you have a new comment @" + comment.username + ": "+ comment.text, {questionId: questionId, commentId:commentId});
 
         doNotSendAgain[question.userId] = true;
         doNotSendAgain[comment.userId] = true;
@@ -132,7 +158,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
           if (!doNotSendAgain[otherComment.userId]) {
 
             doNotSendAgain[otherComment.userId] = true;
-            sendNotification(otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ comment.text, {
+            sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ comment.text, {
               questionId: questionId,
               commentId: commentId
             });
@@ -157,7 +183,7 @@ NotificationService.onQuestionUpVoted = function(questionId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(question.userId, "People love you "+heart+" Your question has been up voted.", {questionId: questionId});
+    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "People love you "+heart+" Your question has been up voted.", {questionId: questionId});
   });
 };
 
@@ -165,7 +191,7 @@ NotificationService.onQuestionDownVoted = function(questionId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(question.userId, "Haters everywhere "+skull+" Your question has been down voted.", {questionId: questionId});
+    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId, "Haters everywhere "+skull+" Your question has been down voted.", {questionId: questionId});
   });
 };
 
@@ -173,7 +199,7 @@ NotificationService.onCommentUpVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(comment.userId, "People love you "+heart+" Your comment has been up voted.", {questionId: comment.questionId, commentId: commentId});
+    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "People love you "+heart+" Your comment has been up voted.", {questionId: comment.questionId, commentId: commentId});
   });
 };
 
@@ -182,7 +208,7 @@ NotificationService.onCommentDownVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {questionId: comment.questionId, commentId: commentId});
+    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {questionId: comment.questionId, commentId: commentId});
   });
 };
 
@@ -201,6 +227,7 @@ NotificationService.list = function (userId, page, numItems, callback) {
 
       notifications = notifications.map(function(dbNot){
         return {
+          type: dbNot.type,
           message: dbNot.message,
           questionId: dbNot.questionId,
           commentId: dbNot.commentId,

@@ -1,16 +1,16 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , dateUtils = require('date-utils')
+  , NOTIFICATION_TYPES = require('../models/notification').NOTIFICATION_TYPES;
   ;
-
 var NOTIFICATIONS = [
-  {name:"OnQuestionPosted", defaultValue: true, title:"New Question", description:"Send me a notification when a new question is posted."},
-  {name:"OnCommentOnMyQuestion", defaultValue: true, title:"Comment on my Question", description:"Send me a notification when someone comments on my question."},
-  {name:"OnCommentOnMyComment", defaultValue: true, title:"Comment on my Comment", description:"Send me a notification when someone comments on a question I'm participating in."},
-  {name:"OnUpVoteOnMyQuestion", defaultValue: true, title:"+1 My Question", description:"My Question was up voted."},
-  {name:"OnDownVoteOnMyQuestion", defaultValue: true, title:"-1 My Question", description:"My Question was down voted."},
-  {name:"OnUpVoteOnMyComment", defaultValue: true, title:"+1 My Comment", description:"My Comment was up voted."},
-  {name:"OnDownVoteOnMyComment", defaultValue: true, title:"-1 My Comment", description:"My Comment was up down voted."}
+  {name: NOTIFICATION_TYPES.ON_QUESTION_POSTED, defaultValue: true, title:"New Question", description:"Send me a notification when a new question is posted."},
+  {name: NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, defaultValue: true, title:"Comment on my Question", description:"Send me a notification when someone comments on my question."},
+  {name: NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, defaultValue: true, title:"Comment on my Comment", description:"Send me a notification when someone comments on a question I'm participating in."},
+  {name: NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, defaultValue: true, title:"+1 My Question", description:"My Question was up voted."},
+  {name: NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, defaultValue: true, title:"-1 My Question", description:"My Question was down voted."},
+  {name: NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, defaultValue: true, title:"+1 My Comment", description:"My Comment was up voted."},
+  {name: NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, defaultValue: true, title:"-1 My Comment", description:"My Comment was up down voted."}
 ];
 
 
@@ -45,10 +45,6 @@ service.update = function (name, value, userId, callback) {
   });
 };
 
-service.findOne = function (name, userId, callback) {
-  User.findOne({userId: userId, name: name}, callback);
-};
-
 service.findAll = function (userId, callback) {
   Setting.find({userId: userId}, function(err, userSettings){
     if (err) return callback(err);
@@ -80,6 +76,19 @@ service.findAll = function (userId, callback) {
 
     callback(null, totalSettings);
 
+  });
+};
+
+
+service.findOne = function (name, userId, callback) {
+  service.findAll(userId, function(err, settings){
+    if (err) return callback(err);
+    for (var key in settings) {
+      var setting = settings[key];
+      if (setting.name === name) {
+        return callback(null, setting);
+      }
+    }
   });
 };
 
