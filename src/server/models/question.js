@@ -356,7 +356,7 @@ QuestionService.incCommentCount = function (questionId, callback) {
 };
 
 QuestionService.findById = function (questionId, callback) {
-  Question.findOne({ _id: questionId }, callback);
+  Question.findOne({ _id: questionId }).populate('typeId').exec(callback);
 };
 
 QuestionService.view = function (questionId, userId, callback) {

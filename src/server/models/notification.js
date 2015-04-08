@@ -62,7 +62,9 @@ var heart = fixedFromCharCode(0x2764);
 var skull = fixedFromCharCode(0x1F480);
 var eyes = fixedFromCharCode(0x1F440);
 
-
+function getQuestionText(question){
+  return question.typeId.word + " " + question.text + "?";
+}
 function sendNotification(type, userId, message, data) {
 
   var notification = new Notification();
@@ -119,7 +121,7 @@ function sendNotification(type, userId, message, data) {
     });
   });
 }
-NotificationService.onQuestionCreated = function(questionId, qType) {
+NotificationService.onQuestionCreated = function(questionId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
@@ -127,9 +129,11 @@ NotificationService.onQuestionCreated = function(questionId, qType) {
       if (err || !users) return;
       users.forEach(function(user){
         if (!user._id.equals(question.userId)) {
-          sendNotification(NOTIFICATION_TYPES.ON_QUESTION_POSTED, user._id, "WOOO! New question available @" + question.username+ ": "+ qType.word + " " + question.text, {
+          var text = eyes+" \"" + getQuestionText(question) + "\"";
+          var data = {
             questionId: questionId
-          });
+          };
+          sendNotification(NOTIFICATION_TYPES.ON_QUESTION_POSTED, user._id, text, data);
         }
       });
     });
@@ -146,11 +150,17 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
       var nextBatch;
       var doNotSendAgain = {};
 
+      var text = eyes+" \""+ comment.text +"\" -> \"" + getQuestionText(question) + "\"";
+      var data = {
+        questionId: questionId,
+        commentId: commentId
+      };
+
       var sendNotificatonProcess = function(err, comments) {
         if (err || !comments || comments.length === 0) return;
 
         // Send notification to author
-        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, question.userId, "Hey! "+eyes+" you have a new comment @" + comment.username + ": "+ comment.text, {questionId: questionId, commentId:commentId});
+        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, question.userId, text , data);
 
         doNotSendAgain[question.userId] = true;
         doNotSendAgain[comment.userId] = true;
@@ -158,10 +168,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
           if (!doNotSendAgain[otherComment.userId]) {
 
             doNotSendAgain[otherComment.userId] = true;
-            sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, "A question you commented has a new comment @" + comment.username + ": "+ comment.text, {
-              questionId: questionId,
-              commentId: commentId
-            });
+            sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, text, data);
           }
         });
 
@@ -183,7 +190,7 @@ NotificationService.onQuestionUpVoted = function(questionId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "People love you "+heart+" Your question has been up voted.", {questionId: questionId});
+    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "+1 for \""+ getQuestionText(question) +"\"", {questionId: questionId});
   });
 };
 
@@ -191,7 +198,7 @@ NotificationService.onQuestionDownVoted = function(questionId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId, "Haters everywhere "+skull+" Your question has been down voted.", {questionId: questionId});
+    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId,  "-1 for \""+ getQuestionText(question) +"\"", {questionId: questionId});
   });
 };
 
@@ -199,7 +206,7 @@ NotificationService.onCommentUpVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "People love you "+heart+" Your comment has been up voted.", {questionId: comment.questionId, commentId: commentId});
+    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "+1 for \""+ comment.text +"\"", {questionId: comment.questionId, commentId: commentId});
   });
 };
 
@@ -208,7 +215,7 @@ NotificationService.onCommentDownVoted = function(commentId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "Haters everywhere "+skull+" Your comment has been down voted.", {questionId: comment.questionId, commentId: commentId});
+    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "-1 for \""+ comment.text +"\"", {questionId: comment.questionId, commentId: commentId});
   });
 };
 
