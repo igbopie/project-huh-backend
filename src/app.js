@@ -62,6 +62,7 @@ var comment = require('./server/routes/comment');
 var vote = require('./server/routes/vote');
 var flag = require('./server/routes/flag');
 var notification = require('./server/routes/notification');
+var setting = require('./server/routes/setting');
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
@@ -119,6 +120,9 @@ app.post('/api/vote/clear', vote.clear);
 
 app.post('/api/notification/list', notification.list);
 app.post('/api/notification/markallasread', notification.markAllAsRead);
+
+app.post('/api/setting/list', setting.list);
+app.post('/api/setting/update', setting.update);
 
 
 http.createServer(app).listen(app.get('port'), function () {
