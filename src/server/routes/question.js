@@ -44,7 +44,11 @@ exports.mine = function (req, res) {
   var userId = req.body.userId;
   var pagination = ApiUtils.getPaginationParams(req);
 
-  QuestionService.mine(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+  if (userId) {
+    QuestionService.mine(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+  } else {
+    ApiUtils.handleResult(req, res)("Invalid params");
+  }
 };
 
 exports.near = function (req, res) {
@@ -52,28 +56,40 @@ exports.near = function (req, res) {
   var latitude = req.body.latitude;
   var longitude = req.body.longitude;
   var pagination = ApiUtils.getPaginationParams(req);
-
-  QuestionService.near(userId, latitude, longitude, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+  if (latitude && longitude) {
+    QuestionService.near(userId, latitude, longitude, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+  } else {
+    ApiUtils.handleResult(req, res)("Invalid params");
+  }
 };
 
 exports.favorites = function (req, res) {
   var userId = req.body.userId;
   var pagination = ApiUtils.getPaginationParams(req);
 
-  QuestionVoteService.findUpVoteQuestionIds(userId, pagination.page, pagination.numItems,
-    ApiUtils.chainResult(req, res, function(questionIds) {
-      QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
-    })
-  );
+  if (userId) {
+    QuestionVoteService.findUpVoteQuestionIds(userId, pagination.page, pagination.numItems,
+      ApiUtils.chainResult(req, res, function (questionIds) {
+        QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
+      })
+    );
+  } else {
+      ApiUtils.handleResult(req, res)("Invalid params");
+  }
 };
 
 exports.commented = function (req, res) {
   var userId = req.body.userId;
   var pagination = ApiUtils.getPaginationParams(req);
 
-  CommentService.findCommentedQuestionIds(userId, pagination.page, pagination.numItems,
-    ApiUtils.chainResult(req, res, function(questionIds) {
-      QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
-    })
-  );
+
+  if (userId) {
+    CommentService.findCommentedQuestionIds(userId, pagination.page, pagination.numItems,
+      ApiUtils.chainResult(req, res, function(questionIds) {
+        QuestionService.processQuestionIds(questionIds, userId, ApiUtils.handleResult(req, res));
+      })
+    );
+  } else {
+    ApiUtils.handleResult(req, res)("Invalid params");
+  }
 };
