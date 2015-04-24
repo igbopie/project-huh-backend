@@ -76,13 +76,13 @@ QuestionVoteService.vote = function (score, questionId, userId, callback) {
       vote.save(function (err) {
         if (err) return callback(err);
 
-        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, callback);
+        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, userId, callback);
       });
     } else if (score === 0){
       vote.remove(function(err){
         if (err) return callback(err);
 
-        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, callback);
+        QuestionService.updateVoteScore(diffScore, score, newVote, questionId, userId, callback);
       })
     }
   });

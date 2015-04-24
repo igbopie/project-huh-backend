@@ -299,7 +299,7 @@ QuestionService.processQuestionIds = function (questionIds, userId, callback) {
     userId, 0, questionIds.length, callback);
 };
 
-QuestionService.updateVoteScore = function (voteIncrement, score, newVote, questionId, callback) {
+QuestionService.updateVoteScore = function (voteIncrement, score, newVote, questionId, userId, callback) {
   console.log(voteIncrement);
   var conditions = { _id: questionId }
     , update = { $inc: { voteScore: voteIncrement }}
@@ -335,9 +335,15 @@ QuestionService.updateVoteScore = function (voteIncrement, score, newVote, quest
 
   Question.findOneAndUpdate(conditions, update, options,
     function (err, question) {
+      if (err) return callback(err);
+
       question.popularScore = question.voteScore * question.createdScore;
       question.trendingScore = question.activity * question.createdScore;
-      question.save(callback(err));
+      question.save(function(err){
+        if (err) return callback(err);
+
+        processQuestion(question, userId, callback);
+      });
     });
 };
 
@@ -350,6 +356,8 @@ QuestionService.incCommentCount = function (questionId, callback) {
 
   Question.findOneAndUpdate(conditions, update, options,
     function (err, question) {
+      if (err) return callback(err);
+
       question.trendingScore = question.activity * question.createdScore;
       question.save(callback(err));
     });
