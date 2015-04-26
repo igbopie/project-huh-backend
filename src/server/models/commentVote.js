@@ -74,13 +74,13 @@ CommentVoteService.vote = function (score, commentId, userId, callback) {
       vote.save(function (err) {
         if (err) return callback(err);
 
-        CommentService.updateVoteScore(diffScore, score, newVote, commentId, callback);
+        CommentService.updateVoteScore(diffScore, score, newVote, commentId, userId, callback);
       });
     } else if (score === 0){
       vote.remove(function(err){
         if (err) return callback(err);
 
-        CommentService.updateVoteScore(diffScore, score, newVote, commentId, callback);
+        CommentService.updateVoteScore(diffScore, score, newVote, commentId, userId, callback);
       })
     }
   });

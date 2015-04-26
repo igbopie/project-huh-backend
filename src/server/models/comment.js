@@ -127,7 +127,7 @@ CommentService.listByQuestion = function (questionId, userId, page, numItems, ca
 
 
 
-CommentService.updateVoteScore = function (voteIncrement, score, newVote, commentId, callback) {
+CommentService.updateVoteScore = function (voteIncrement, score, newVote, commentId, userId, callback) {
   var conditions = { _id: commentId }
     , update = { $inc: { voteScore: voteIncrement }}
     , options = { multi: false };
@@ -159,9 +159,11 @@ CommentService.updateVoteScore = function (voteIncrement, score, newVote, commen
     }
   }
 
-  Comment.update(conditions, update, options,
-    function (err) {
-      callback(err);
+  Comment.findOneAndUpdate(conditions, update, options,
+    function (err, dbComment) {
+      if (err) return callback(err);
+
+      process(dbComment, userId, callback);
     });
 };
 
