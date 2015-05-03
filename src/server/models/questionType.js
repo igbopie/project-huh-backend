@@ -40,37 +40,37 @@ module.exports = {
 var initialList = [
   {
     word:"WHAT",
-    color:"#5CC6B0",
+    color:"#85E39D",
     weight: 0
   },
   {
     word:"WHERE",
-    color:"#FFCA00",
+    color:"#FFCF1A",
     weight: 10
   },
   {
     word:"WHEN",
-    color:"#FC4B4E",
+    color:"#E03A5D",
     weight: 20
   },
   {
     word:"WHY",
-    color:"#53ADE6",
+    color:"#52ACBE",
     weight: 30
   },
   {
     word:"WHO",
-    color:"#FF9200",
+    color:"#FF9C1B",
     weight: 40
   },
   {
     word:"HOW",
-    color:"#E35FA9",
+    color:"#F08596",
     weight: 50
   },
   {
     word:"WTF",
-    color:"#D1E89E",
+    color:"#A077D5",
     weight: 60
   }
 ];
