@@ -2,7 +2,8 @@ var mongoose = require('mongoose'),
   u = require('underscore'),
   Schema = mongoose.Schema,
   Utils = require('../utils/utils'),
-  Apn = require("../utils/apn")
+  Apn = require("../utils/apn"),
+  Gcm = require("../utils/gcm")
   ;
 
 var NOTIFICATION_TYPES = {
@@ -108,10 +109,10 @@ function sendNotification(type, userId, message, data) {
           if (user.apnToken) {
             Apn.send(user.apnToken, message, data, badge);
           }
-          /*if (user.gcmToken) {
-           Gcm.send(user.gcmToken, message, data);
-           }
-           if (user.email) {
+          if (user.gcmToken) {
+            Gcm.send(user.gcmToken, message, data);
+          }
+           /*if (user.email) {
            //Email.send(user.email, message);
            }*/
           console.log("Notification To:" + userId + " Msg:" + message + " Badge: "+ badge);
