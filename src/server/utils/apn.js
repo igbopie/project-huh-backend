@@ -23,7 +23,7 @@ function Apn(certificate, sandbox) {
   }
 
   this.feedback
-    //.set('interval', '30s') // default is 30 minutes?
+    .set('interval', '30s') // default is 30 minutes?
     .connect();
   this.feedback.set('concurrency', 1);
 

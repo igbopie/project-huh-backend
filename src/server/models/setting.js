@@ -4,7 +4,7 @@ var mongoose = require('mongoose')
   , NOTIFICATION_TYPES = require('../models/notification').NOTIFICATION_TYPES;
   ;
 var NOTIFICATIONS = [
-  {name: NOTIFICATION_TYPES.ON_QUESTION_POSTED, defaultValue: true, title:"New Question", description:"Send me a notification when a new question is posted."},
+  {name: NOTIFICATION_TYPES.ON_QUESTION_POSTED, defaultValue: false, title:"New Question", description:"Send me a notification when a new question is posted."},
   {name: NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, defaultValue: true, title:"Comment on my Question", description:"Send me a notification when someone comments on my question."},
   {name: NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, defaultValue: true, title:"Comment on my Comment", description:"Send me a notification when someone comments on a question I'm participating in."},
   {name: NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, defaultValue: true, title:"+1 My Question", description:"My Question was up voted."},
