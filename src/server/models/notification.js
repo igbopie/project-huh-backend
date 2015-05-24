@@ -190,36 +190,50 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
   });
 };
 
-NotificationService.onQuestionUpVoted = function(questionId) {
+NotificationService.onQuestionUpVoted = function(questionId, userId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "+1 for \""+ getQuestionText(question) +"\"", {questionId: questionId});
+    if (!question.userId.equals(userId)) {
+      sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "+1 for \"" + getQuestionText(question) + "\"", {questionId: questionId});
+    }
   });
 };
 
-NotificationService.onQuestionDownVoted = function(questionId) {
+NotificationService.onQuestionDownVoted = function(questionId, userId) {
   QuestionService.findById(questionId, function(err, question) {
     if (err || !question) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId,  "-1 for \""+ getQuestionText(question) +"\"", {questionId: questionId});
+    if (!question.userId.equals(userId)) {
+      sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId, "-1 for \"" + getQuestionText(question) + "\"", {questionId: questionId});
+    }
   });
 };
 
-NotificationService.onCommentUpVoted = function(commentId) {
+NotificationService.onCommentUpVoted = function(commentId, userId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "+1 for \""+ comment.text +"\"", {questionId: comment.questionId, commentId: commentId});
+    if (!comment.userId.equals(userId)) {
+      sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "+1 for \"" + comment.text + "\"", {
+        questionId: comment.questionId,
+        commentId: commentId
+      });
+    }
   });
 };
 
 
-NotificationService.onCommentDownVoted = function(commentId) {
+NotificationService.onCommentDownVoted = function(commentId, userId) {
   CommentService.findById(commentId, function(err, comment) {
     if (err || !comment) return;
 
-    sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "-1 for \""+ comment.text +"\"", {questionId: comment.questionId, commentId: commentId});
+    if (!comment.userId.equals(userId)) {
+      sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "-1 for \"" + comment.text + "\"", {
+        questionId: comment.questionId,
+        commentId: commentId
+      });
+    }
   });
 };
 

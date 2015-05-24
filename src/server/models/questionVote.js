@@ -35,18 +35,18 @@ QuestionVoteService.findVote = function (questionId, userId, callback) {
 
 QuestionVoteService.upVote = function (questionId, userId, callback) {
   QuestionVoteService.vote(1, questionId, userId, callback);
-  NotificationService.onQuestionUpVoted(questionId);
+  NotificationService.onQuestionUpVoted(questionId, userId);
 };
 
 QuestionVoteService.downVote = function (questionId, userId, callback) {
   QuestionVoteService.vote(-1, questionId, userId, callback);
-  NotificationService.onQuestionDownVoted(questionId);
+  NotificationService.onQuestionDownVoted(questionId, userId);
 };
 
 
 QuestionVoteService.clearVote = function (questionId, userId, callback) {
   QuestionVoteService.vote(0, questionId, userId, callback);
-  NotificationService.onQuestionDownVoted(questionId);
+  //NotificationService.onQuestionDownVoted(questionId, userId);
 };
 
 QuestionVoteService.vote = function (score, questionId, userId, callback) {

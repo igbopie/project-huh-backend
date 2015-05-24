@@ -34,17 +34,17 @@ CommentVoteService.findVote = function (commentId, userId, callback) {
 
 CommentVoteService.upVote = function (commentId, userId, callback) {
   CommentVoteService.vote(1, commentId, userId, callback);
-  NotificationService.onCommentUpVoted(commentId);
+  NotificationService.onCommentUpVoted(commentId, userId);
 };
 
 CommentVoteService.downVote = function (commentId, userId, callback) {
   CommentVoteService.vote(-1, commentId, userId, callback);
-  NotificationService.onCommentDownVoted(commentId);
+  NotificationService.onCommentDownVoted(commentId, userId);
 };
 
 CommentVoteService.clearVote = function (commentId, userId, callback) {
   CommentVoteService.vote(0, commentId, userId, callback);
-  NotificationService.onCommentDownVoted(commentId);
+  //NotificationService.onCommentDownVoted(commentId, userId);
 };
 
 CommentVoteService.vote = function (score, commentId, userId, callback) {
