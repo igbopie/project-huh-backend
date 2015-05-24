@@ -157,14 +157,17 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
         commentId: commentId
       };
 
+      doNotSendAgain[comment.userId] = true;
+
+      // Send notification to author if not the same
+      if (!doNotSendAgain[question.userId]) {
+        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, question.userId, text, data);
+        doNotSendAgain[question.userId] = true;
+      }
+
       var sendNotificatonProcess = function(err, comments) {
         if (err || !comments || comments.length === 0) return;
 
-        // Send notification to author
-        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_QUESTION, question.userId, text , data);
-
-        doNotSendAgain[question.userId] = true;
-        doNotSendAgain[comment.userId] = true;
         comments.forEach(function(otherComment){
           if (!doNotSendAgain[otherComment.userId]) {
 
