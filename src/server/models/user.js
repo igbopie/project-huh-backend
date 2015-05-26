@@ -87,7 +87,23 @@ service.removeGcmToken = function (userId, callback) {
 service.unsubscribeApn = function(apnToken, callback) {
   User.where("apnToken").equals(apnToken)
     .exec(function (err, users) {
-      callback(err);
+      if (err) {
+        callback(err);
+      } else {
+        users.forEach(function (user, next) {
+          console.log("Unsubscribing user:" + user)
+          // this device hasn't pinged our api since it unsubscribed
+          if (user.apnSubscribeDate <= ts) {
+            user.apnToken = null;
+            user.apnSubscribeDate = null;
+            user.save(next);
+          }
+          // we have seen this device recently so we don't need to deactive it
+          else {
+            next();
+          }
+        }, done);
+      }
     });
 }
 
