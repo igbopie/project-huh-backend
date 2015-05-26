@@ -84,6 +84,13 @@ exports.removeGcmToken = function (userId, callback) {
   });
 };
 
+exports.unsubscribeApn = function(apnToken, callback) {
+  User.where("apnToken").equals(apnToken)
+    .exec(function (err, users) {
+      callback(err);
+    });
+}
+
 
 module.exports = {
   Service: service

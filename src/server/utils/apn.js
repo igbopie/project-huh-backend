@@ -5,7 +5,7 @@
 var join = require('path').join;
 // Create a new agent
 var apnagent = require('apnagent');
-var User = require('../models/user').User;
+var UserService = require('../models/user').Service;
 var prodCert = join(__dirname, '../../../_certs/HuhAPNProd.p12');
 var devCert = join(__dirname, '../../../_certs/HuhAPNDev.p12');
 
@@ -35,42 +35,37 @@ function Apn(certificate, sandbox) {
   });
 
 
+  this.feedback.set("pfx file", certificate);
+
   this.feedback
     .set('interval', '30s') // default is 30 minutes?
     .connect();
   this.feedback.set('concurrency', 1);
 
-
   this.feedback.use(function (device, timestamp, done) {
     var token = device.toString()
       , ts = timestamp.getTime();
 
-
     console.log("I should unsubscribe token:" + token)
-    User
-      .where("apnToken").equals(token)
-      .exec(function (err, users) {
-        if (err) {
-          console.log("Error apn unsubscribing:" + err);
-        } else {
-          users.forEach(function (user, next) {
-            console.log("Unsubscribing user:" + user)
-            // this device hasn't pinged our api since it unsubscribed
-            if (device.apnSubscribeDate <= ts) {
-              device.apnToken = null;
-              device.apnSubscribeDate = null;
-              device.save(next);
-            }
-            // we have seen this device recently so we don't need to deactive it
-            else {
-              next();
-            }
-          }, done);
-        }
-
-      });
-
-
+    UserService.unsubscribeApn(token, function(err) {
+      if (err) {
+        console.log("Error apn unsubscribing:" + err);
+      } else {
+        users.forEach(function (user, next) {
+          console.log("Unsubscribing user:" + user)
+          // this device hasn't pinged our api since it unsubscribed
+          if (device.apnSubscribeDate <= ts) {
+            device.apnToken = null;
+            device.apnSubscribeDate = null;
+            device.save(next);
+          }
+          // we have seen this device recently so we don't need to deactive it
+          else {
+            next();
+          }
+        }, done);
+      }
+    });
   });
 
 
