@@ -72,7 +72,7 @@ service.addGcmToken = function (gcmToken, userId, callback) {
   });
 }
 
-exports.removeGcmToken = function (userId, callback) {
+service.removeGcmToken = function (userId, callback) {
   User.findById(userId, function(err, user) {
     user.gcmToken = undefined;
     user.gcmSubscribeDate = undefined;
@@ -84,7 +84,7 @@ exports.removeGcmToken = function (userId, callback) {
   });
 };
 
-exports.unsubscribeApn = function(apnToken, callback) {
+service.unsubscribeApn = function(apnToken, callback) {
   User.where("apnToken").equals(apnToken)
     .exec(function (err, users) {
       callback(err);
