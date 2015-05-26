@@ -102,7 +102,7 @@ service.unsubscribeApn = function(apnToken, callback) {
           else {
             next();
           }
-        }, done);
+        }, callback);
       }
     });
 }

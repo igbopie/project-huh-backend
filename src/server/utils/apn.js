@@ -53,6 +53,7 @@ function Apn(certificate, sandbox) {
       } else {
         console.log("Success unsubscribing.");
       }
+      done()
     });
   });
 
