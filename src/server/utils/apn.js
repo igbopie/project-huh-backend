@@ -22,6 +22,19 @@ function Apn(certificate, sandbox) {
     this.agent.enable('sandbox');
   }
 
+  this.feedback.on("feedback:connect", function() {
+    console.log("APN Feedback Connected");
+  });
+
+  this.feedback.on("feedback:close", function() {
+    console.log("APN Feedback Closed");
+  });
+
+  this.feedback.on("feedback:error", function(error) {
+    console.error("APN Feedback Error: "+error);
+  });
+
+
   this.feedback
     .set('interval', '30s') // default is 30 minutes?
     .connect();
