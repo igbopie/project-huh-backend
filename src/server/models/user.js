@@ -36,7 +36,7 @@ service.findAll = function (callback) {
 };
 
 service.addApnToken = function(apnToken, userId, callback) {
-  service.unsubscribeApn(apnToken, Date.now(), true, function(){
+  service.unsubscribeApn(apnToken, Date.now(), true, function(err){
     if (err) return callback(err);
 
     User.findById(userId, function(err, user) {
