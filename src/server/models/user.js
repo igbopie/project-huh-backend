@@ -36,21 +36,17 @@ service.findAll = function (callback) {
 };
 
 service.addApnToken = function(apnToken, userId, callback) {
-  User.find({apnToken: apnToken}, function(err, users){
+  service.unsubscribeApn(apnToken, Date.now(), true, function(){
     if (err) return callback(err);
 
-    service.unsubscribeApn(apnToken, now(), true, function(){
+    User.findById(userId, function(err, user) {
       if (err) return callback(err);
-
-      User.findById(userId, function(err, user) {
+      user.apnToken = apnToken;
+      user.apnSubscribeDate = Date.now();
+      user.save(function (err) {
         if (err) return callback(err);
-        user.apnToken = apnToken;
-        user.apnSubscribeDate = Date.now();
-        user.save(function (err) {
-          if (err) return callback(err);
 
-          callback();
-        });
+        callback();
       });
     });
   });
