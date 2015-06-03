@@ -47,7 +47,7 @@ function Apn(certificate, sandbox) {
       , ts = timestamp.getTime();
 
     console.log("I should unsubscribe token:" + token)
-    UserService.unsubscribeApn(token, ts, function(err) {
+    UserService.unsubscribeApn(token, ts, false, function(err) {
       if (err) {
         console.log("Error apn unsubscribing:" + err);
       } else {

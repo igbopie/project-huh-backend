@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "apnagent": "1.0.x",
+    "async": "^1.2.0",
     "aws-sdk": "^2.0.17",
     "bcrypt": "~0.7.7",
     "bitly": "^1.2.5",

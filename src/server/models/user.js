@@ -13,6 +13,8 @@ var userSchema = new Schema({
   gcmSubscribeDate: {type: Date, required: false}
 });
 
+userSchema.index({apnToken: 1});
+
 var User = mongoose.model('User', userSchema);
 
 //Service
@@ -34,14 +36,22 @@ service.findAll = function (callback) {
 };
 
 service.addApnToken = function(apnToken, userId, callback) {
-  User.findById(userId, function(err, user) {
+  User.find({apnToken: apnToken}, function(err, users){
     if (err) return callback(err);
-    user.apnToken = apnToken;
-    user.apnSubscribeDate = Date.now();
-    user.save(function (err) {
+
+    service.unsubscribeApn(apnToken, now(), true, function(){
       if (err) return callback(err);
 
-      callback();
+      User.findById(userId, function(err, user) {
+        if (err) return callback(err);
+        user.apnToken = apnToken;
+        user.apnSubscribeDate = Date.now();
+        user.save(function (err) {
+          if (err) return callback(err);
+
+          callback();
+        });
+      });
     });
   });
 }
@@ -84,7 +94,7 @@ service.removeGcmToken = function (userId, callback) {
   });
 };
 
-service.unsubscribeApn = function(apnToken, ts, callback) {
+service.unsubscribeApn = function(apnToken, ts, force,  callback) {
   User.where("apnToken").equals(apnToken)
     .exec(function (err, users) {
       if (err) {
@@ -93,7 +103,7 @@ service.unsubscribeApn = function(apnToken, ts, callback) {
         users.forEach(function (user, next) {
           console.log("Unsubscribing user:" + user)
           // this device hasn't pinged our api since it unsubscribed
-          if (user.apnSubscribeDate <= ts) {
+          if (user.apnSubscribeDate <= ts || force) {
             user.apnToken = null;
             user.apnSubscribeDate = null;
             user.save(next);
