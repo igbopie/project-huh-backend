@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , dateUtils = require('date-utils')
+  , Async = require('async')
   ;
 
 
@@ -96,7 +97,7 @@ service.unsubscribeApn = function(apnToken, ts, force,  callback) {
       if (err) {
         callback(err);
       } else {
-        users.forEach(function (user, next) {
+        Async.each(users,function (user, next) {
           console.log("Unsubscribing user:" + user)
           // this device hasn't pinged our api since it unsubscribed
           if (user.apnSubscribeDate <= ts || force) {
