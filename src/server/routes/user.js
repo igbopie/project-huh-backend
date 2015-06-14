@@ -32,3 +32,10 @@ exports.removeGcmToken = function (req, res) {
   UserService.removeGcmToken(userId, ApiUtils.handleResult(req, res));
 };
 
+exports.updateLocation = function (req, res) {
+  var userId = req.body.userId;
+  var latitude = req.body.latitude;
+  var longitude = req.body.longitude;
+  UserService.updateLocation(userId, latitude, longitude, ApiUtils.handleResult(req, res));
+};
+

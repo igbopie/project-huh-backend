@@ -1,8 +1,9 @@
-var mongoose = require('mongoose')
-  , Schema = mongoose.Schema
-  , dateUtils = require('date-utils')
-  , Async = require('async')
-  ;
+var mongoose = require('mongoose'),
+  Schema = mongoose.Schema,
+  dateUtils = require('date-utils'),
+  Async = require('async'),
+  LOCATION_LONGITUDE = 0,
+  LOCATION_LATITUDE = 1;
 
 
 var userSchema = new Schema({
@@ -11,7 +12,8 @@ var userSchema = new Schema({
   apnToken: {type: String, required: false}, //iOs notification
   apnSubscribeDate: {type: Date, required: false},
   gcmToken: {type: String, required: false}, //Android notification
-  gcmSubscribeDate: {type: Date, required: false}
+  gcmSubscribeDate: {type: Date, required: false},
+  location: {type: [Number], required: false, index: '2dsphere'}
 });
 
 userSchema.index({apnToken: 1});
@@ -112,7 +114,23 @@ service.unsubscribeApn = function(apnToken, ts, force,  callback) {
         }, callback);
       }
     });
-}
+};
+
+service.updateLocation = function(userId, latitude, longitude, callback) {
+  service.findById(userId, function(err, user){
+    if (err) return callback(err);
+    if (latitude !== undefined &&
+      latitude !== null &&
+      longitude !== undefined &&
+      longitude !== null) {
+      var locationArray = [];
+      locationArray[LOCATION_LONGITUDE] = longitude;
+      locationArray[LOCATION_LATITUDE] = latitude;
+      user.location = locationArray;
+    }
+    user.save(callback)
+  });
+};
 
 
 module.exports = {
