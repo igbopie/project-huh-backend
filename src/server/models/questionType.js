@@ -69,8 +69,13 @@ var initialList = [
     weight: 50
   },
   {
+    word:"WHICH",
+    color:"#34495E",
+    weight: 55
+  },
+  {
     word:"WTF",
-    color:"#A077D5",
+    color:"#6D72CE",
     weight: 60
   }
 ];
