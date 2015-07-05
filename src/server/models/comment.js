@@ -206,3 +206,12 @@ CommentService.findById = function (commentId, callback) {
 };
 
 
+CommentService.view = function (commentId, userId, callback) {
+  Comment.findOne({ _id: commentId }, function(err, dbComment) {
+    if (err) return callback(err);
+
+    process(dbComment, userId, callback);
+  });
+};
+
+

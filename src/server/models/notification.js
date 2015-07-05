@@ -3,7 +3,8 @@ var mongoose = require('mongoose'),
   Schema = mongoose.Schema,
   Utils = require('../utils/utils'),
   Apn = require("../utils/apn"),
-  Gcm = require("../utils/gcm")
+  Gcm = require("../utils/gcm"),
+  Async = require("async")
   ;
 
 var NOTIFICATION_TYPES = {
@@ -250,20 +251,35 @@ NotificationService.list = function (userId, page, numItems, callback) {
     .exec(function(err, notifications){
       if(err) return callback(err);
 
-      notifications = notifications.map(function(dbNot){
-        return {
-          type: dbNot.type,
-          message: dbNot.message,
-          questionId: dbNot.questionId,
-          commentId: dbNot.commentId,
-          created: dbNot.created,
-          read: dbNot.read
+      Async.map(
+        notifications,
+        function(dbNot){
+          var notification = {
+            type: dbNot.type,
+            message: dbNot.message,
+            questionId: dbNot.questionId,
+            commentId: dbNot.commentId,
+            created: dbNot.created,
+            read: dbNot.read
+          };
 
+          QuestionService.view(notification.questionId, userId, function(err, question){
+            notification.question = question;
+
+            if (notification.commentId) {
+              CommentService.view(notification.commentId, userId, function(err, comment){
+                notification.comment = comment;
+                callback(err, notification);
+              });
+            } else {
+              callback(err, notification);
+            }
+          });
+        },
+        function(err, results){
+          callback(err, results);
         }
-      });
-
-      callback(null, notifications);
-
+      );
     });
 };
 
