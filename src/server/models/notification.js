@@ -253,7 +253,7 @@ NotificationService.list = function (userId, page, numItems, callback) {
 
       Async.map(
         notifications,
-        function(dbNot){
+        function(dbNot, callback){
           var notification = {
             type: dbNot.type,
             message: dbNot.message,
