@@ -174,11 +174,12 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
         comments.forEach(function(otherComment){
           if (!doNotSendAgain[otherComment.userId]) {
 
-            var data = u.defaults({
+            var newData = u.defaults({
               commentNewId: otherComment._id
             }, data);
+
             doNotSendAgain[otherComment.userId] = true;
-            sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, text, data);
+            sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, text, newData);
           }
         });
 
@@ -264,6 +265,7 @@ NotificationService.list = function (userId, page, numItems, callback) {
             message: dbNot.message,
             questionId: dbNot.questionId,
             commentId: dbNot.commentId,
+            commentNewId: dbNot.commentNewId,
             created: dbNot.created,
             read: dbNot.read
           };

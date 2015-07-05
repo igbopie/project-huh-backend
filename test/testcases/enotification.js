@@ -42,8 +42,13 @@ describe('Notification', function () {
               if (err) return done(err);
 
               comment._id = data._id;
+              comment.userId = users[2]._id;
 
-              done();
+              Comment.create(comment, function(err, data) {
+                if (err) return done(err);
+
+                done();
+              });
             });
           }
         );
@@ -65,8 +70,11 @@ describe('Notification', function () {
             Notification.markAllAsRead({userId: users[0]._id}, function(err, notifications) {
               Notification.list({userId: users[0]._id}, function(err, notifications) {
                 console.log(notifications);
+                Notification.list({userId: users[1]._id}, function(err, notifications) {
+                  console.log(notifications);
 
-                done();
+                  done();
+                });
               });
             });
           });
