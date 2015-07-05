@@ -25,7 +25,8 @@ var notificationSchema = new Schema({
   type: {type: String, required: true},
   //DATA
   questionId: {type: Schema.Types.ObjectId, required: false, ref: "Question"},
-  commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
+  commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"},
+  commentNewId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
 });
 
 notificationSchema.index({userId: 1, created: -1});
@@ -74,6 +75,7 @@ function sendNotification(type, userId, message, data) {
   notification.message = message;
   notification.userId = userId;
   notification.commentId = data.commentId;
+  notification.commentNewId = data.commentNewId;
   notification.questionId = data.questionId;
 
   notification.save(function(err) {
@@ -172,6 +174,9 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
         comments.forEach(function(otherComment){
           if (!doNotSendAgain[otherComment.userId]) {
 
+            var data = u.defaults({
+              commentNewId: otherComment._id
+            }, data);
             doNotSendAgain[otherComment.userId] = true;
             sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, text, data);
           }
@@ -269,7 +274,15 @@ NotificationService.list = function (userId, page, numItems, callback) {
             if (notification.commentId) {
               CommentService.view(notification.commentId, userId, function(err, comment){
                 notification.comment = comment;
-                callback(err, notification);
+
+                if (notification.commentNewId) {
+                  CommentService.view(notification.commentNewId, userId, function(err, comment) {
+                    notification.commentNew = comment;
+                    callback(err, notification);
+                  });
+                } else {
+                  callback(err, notification);
+                }
               });
             } else {
               callback(err, notification);

@@ -22,6 +22,7 @@
     "gm": "^1.14.2",
     "iso8601": "^1.1.1",
     "jade": "*",
+    "lodash": "^3.10.0",
     "mkdirp": "^0.5.0",
     "mongoose": "~3.8.8",
     "mongoose-text-search": "0.0.2",
