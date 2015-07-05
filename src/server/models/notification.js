@@ -26,7 +26,7 @@ var notificationSchema = new Schema({
   //DATA
   questionId: {type: Schema.Types.ObjectId, required: false, ref: "Question"},
   commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"},
-  commentNewId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
+  yourCommentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
 });
 
 notificationSchema.index({userId: 1, created: -1});
@@ -75,7 +75,7 @@ function sendNotification(type, userId, message, data) {
   notification.message = message;
   notification.userId = userId;
   notification.commentId = data.commentId;
-  notification.commentNewId = data.commentNewId;
+  notification.yourCommentId = data.yourCommentId;
   notification.questionId = data.questionId;
 
   notification.save(function(err) {
@@ -175,7 +175,7 @@ NotificationService.onQuestionCommented = function(questionId, commentId) {
           if (!doNotSendAgain[otherComment.userId]) {
 
             var newData = u.defaults({
-              commentNewId: otherComment._id
+              yourCommentId: otherComment._id
             }, data);
 
             doNotSendAgain[otherComment.userId] = true;
@@ -265,7 +265,7 @@ NotificationService.list = function (userId, page, numItems, callback) {
             message: dbNot.message,
             questionId: dbNot.questionId,
             commentId: dbNot.commentId,
-            commentNewId: dbNot.commentNewId,
+            yourCommentId: dbNot.yourCommentId,
             created: dbNot.created,
             read: dbNot.read
           };
@@ -277,9 +277,9 @@ NotificationService.list = function (userId, page, numItems, callback) {
               CommentService.view(notification.commentId, userId, function(err, comment){
                 notification.comment = comment;
 
-                if (notification.commentNewId) {
-                  CommentService.view(notification.commentNewId, userId, function(err, comment) {
-                    notification.commentNew = comment;
+                if (notification.yourCommentId) {
+                  CommentService.view(notification.yourCommentId, userId, function(err, comment) {
+                    notification.yourComment = comment;
                     callback(err, notification);
                   });
                 } else {
