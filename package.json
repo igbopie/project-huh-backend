@@ -3,8 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node dist/app.js",
-    "postinstall": "node node_modules/gulp/bin/gulp.js build-frontend"
   },
   "dependencies": {
     "apnagent": "1.0.x",

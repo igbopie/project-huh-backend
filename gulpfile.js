@@ -8,7 +8,7 @@ var mkdirp = require('mkdirp');
 var clean = require('gulp-clean');
 var bower = require('gulp-bower');
 
-gulp.task('run',['build-frontend'] , function() {
+gulp.task('run-dev',['build-frontend'] , function() {
   /*
   #!/bin/bash
   export =
@@ -36,8 +36,13 @@ gulp.task('run',['build-frontend'] , function() {
     var app = require("./dist/app");
 
   });
-
 });
+
+gulp.task('run',['build-frontend'] , function() {
+  //run app
+  var app = require("./dist/app");
+});
+
 gulp.task('clean', function() {
   return gulp.src('dist', {read: false})
     .pipe(clean());

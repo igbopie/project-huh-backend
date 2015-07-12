@@ -1,1 +1,1 @@
-web: node src/app.js
+web: node node_modules/gulp/bin/gulp run
