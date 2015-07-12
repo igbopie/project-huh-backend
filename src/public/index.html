@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
+    <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/libs/fontawesome/css/font-awesome.min.css">
     <!-- Angulars Material CSS now available via Google CDN; version 0.7 used here -->
     <link rel="stylesheet" href="/libs/angular-material/angular-material.min.css">
@@ -15,18 +15,7 @@
     <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
-    <div layout="column" layout-fill>
-        <md-toolbar md-scroll-shrink>
-            <div class="md-toolbar-tools">
-                <h3>
-                    <span>Huh?</span>
-                </h3>
-            </div>
-        </md-toolbar>
-        <div class="inner-list">
-            <div ng-view class="inner-list-child"></div>
-        </div>
-    </div>
+    <div ng-view></div>
 
 
     <script  data-main="javascripts/angular/main" src="/libs/requirejs/require.js"></script>

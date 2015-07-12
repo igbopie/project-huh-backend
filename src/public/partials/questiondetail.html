@@ -1,24 +1,33 @@
 
+<md-toolbar md-scroll-shrink>
+    <div class="md-toolbar-tools">
+        <img class="logo" src="/images/huh.png" />
+        <img class="logo-text" src="/images/huh-logo-text.png" />
+        <h3>
+        </h3>
+    </div>
+</md-toolbar>
+<div class="inner-list">
+
+    <div layout="column" layout-fill  class="inner-list-child">
     <md-content>
         <md-item-content class="question-container" ng-click="goToQuestion(question)">
-            <div class="md-tile-left question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
-                <p>
-                    {{question.type.word}}
-                </p>
+            <div class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
             </div>
             <div class="md-tile-content question-content" layout="column" layout-align="center">
-                <div class="question-created"><span am-time-ago="question.created"></span></div>
+                <div class="question-created">{{question.username}}</div>
+                <div class="question-profile-image"><img src="/images/usericons/{{question.username.toLowerCase()}}.png" /> </div>
                 <div class="question-text">
-                    {{question.text}}?
+                    <span style="color:{{question.type.color}};" >{{question.type.word}}</span> {{question.text}}?
                 </div>
                 <div class="question-more" >
-                    <span class="question-username">@{{question.username}}</span>
+                    <span class="question-username"><span am-time-ago="question.created"></span></span>
                     <span class="question-replies">{{question.nComments}} replies</span>
                     <!--span>{{question.created}}</span -->
                 </div>
             </div>
             <div  layout="column" layout-align="center">
-                <span class="question-score" style="border-color:{{question.type.color}}">{{question.voteScore}}</span>
+                <span class="question-score">{{question.voteScore}}</span>
             </div>
         </md-item-content>
         <md-divider inset></md-divider>
@@ -47,3 +56,6 @@
             </md-item>
         </md-list>
     </md-content>
+
+    </div>
+    </div>
