@@ -19,3 +19,4 @@ node_modules
 db
 src/public/libs
 src/public/libs/**
+dist

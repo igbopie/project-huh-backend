@@ -19,6 +19,8 @@
  * MONGOLAB_URI || MONGOHQ_URL (HEROKU CONFIG)
  *
  */
+global.__base = __dirname + '/';
+
 console.log("STARTING UP CHECKING ENV...")
 if (process.env.MONGOLAB_URI) {
   console.log("Using MONGO LAB")
@@ -47,22 +49,21 @@ console.log("STARTING UP ENV CHECKED.")
  */
 
 var express = require('express');
-var routes = require('./server/routes');
 var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose');
 var app = express();
 
 //ROUTES
-var index = require('./server/routes/index');
-var user = require('./server/routes/user');
-var question = require('./server/routes/question');
-var questionType = require('./server/routes/questionType');
-var comment = require('./server/routes/comment');
-var vote = require('./server/routes/vote');
-var flag = require('./server/routes/flag');
-var notification = require('./server/routes/notification');
-var setting = require('./server/routes/setting');
+var index = require(__base + 'server/routes/index');
+var user = require(__base + 'server/routes/user');
+var question = require(__base + 'server/routes/question');
+var questionType = require(__base + 'server/routes/questionType');
+var comment = require(__base + 'server/routes/comment');
+var vote = require(__base + 'server/routes/vote');
+var flag = require(__base + 'server/routes/flag');
+var notification = require(__base + 'server/routes/notification');
+var setting = require(__base + 'server/routes/setting');
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
