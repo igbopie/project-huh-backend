@@ -1,5 +1,6 @@
 @import "angular-material.min.css";
 @import "font-awesome.min.css";
+@import "bourbon";
 
 body {
     font-family: 'Varela Round', sans-serif;
@@ -24,51 +25,60 @@ md-toolbar.md-default-theme {
     -webkit-align-items: stretch;
     padding-right: 20px;
     cursor: pointer;
-}
-.question-container:hover {
-    background: #fafafa;
-}
-.question-type-title{
-    min-width: 30px;
-}
-.question-profile-image {
-    position: absolute;
-    top: 10px;
-    left: 15px;
 
-}
-.question-profile-image img {
-    width: 32px;
-    background: #eaeaea;
-    border-radius: 20px;
-    padding: 3px;
-}
+    &:hover {
+        background: #fafafa;
+    }
 
-.question-content{
-    padding-left: 25px;
-    padding-right: 25px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-}
 
-.question-replies {
-    float: right;
-}
+    .question-score-container{
+        @include flex(inherit);
+    }
 
-.question-score {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    display: inline-block;
-}
-.question-created, .question-more, .comment-created{
-    color: #aaa;
-    font-size: 12px;
-}
-.question-text{
-    margin-top: 10px;
-    margin-bottom: 10px;
+    .question-type-title{
+        @include flex(inherit);
+        min-width: 30px;
+    }
+    .question-profile-image {
+        position: absolute;
+        top: 10px;
+        left: 13px;
+
+    }
+    .question-profile-image img {
+        width: 29px;
+        height: 29px;
+        background: #eaeaea;
+        border-radius: 20px;
+        padding: 3px;
+    }
+
+    .question-content{
+        padding-left: 25px;
+        padding-right: 25px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .question-replies {
+        float: right;
+    }
+
+    .question-score {
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        display: inline-block;
+    }
+    .question-created, .question-more, .comment-created{
+        color: #aaa;
+        font-size: 12px;
+    }
+    .question-text{
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 }
 .md-button.md-default-theme.md-primary.md-raised, .md-button.md-default-theme.md-primary.md-fab {
     font-size: 28px;

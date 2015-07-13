@@ -11,10 +11,10 @@
 
     <div layout="column" layout-fill  class="inner-list-child">
     <md-content>
-        <md-item-content class="question-container" ng-click="goToQuestion(question)">
-            <div class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
+        <md-item-content layout="row" class="question-container">
+            <div flex class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
             </div>
-            <div class="md-tile-content question-content" layout="column" layout-align="center">
+            <div flex class="question-content" layout="column" layout-align="center">
                 <div class="question-created">{{question.username}}</div>
                 <div class="question-profile-image"><img src="/images/usericons/{{question.username.toLowerCase()}}.png" /> </div>
                 <div class="question-text">
@@ -26,7 +26,7 @@
                     <!--span>{{question.created}}</span -->
                 </div>
             </div>
-            <div  layout="column" layout-align="center">
+            <div flex layout="column" class="question-score-container" layout-align="center">
                 <span class="question-score">{{question.voteScore}}</span>
             </div>
         </md-item-content>

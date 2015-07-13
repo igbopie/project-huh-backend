@@ -10,8 +10,11 @@ var sass = require('gulp-sass');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var runSequence = require('run-sequence');
+var watchify = require('watchify');
+var _ = require('underscore');
+var bourbon = require('node-bourbon').includePaths;
 
-gulp.task('run-dev',['build-frontend'] , function() {
+gulp.task('run-dev',['build-frontend', 'build-frontend-css-watch', 'build-frontend-partials-watch'] , function() {
   /*
   #!/bin/bash
   export =
@@ -56,16 +59,6 @@ gulp.task('build-backend', ["clean"], function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('build-frontend-browserify', function() {
-  var customOpts = {
-    entries: ['./src-frontend/js/app.js'],
-    debug: true
-  };
-  var b = browserify(customOpts);
-  return b.bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('dist/public/'))
-});
 
 gulp.task('build-frontend-assets', function() {
   return gulp.src('src-frontend/assets/**')
@@ -74,8 +67,15 @@ gulp.task('build-frontend-assets', function() {
 
 gulp.task('build-frontend-css', function() {
   return gulp.src('src-frontend/scss/style.scss')
-    .pipe(sass().on('error', console.error))
+    .pipe(sass({
+      includePaths: ['styles'].concat(bourbon)
+    }).on('error', console.error))
     .pipe(gulp.dest('dist/public/css'));
+});
+
+
+gulp.task('build-frontend-css-watch', function () {
+  return gulp.watch('src-frontend/scss/style.scss', ['build-frontend-css']);
 });
 
 gulp.task('build-frontend-css-dep', function() {
@@ -94,6 +94,12 @@ gulp.task('build-frontend-partials', function() {
     .pipe(gulp.dest('dist/public/partials'));
 });
 
+gulp.task('build-frontend-partials-watch', function () {
+  return gulp.watch('src-frontend/partials/**', ['build-frontend-partials']);
+});
+
+gulp.task('build-frontend-browserify', buildWatchFrontEndJs);
+
 gulp.task('build-frontend', ['build-backend'], function(callback) {
   runSequence('build-frontend-assets',
     'build-frontend-css',
@@ -103,3 +109,19 @@ gulp.task('build-frontend', ['build-backend'], function(callback) {
     'build-frontend-partials',
     callback);
 });
+
+
+var customOpts = {
+  entries: ['./src-frontend/js/app.js'],
+  debug: true
+};
+var opts = _.defaults({}, watchify.args, customOpts);
+var watchifyFrontendJs = watchify(browserify(opts));
+function buildWatchFrontEndJs(){
+  return watchifyFrontendJs.bundle()
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest('dist/public/'))
+}
+
+watchifyFrontendJs.on('update', buildWatchFrontEndJs); // on any dep update, runs the bundler
+watchifyFrontendJs.on('log', console.log);
