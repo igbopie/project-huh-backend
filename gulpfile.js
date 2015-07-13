@@ -6,7 +6,10 @@ var env = require('gulp-env');
 var child_process = require('child_process');
 var mkdirp = require('mkdirp');
 var clean = require('gulp-clean');
-var bower = require('gulp-bower');
+var sass = require('gulp-sass');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
+var runSequence = require('run-sequence');
 
 gulp.task('run-dev',['build-frontend'] , function() {
   /*
@@ -53,12 +56,50 @@ gulp.task('build-backend', ["clean"], function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('bower', ['build-backend'], function() {
-  return bower()
-    .pipe(gulp.dest('dist/public/libs/'))
+gulp.task('build-frontend-browserify', function() {
+  var customOpts = {
+    entries: ['./src-frontend/js/app.js'],
+    debug: true
+  };
+  var b = browserify(customOpts);
+  return b.bundle()
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest('dist/public/'))
 });
 
-gulp.task('build-frontend', ['bower'], function() {
-  return gulp.src('src-frontend/**')
+gulp.task('build-frontend-assets', function() {
+  return gulp.src('src-frontend/assets/**')
     .pipe(gulp.dest('dist/public'));
+});
+
+gulp.task('build-frontend-css', function() {
+  return gulp.src('src-frontend/scss/style.scss')
+    .pipe(sass().on('error', console.error))
+    .pipe(gulp.dest('dist/public/css'));
+});
+
+gulp.task('build-frontend-css-dep', function() {
+  return gulp.src(['./node_modules/font-awesome/css/font-awesome.min.css', './node_modules/angular-material/angular-material.min.css'])
+    .pipe(gulp.dest('dist/public/css'));
+});
+
+
+gulp.task('build-frontend-html', function() {
+  return gulp.src('src-frontend/index.html')
+    .pipe(gulp.dest('dist/public'));
+});
+
+gulp.task('build-frontend-partials', function() {
+  return gulp.src('src-frontend/partials/**')
+    .pipe(gulp.dest('dist/public/partials'));
+});
+
+gulp.task('build-frontend', ['build-backend'], function(callback) {
+  runSequence('build-frontend-assets',
+    'build-frontend-css',
+    'build-frontend-css-dep',
+    'build-frontend-browserify',
+    'build-frontend-html',
+    'build-frontend-partials',
+    callback);
 });
