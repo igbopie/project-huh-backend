@@ -14,7 +14,7 @@ var watchify = require('watchify');
 var _ = require('underscore');
 var bourbon = require('node-bourbon').includePaths;
 
-gulp.task('run-dev',['build-frontend', 'build-frontend-css-watch', 'build-frontend-partials-watch'] , function() {
+gulp.task('run-dev',['build-frontend', 'build-frontend-css-watch', 'build-frontend-partials-watch', 'build-frontend-browserify-watch'] , function() {
   /*
   #!/bin/bash
   export =
@@ -98,7 +98,8 @@ gulp.task('build-frontend-partials-watch', function () {
   return gulp.watch('src-frontend/partials/**', ['build-frontend-partials']);
 });
 
-gulp.task('build-frontend-browserify', buildWatchFrontEndJs);
+gulp.task('build-frontend-browserify', buildFrontEndJs);
+gulp.task('build-frontend-browserify-watch', buildWatchFrontEndJs);
 
 gulp.task('build-frontend', ['build-backend'], function(callback) {
   runSequence('build-frontend-assets',
@@ -117,6 +118,11 @@ var customOpts = {
 };
 var opts = _.defaults({}, watchify.args, customOpts);
 var watchifyFrontendJs = watchify(browserify(opts));
+function buildFrontEndJs(){
+  return browserify(opts).bundle()
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest('dist/public/'))
+}
 function buildWatchFrontEndJs(){
   return watchifyFrontendJs.bundle()
     .pipe(source('bundle.js'))
