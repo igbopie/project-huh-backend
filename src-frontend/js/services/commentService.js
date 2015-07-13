@@ -2,7 +2,7 @@
 var angular = require("angular");
 var services = require("../services");
   /* Services */
-services.service('CommentService', ['$http', function ($http) {
+services.service('CommentService', function ($http) {
   var urlBase = '/api/comment';
 
   ///api/comment/list
@@ -17,4 +17,4 @@ services.service('CommentService', ['$http', function ($http) {
       callback(error);
     });
   };
-}]);
+});

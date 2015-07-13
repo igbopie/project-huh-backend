@@ -30,8 +30,10 @@
     "gulp": "^3.9.0",
     "gulp-clean": "^0.3.1",
     "gulp-env": "^0.2.0",
+    "gulp-ng-annotate": "^1.0.0",
     "gulp-sass": "^2.0.3",
     "gulp-shell": "^0.2.11",
+    "gulp-uglify": "^1.2.0",
     "iso8601": "^1.1.1",
     "jade": "*",
     "lodash": "^3.10.0",
@@ -50,6 +52,7 @@
     "time": "",
     "twilio": "^1.5.0",
     "underscore": "^1.7.0",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.2.3"
   },

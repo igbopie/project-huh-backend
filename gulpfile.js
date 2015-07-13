@@ -11,6 +11,9 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var runSequence = require('run-sequence');
 var watchify = require('watchify');
+var uglify = require('gulp-uglify');
+var buffer = require('vinyl-buffer');
+var ngAnnotate = require('gulp-ng-annotate');
 var _ = require('underscore');
 var bourbon = require('node-bourbon').includePaths;
 
@@ -121,6 +124,9 @@ var watchifyFrontendJs = watchify(browserify(opts));
 function buildFrontEndJs(){
   return browserify(opts).bundle()
     .pipe(source('bundle.js'))
+    .pipe(ngAnnotate())
+    .pipe(buffer())
+    .pipe(uglify())
     .pipe(gulp.dest('dist/public/'))
 }
 function buildWatchFrontEndJs(){

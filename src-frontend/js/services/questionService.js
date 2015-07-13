@@ -4,7 +4,7 @@ var angular = require("angular");
 var services = require("../services");
 
   /* Services */
-services.service('QuestionService', ['$http', function ($http) {
+services.service('QuestionService', function ($http) {
   var urlBase = '/api/question';
   this.recent = function (callback) {
     $http.post(urlBase + "/recent", {}).success(function (data) {
@@ -29,4 +29,4 @@ services.service('QuestionService', ['$http', function ($http) {
       callback(error);
     });
   };
-}]);
+});

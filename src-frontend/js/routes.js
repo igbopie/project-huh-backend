@@ -7,7 +7,7 @@
 var angular = require("angular");
 var app = require("./app");
 
-app.config(['$routeProvider', function ($routeProvider) {
+app.config( function ($routeProvider) {
   $routeProvider.
     when('/', {
       templateUrl: 'partials/index.html',
@@ -20,4 +20,4 @@ app.config(['$routeProvider', function ($routeProvider) {
     otherwise({
       redirectTo: '/'
     });
-}]);
+});

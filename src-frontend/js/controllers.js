@@ -6,3 +6,6 @@ var angular = require("angular");
 
 /* Controllers */
 module.exports = angular.module('huh.controllers', []);
+
+//All controllers here
+var indexController = require("./controllers/indexController");

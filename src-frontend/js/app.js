@@ -8,7 +8,6 @@ var angularMaterial = require("angular-material");
 var services = require("./services");
 var directives = require("./directives");
 var controllers = require("./controllers");
-var indexController = require("./controllers/indexController");
 
 var huh = angular.module('huh', [
   'ngRoute',
