@@ -1,0 +1,17 @@
+<md-item-content layout="row" class="question-container">
+    <div flex class="question-type-title"  layout="column" layout-align="center">
+    </div>
+    <div flex class="question-content" layout="column" layout-align="center">
+        <div class="question-created">{{comment.username}}</div>
+        <div class="question-profile-image"><img src="/images/usericons/{{comment.username.toLowerCase()}}.png" /> </div>
+        <div class="question-text">
+            {{comment.text}}
+        </div>
+        <div class="question-more" >
+            <span class="question-username"><span am-time-ago="comment.created"></span></span>
+        </div>
+    </div>
+    <div flex layout="column" class="question-score-container" layout-align="center">
+        <span class="question-score">{{comment.voteScore}}</span>
+    </div>
+</md-item-content>

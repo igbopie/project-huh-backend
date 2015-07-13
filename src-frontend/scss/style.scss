@@ -1,107 +1,12 @@
 @import "angular-material.min.css";
 @import "font-awesome.min.css";
 @import "bourbon";
+@import "colors";
+@import "question";
+@import "header";
+@import "layout";
+@import "mdMods";
 
 body {
     font-family: 'Varela Round', sans-serif;
-}
-
-img.logo {
-    width: auto;
-    height: 100%;
-}
-img.logo-text{
-    width: auto;
-    height: 50%;
-    margin-left: 10px;
-}
-
-md-toolbar.md-default-theme {
-    background-color: #a077d5;
-    color: white;
-}
-.question-container{
-    align-items: stretch;
-    -webkit-align-items: stretch;
-    padding-right: 20px;
-    cursor: pointer;
-
-    &:hover {
-        background: #fafafa;
-    }
-
-
-    .question-score-container{
-        @include flex(inherit);
-    }
-
-    .question-type-title{
-        @include flex(inherit);
-        min-width: 30px;
-    }
-    .question-profile-image {
-        position: absolute;
-        top: 10px;
-        left: 13px;
-
-    }
-    .question-profile-image img {
-        width: 29px;
-        height: 29px;
-        background: #eaeaea;
-        border-radius: 20px;
-        padding: 3px;
-    }
-
-    .question-content{
-        padding-left: 25px;
-        padding-right: 25px;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    .question-replies {
-        float: right;
-    }
-
-    .question-score {
-        padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 15px;
-        padding-bottom: 15px;
-        display: inline-block;
-    }
-    .question-created, .question-more, .comment-created{
-        color: #aaa;
-        font-size: 12px;
-    }
-    .question-text{
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-}
-.md-button.md-default-theme.md-primary.md-raised, .md-button.md-default-theme.md-primary.md-fab {
-    font-size: 28px;
-}
-.inner-list{
-    -webkit-align-items: stretch;
-    align-items: stretch;
-
-    -webkit-justify-content: center;
-    justify-content: center;
-
-    display: flex;
-    display: -webkit-flex;
-}
-.inner-list-child{
-    width: 100%;
-    max-width: 500px;
-}
-
-.question-chevron {
-    font-size: 23px;
-    color: #dadada;
-}
-.comment-created {
-    margin-right: 10px;
 }

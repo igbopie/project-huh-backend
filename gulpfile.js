@@ -75,7 +75,7 @@ gulp.task('build-frontend-css', function() {
 
 
 gulp.task('build-frontend-css-watch', function () {
-  return gulp.watch('src-frontend/scss/style.scss', ['build-frontend-css']);
+  return gulp.watch('src-frontend/scss/**/*', ['build-frontend-css']);
 });
 
 gulp.task('build-frontend-css-dep', function() {

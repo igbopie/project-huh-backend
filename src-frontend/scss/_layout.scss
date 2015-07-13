@@ -1,0 +1,10 @@
+.inner-list{
+    @include justify-content(center);
+    @include align-items(stretch);
+    @include display(flex);
+}
+
+.inner-list-child{
+    width: 100%;
+    max-width: 500px;
+}

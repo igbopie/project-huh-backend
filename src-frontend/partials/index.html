@@ -1,36 +1,12 @@
-
-    <md-content>
-        <md-list>
-            <md-item ng-repeat="question in questions">
-                <md-item-content class="question-container" ng-click="goToQuestion(question)">
-                    <div class="md-tile-left question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
-                        <!--img ng-src="{{item.face}}" alt="{{item.who}}" class="face" -->
-                        <p>
-                            {{question.type.word}}
-                        </p>
-                    </div>
-                    <div class="md-tile-content question-content" layout="column" layout-align="center">
-                        <div class="question-created"><span am-time-ago="question.created"></span></div>
-                        <div class="question-text">
-                            {{question.text}}?
-                        </div>
-                        <div class="question-more" >
-                            <span class="question-username">@{{question.username}}</span>
-                            <span class="question-replies">{{question.nComments}} replies</span>
-                            <!--span>{{question.created}}</span -->
-                        </div>
-                    </div>
-                    <div  layout="column" layout-align="center">
-                        <span class="question-score" style="border-color:{{question.type.color}}">{{question.voteScore}}</span>
-                    </div>
-                    <div  layout="column" layout-align="center" class="question-chevron">
-                        <!--md-button class="md-fab md-primary" aria-label="See">
-                            <i class="fa fa-share-alt"></i>
-                        </md-button-->
-                        <i class="fa fa-chevron-right"></i>
-                    </div>
-                </md-item-content>
-                <md-divider inset></md-divider>
-            </md-item>
-        </md-list>
-    </md-content>
+<div class="inner-list">
+    <div layout="column" layout-fill  class="inner-list-child">
+        <md-content>
+            <md-list>
+                <md-item ng-repeat="question in questions">
+                    <huh-question question="question"> </huh-question>
+                    <md-divider inset></md-divider>
+                </md-item>
+            </md-list>
+        </md-content>
+    </div>
+</div>

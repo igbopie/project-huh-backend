@@ -1,0 +1,19 @@
+<md-item-content layout="row" class="question-container">
+    <div flex class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
+    </div>
+    <div flex class="question-content" layout="column" layout-align="center">
+        <div class="question-created">{{question.username}}</div>
+        <div class="question-profile-image"><img src="/images/usericons/{{question.username.toLowerCase()}}.png" /> </div>
+        <div class="question-text">
+            <span style="color:{{question.type.color}};" >{{question.type.word}}</span> {{question.text}}?
+        </div>
+        <div class="question-more" >
+            <span class="question-username"><span am-time-ago="question.created"></span></span>
+            <span class="question-replies">{{question.nComments}} replies</span>
+            <!--span>{{question.created}}</span -->
+        </div>
+    </div>
+    <div flex layout="column" class="question-score-container" layout-align="center">
+        <span class="question-score">{{question.voteScore}}</span>
+    </div>
+</md-item-content>
