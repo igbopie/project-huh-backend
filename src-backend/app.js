@@ -65,6 +65,7 @@ var vote = require(__base + 'routes/vote');
 var flag = require(__base + 'routes/flag');
 var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
+var Apn = require(__base + "utils/apn");
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
@@ -120,7 +121,6 @@ app.post('/api/vote/up', vote.up);
 app.post('/api/vote/down', vote.down);
 app.post('/api/vote/clear', vote.clear);
 
-
 app.post('/api/notification/list', notification.list);
 app.post('/api/notification/markallasread', notification.markAllAsRead);
 
@@ -128,6 +128,18 @@ app.post('/api/setting/list', setting.list);
 app.post('/api/setting/update', setting.update);
 
 
-http.createServer(app).listen(app.get('port'), function () {
-    console.log('Express server listening on port ' + app.get('port'));
-});
+var server = http.createServer(app);
+var listen;
+exports.start = function (callback) {
+    listen = server.listen(app.get('port'), function () {
+        console.log('Express server listening on port ' + app.get('port'));
+        if (callback) {
+            callback();
+        }
+    });
+};
+
+exports.stop = function () {
+    listen.close();
+    Apn.close();
+};

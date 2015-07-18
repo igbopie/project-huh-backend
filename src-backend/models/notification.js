@@ -2,7 +2,6 @@
 var mongoose = require('mongoose'),
     u = require('underscore'),
     Schema = mongoose.Schema,
-    Utils = require('../utils/utils'),
     Apn = require("../utils/apn"),
     Gcm = require("../utils/gcm"),
     Async = require("async");

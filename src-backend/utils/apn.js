@@ -145,10 +145,20 @@ function Apn(certificate, sandbox) {
     };
 }
 
+Apn.prototype.close = function () {
+    this.feedback.close();
+    this.agent.close();
+};
+
 var apnDev = new Apn(devCert, true);
 var apnProd = new Apn(prodCert, false);
 
 exports.send = function (token, message, data, badge) {
     apnDev.send(token, message, data, badge);
     apnProd.send(token, message, data, badge);
+};
+
+exports.close = function () {
+    apnDev.close();
+    apnProd.close();
 };
