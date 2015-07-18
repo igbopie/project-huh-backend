@@ -20,3 +20,4 @@ db
 src/public/libs
 src/public/libs/**
 dist
+coverage/
