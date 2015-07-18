@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "postinstall": "gulp build-frontend"
+    "postinstall": "gulp build-frontend",
+    "start": "gulp run-dev",
+    "test": "mocha test/testcases -g"
   },
   "dependencies": {
     "angular": "^1.4.2",
@@ -30,6 +32,7 @@
     "gulp": "^3.9.0",
     "gulp-clean": "^0.3.1",
     "gulp-env": "^0.2.0",
+    "gulp-jslint": "^0.2.2",
     "gulp-ng-annotate": "^1.0.0",
     "gulp-sass": "^2.0.3",
     "gulp-shell": "^0.2.11",
@@ -43,6 +46,7 @@
     "mongoose-text-search": "0.0.2",
     "node-bourbon": "^4.2.3",
     "node-gcm": "^0.9.10",
+    "node-jslint": "^0.1.1",
     "node-sass": "^3.2.0",
     "process": "^0.11.1",
     "q": "^1.0.1",

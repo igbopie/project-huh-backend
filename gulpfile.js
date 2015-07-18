@@ -15,7 +15,41 @@ var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var ngAnnotate = require('gulp-ng-annotate');
 var _ = require('underscore');
+var jslint = require('gulp-jslint');
 var bourbon = require('node-bourbon').includePaths;
+
+
+var jslintConf = {
+  // these directives can
+  // be found in the official
+  // JSLint documentation.
+  todo: true,
+  node: true,
+  nomen: true,
+
+  // you can also set global
+  // declarations for all source
+  // files like so:
+  global: [],
+  predef: [],
+  // both ways will achieve the
+  // same result; predef will be
+  // given priority because it is
+  // promoted by JSLint
+
+  // pass in your prefered
+  // reporter like so:
+  reporter: 'default',
+  // ^ there's no need to tell gulp-jslint
+  // to use the default reporter. If there is
+  // no reporter specified, gulp-jslint will use
+  // its own.
+
+  // specify whether or not
+  // to show 'PASS' messages
+  // for built-in reporter
+  errorsOnly: false
+};
 
 gulp.task('run-dev',['build-frontend', 'build-frontend-css-watch', 'build-frontend-partials-watch', 'build-frontend-browserify-watch'] , function() {
   /*
@@ -56,12 +90,26 @@ gulp.task('clean', function() {
   return gulp.src('dist', {read: false})
     .pipe(clean());
 });
-
-gulp.task('build-backend', ["clean"], function() {
-  return gulp.src('src/**')
-    .pipe(gulp.dest('dist'));
+gulp.task('build-backend-js', ["clean"], function() {
+  return gulp.src('src-backend/**')
+      .pipe(jslint(jslintConf))
+      .pipe(gulp.dest('dist'))
+      .on('error', function (error) {
+        console.error(error);
+      });
 });
 
+gulp.task('build-backend-jade', ["build-backend-js"], function() {
+  return gulp.src('src-jade/**')
+      .pipe(gulp.dest('dist/views'))
+      .on('error', function (error) {
+        console.error(String(error));
+      });
+});
+
+gulp.task('build-backend', ["build-backend-jade"], function() {
+  return;
+});
 
 gulp.task('build-frontend-assets', function() {
   return gulp.src('src-frontend/assets/**')
@@ -137,3 +185,4 @@ function buildWatchFrontEndJs(){
 
 watchifyFrontendJs.on('update', buildWatchFrontEndJs); // on any dep update, runs the bundler
 watchifyFrontendJs.on('log', console.log);
+

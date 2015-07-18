@@ -18,17 +18,16 @@
     .question-profile-image {
         position: absolute;
         top: 10px;
-        left: 13px;
-
-    }
-    .question-profile-image img {
-        width: 29px;
-        height: 29px;
+        left: 12px;
         background: $bgQuestionImage;
         border-radius: 20px;
         padding: 3px;
+        img {
+            display: block;
+            width: 30px;
+            height: 30px;
+        }
     }
-
     .question-content{
         padding-left: 25px;
         padding-right: 25px;
