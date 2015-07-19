@@ -48,12 +48,12 @@ app.config(function ($stateProvider, $urlRouterProvider) {
             {
                 url: '/dashboard',
                 views: {
-                    "toolbar": {
+                    'toolbar': {
                         templateUrl: 'partials/starbucks.toolbar.html',
                         controller: 'StarbucksToolbarCtrl'
                     },
-                    "main": {
-                        template: "Dashboard here"
+                    'main': {
+                        template: 'Dashboard here'
                     }
                 }
             });
