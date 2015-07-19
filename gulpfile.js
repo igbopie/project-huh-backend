@@ -18,7 +18,6 @@ var _ = require('underscore');
 var jshint = require('gulp-jshint');
 var bourbon = require('node-bourbon').includePaths;
 var istanbul = require('gulp-istanbul');
-// We'll use mocha here, but any test framework will work
 var mocha = require('gulp-mocha');
 var jscs = require('gulp-jscs');
 
@@ -167,6 +166,7 @@ gulp.task('build-frontend-lint', function() {
         .pipe(jshint(jslintConfFrontend))
         .pipe(jshint.reporter('default'))
         .pipe(jshint.reporter('fail'))
+        .pipe(jscs())
         .on('error', function (error) {
             console.error(error);
         });

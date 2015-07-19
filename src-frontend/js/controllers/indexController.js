@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 /**
  * Created by igbopie on 11/16/14.
  */
 
-var angular = require("angular");
-var controllers = require("../controllers");
-var services = require("../services");
+var angular = require('angular');
+var controllers = require('../controllers');
+var services = require('../services');
 
 controllers
     .controller('IndexCtrl',
@@ -17,7 +17,7 @@ controllers
         });
 
         $scope.goToQuestion = function (question) {
-            $location.path("/q/" + question._id);
+            $location.path('/q/' + question._id);
         };
 
     })
@@ -35,7 +35,7 @@ controllers
         });
 
         /*$scope.goToQuestion = function(question) {
-         $location.path("/q/" + question._id);
+         $location.path('/q/' + question._id);
          }*/
 
     })

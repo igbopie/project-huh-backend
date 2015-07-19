@@ -1,13 +1,13 @@
 'use strict';
 
-var angular = require("angular");
-var services = require("../services");
+var angular = require('angular');
+var services = require('../services');
 
 /* Services */
 services.service('QuestionService', function ($http) {
     var urlBase = '/api/question';
     this.recent = function (callback) {
-        $http.post(urlBase + "/recent", {}).success(function (data) {
+        $http.post(urlBase + '/recent', {}).success(function (data) {
             if (data.response) {
                 callback(null, data.response);
             } else {
@@ -19,7 +19,7 @@ services.service('QuestionService', function ($http) {
     };
 
     this.view = function (questionId, callback) {
-        $http.post(urlBase + "/view", {questionId: questionId}).success(function (data) {
+        $http.post(urlBase + '/view', {questionId: questionId}).success(function (data) {
             if (data.response) {
                 callback(null, data.response);
             } else {

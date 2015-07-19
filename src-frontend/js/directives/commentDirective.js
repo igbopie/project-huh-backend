@@ -1,10 +1,10 @@
-"use strict";
+'use strict';
 /**
  * Created by igbopie on 11/16/14.
  */
 
-var angular = require("angular");
-var directives = require("../directives");
+var angular = require('angular');
+var directives = require('../directives');
 
 directives
     .directive('huhComment', function () {

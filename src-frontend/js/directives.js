@@ -3,11 +3,11 @@
  */
 'use strict';
 
-var angular = require("angular");
-var services = require("./services");
+var angular = require('angular');
+var services = require('./services');
 
 module.exports = angular.module('huh.directives', ['huh.services']);
 
-//All directives here
-var questionDirective = require("./directives/questionDirective");
-var commentDirective = require("./directives/commentDirective");
+// All directives here
+var questionDirective = require('./directives/questionDirective');
+var commentDirective = require('./directives/commentDirective');

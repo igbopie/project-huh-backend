@@ -4,8 +4,8 @@
 
 'use strict';
 
-var angular = require("angular");
-var app = require("./app");
+var angular = require('angular');
+var app = require('./app');
 
 app.config(function ($routeProvider) {
     $routeProvider.
