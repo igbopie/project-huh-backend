@@ -1,3 +1,4 @@
+'use strict';
 var angular = require("angular");
 var angularMoment = require("angular-moment");
 var angularRoute = require("angular-route");
@@ -10,19 +11,19 @@ var directives = require("./directives");
 var controllers = require("./controllers");
 
 var huh = angular.module('huh', [
-  'ngRoute',
-  'ngCookies',
-  'ngAnimate',
-  'ngAria',
-  'ngMaterial',
-  'angularMoment',
-  'huh.services',
-  'huh.directives',
-  'huh.controllers'
+    'ngRoute',
+    'ngCookies',
+    'ngAnimate',
+    'ngAria',
+    'ngMaterial',
+    'angularMoment',
+    'huh.services',
+    'huh.directives',
+    'huh.controllers'
 ]);
 
-huh.config(function($mdThemingProvider) {
-  $mdThemingProvider.theme('default').primaryPalette('amber');
+huh.config(function ($mdThemingProvider) {
+    $mdThemingProvider.theme('default').primaryPalette('amber');
 });
 
 module.exports = huh;

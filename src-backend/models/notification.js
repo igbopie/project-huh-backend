@@ -2,30 +2,30 @@
 var mongoose = require('mongoose'),
     u = require('underscore'),
     Schema = mongoose.Schema,
-    Apn = require("../utils/apn"),
-    Gcm = require("../utils/gcm"),
-    Async = require("async");
+    Apn = require('../utils/apn'),
+    Gcm = require('../utils/gcm'),
+    Async = require('async');
 
 var NOTIFICATION_TYPES = {
-    ON_QUESTION_POSTED: "OnQuestionPosted",
-    ON_COMMENT_ON_MY_QUESTION: "OnCommentOnMyQuestion",
-    ON_COMMENT_ON_MY_COMMENT: "OnCommentOnMyComment",
-    ON_UP_VOTE_ON_MY_QUESTION: "OnUpVoteOnMyQuestion",
-    ON_DOWN_VOTE_ON_MY_QUESTION: "OnDownVoteOnMyQuestion",
-    ON_UP_VOTE_ON_MY_COMMENT: "OnUpVoteOnMyComment",
-    ON_DOWN_VOTE_ON_MY_COMMENT: "OnDownVoteOnMyComment"
+    ON_QUESTION_POSTED: 'OnQuestionPosted',
+    ON_COMMENT_ON_MY_QUESTION: 'OnCommentOnMyQuestion',
+    ON_COMMENT_ON_MY_COMMENT: 'OnCommentOnMyComment',
+    ON_UP_VOTE_ON_MY_QUESTION: 'OnUpVoteOnMyQuestion',
+    ON_DOWN_VOTE_ON_MY_QUESTION: 'OnDownVoteOnMyQuestion',
+    ON_UP_VOTE_ON_MY_COMMENT: 'OnUpVoteOnMyComment',
+    ON_DOWN_VOTE_ON_MY_COMMENT: 'OnDownVoteOnMyComment'
 };
 
 var notificationSchema = new Schema({
     message: {type: String, required: false},
-    userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+    userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     created: {type: Date, required: true, default: Date.now},
     read: {type: Boolean, required: true, default: false},
     type: {type: String, required: true},
-    //DATA
-    questionId: {type: Schema.Types.ObjectId, required: false, ref: "Question"},
-    commentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"},
-    yourCommentId: {type: Schema.Types.ObjectId, required: false, ref: "Comment"}
+    // DATA
+    questionId: {type: Schema.Types.ObjectId, required: false, ref: 'Question'},
+    commentId: {type: Schema.Types.ObjectId, required: false, ref: 'Comment'},
+    yourCommentId: {type: Schema.Types.ObjectId, required: false, ref: 'Comment'}
 });
 
 notificationSchema.index({userId: 1, created: -1});
@@ -34,7 +34,7 @@ notificationSchema.index({questionId: 1, created: -1});
 
 var Notification = mongoose.model('Notification', notificationSchema);
 
-//Service?
+// Service?
 var NotificationService = {};
 
 // The exports is here to avoid cyclic dependency problem
@@ -65,7 +65,7 @@ var skull = fixedFromCharCode(0x1F480);
 var eyes = fixedFromCharCode(0x1F440);
 
 function getQuestionText(question) {
-    return question.typeId.word + " " + question.text + "?";
+    return question.typeId.word + ' ' + question.text + '?';
 }
 function sendNotification(type, userId, message, data) {
 
@@ -95,7 +95,7 @@ function sendNotification(type, userId, message, data) {
                     return;
                 }
                 if (!user) {
-                    console.error("User not found:" + user);
+                    console.error('User not found:' + user);
                     return;
                 }
                 SettingsService.findOne(type, userId, function (err, setting) {
@@ -104,7 +104,7 @@ function sendNotification(type, userId, message, data) {
                         return;
                     }
                     if (!setting.value) {
-                        console.log("Notification is off");
+                        console.log('Notification is off');
                         return;
                     }
 
@@ -117,7 +117,7 @@ function sendNotification(type, userId, message, data) {
                     /*if (user.email) {
                      //Email.send(user.email, message);
                      }*/
-                    console.log("Notification To:" + userId + " Msg:" + message + " Badge: " + badge);
+                    console.log('Notification To:' + userId + ' Msg:' + message + ' Badge: ' + badge);
                 });
 
             });
@@ -132,7 +132,7 @@ NotificationService.onQuestionCreated = function (questionId) {
             if (err || !users) { return; }
             users.forEach(function (user) {
                 if (!user._id.equals(question.userId)) {
-                    var text = eyes + " \"" + getQuestionText(question) + "\"",
+                    var text = eyes + ' \"' + getQuestionText(question) + '\"',
                         data = {
                             questionId: questionId
                         };
@@ -153,7 +153,7 @@ NotificationService.onQuestionCommented = function (questionId, commentId) {
                 nextBatch,
                 sendNotificatonProcess,
                 doNotSendAgain = {},
-                text = eyes + " \"" + comment.text + "\" -> \"" + getQuestionText(question) + "\"",
+                text = eyes + ' \"' + comment.text + '\" -> \"' + getQuestionText(question) + '\"',
                 data = {
                     questionId: questionId,
                     commentId: commentId
@@ -178,7 +178,11 @@ NotificationService.onQuestionCommented = function (questionId, commentId) {
                         }, data);
 
                         doNotSendAgain[otherComment.userId] = true;
-                        sendNotification(NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT, otherComment.userId, text, newData);
+                        sendNotification(
+                            NOTIFICATION_TYPES.ON_COMMENT_ON_MY_COMMENT,
+                            otherComment.userId,
+                            text,
+                            newData);
                     }
                 });
 
@@ -201,7 +205,12 @@ NotificationService.onQuestionUpVoted = function (questionId, userId) {
         if (err || !question) { return; }
 
         if (!question.userId.equals(userId)) {
-            sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION, question.userId, "+1 for \"" + getQuestionText(question) + "\"", {questionId: questionId});
+            sendNotification(
+                NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_QUESTION,
+                question.userId,
+                '+1 for \"' + getQuestionText(question) + '\"',
+                {questionId: questionId}
+            );
         }
     });
 };
@@ -211,7 +220,12 @@ NotificationService.onQuestionDownVoted = function (questionId, userId) {
         if (err || !question) { return; }
 
         if (!question.userId.equals(userId)) {
-            sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION, question.userId, "-1 for \"" + getQuestionText(question) + "\"", {questionId: questionId});
+            sendNotification(
+                NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_QUESTION,
+                question.userId,
+                '-1 for \"' + getQuestionText(question) + '\"',
+                {questionId: questionId}
+            );
         }
     });
 };
@@ -221,10 +235,15 @@ NotificationService.onCommentUpVoted = function (commentId, userId) {
         if (err || !comment) { return; }
 
         if (!comment.userId.equals(userId)) {
-            sendNotification(NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT, comment.userId, "+1 for \"" + comment.text + "\"", {
-                questionId: comment.questionId,
-                commentId: commentId
-            });
+            sendNotification(
+                NOTIFICATION_TYPES.ON_UP_VOTE_ON_MY_COMMENT,
+                comment.userId,
+                '+1 for \"' + comment.text + '\"',
+                {
+                    questionId: comment.questionId,
+                    commentId: commentId
+                }
+            );
         }
     });
 };
@@ -235,10 +254,15 @@ NotificationService.onCommentDownVoted = function (commentId, userId) {
         if (err || !comment) { return; }
 
         if (!comment.userId.equals(userId)) {
-            sendNotification(NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT, comment.userId, "-1 for \"" + comment.text + "\"", {
-                questionId: comment.questionId,
-                commentId: commentId
-            });
+            sendNotification(
+                NOTIFICATION_TYPES.ON_DOWN_VOTE_ON_MY_COMMENT,
+                comment.userId,
+                '-1 for \"' + comment.text + '\"',
+                {
+                    questionId: comment.questionId,
+                    commentId: commentId
+                }
+            );
         }
     });
 };

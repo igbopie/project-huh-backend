@@ -7,9 +7,9 @@ var join = require('path').join,
     devCert = join(__dirname, '../../_certs/HuhAPNDev.p12');
 
 
-//---------------------------------------
+// ---------------------------------------
 //      Worker part
-//---------------------------------------
+// ---------------------------------------
 function Apn(certificate, sandbox) {
 
     this.feedback = new apnagent.Feedback();
@@ -19,20 +19,20 @@ function Apn(certificate, sandbox) {
         this.agent.enable('sandbox');
     }
 
-    this.feedback.on("feedback:connect", function () {
-        console.log("APN Feedback Connected");
+    this.feedback.on('feedback:connect', function () {
+        console.log('APN Feedback Connected');
     });
 
-    this.feedback.on("feedback:close", function () {
-        console.log("APN Feedback Closed");
+    this.feedback.on('feedback:close', function () {
+        console.log('APN Feedback Closed');
     });
 
-    this.feedback.on("feedback:error", function (error) {
-        console.error("APN Feedback Error: " + error);
+    this.feedback.on('feedback:error', function (error) {
+        console.error('APN Feedback Error: ' + error);
     });
 
 
-    this.feedback.set("pfx file", certificate);
+    this.feedback.set('pfx file', certificate);
 
     this.feedback
         .set('interval', '30s') // default is 30 minutes?
@@ -43,27 +43,24 @@ function Apn(certificate, sandbox) {
         var token = device.toString(),
             ts = timestamp.getTime();
 
-        console.log("I should unsubscribe token:" + token);
+        console.log('I should unsubscribe token:' + token);
         UserService.unsubscribeApn(token, ts, false, function (err) {
             if (err) {
-                console.log("Error apn unsubscribing:" + err);
+                console.log('Error apn unsubscribing:' + err);
             } else {
-                console.log("Success unsubscribing.");
+                console.log('Success unsubscribing.');
             }
             done();
         });
     });
 
 
-    //---------------------------------------
+    // ---------------------------------------
     //      Send notifications part
-    //---------------------------------------
+    // ---------------------------------------
 
     // set our credentials
-    this.agent.set("pfx file", certificate);
-    // our credentials were for development
-    //agent.enable('sandbox');
-
+    this.agent.set('pfx file', certificate);
     this.agent.on('message:error', function (err, msg) {
         switch (err.name) {
         // This error occurs when Apple reports an issue parsing the message.
@@ -96,26 +93,13 @@ function Apn(certificate, sandbox) {
 
     this.agent.connect(function (err) {
         if (err) { throw err; }
-
         // it worked!
-        var env = this.agent.enabled('sandbox')
-            ? 'sandbox'
-            : 'production';
-
+        var env = this.agent.enabled('sandbox') ? 'sandbox' : 'production';
         console.log('apnagent [%s] gateway connected', env);
-
 
     }.bind(this));
 
     this.send = function (token, msg, data, badge) {
-
-        //b401a0af2b7edb04732cfb3575db3bdbbbd700ed940dbe0217b1d90329adc3a4
-        //var nachoToken ="<b401a0af 2b7edb04 732cfb35 75db3bdb bbd700ed 940dbe02 17b1d903 29adc3a4>";
-        //var nachoToken ="b401a0af2b7edb04732cfb3575db3bdbbbd700ed940dbe0217b1d90329adc3a4";
-        //var dougToken ="abf625ad5b82741dede97f6be25c68e1aee2c714d5afff9fb7ee2bff90542cc0";
-        //abf625ad5b82741dede97f6be25c68e1aee2c714d5afff9fb7ee2bff90542cc0
-        //var dougToken ="<abf625ad 5b82741d ede97f6b e25c68e1 aee2c714 d5afff9f b7ee2bff 90542cc0>";
-        //var azaToken="7ecf94e5dc0b627442b3b86897fb2332c7cfe533d0c50b3be13d7b2271b07926";
 
         var message = this.agent.createMessage()
             .device(token)
@@ -125,21 +109,13 @@ function Apn(certificate, sandbox) {
 
         if (data) {
             message.set(data);
-            /*for (var prop in data) {
-             // important check that this is objects own property
-             // not from prototype prop inherited
-             if(data.hasOwnProperty(prop)){
-             message.set(prop,data[prop]);
-             console.log(prop+"="+data[prop]);
-             }
-             }*/
         }
 
         message.send(function (err) {
             if (err) {
-                console.log("Error:" + err);
+                console.log('Error:' + err);
             } else {
-                console.log("Sent!");
+                console.log('Sent!');
             }
         });
     };

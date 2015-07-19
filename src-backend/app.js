@@ -23,28 +23,31 @@
 global.__base = __dirname + '/';
 var __base = global.__base;
 
-console.log("STARTING UP CHECKING ENV...");
+console.log('STARTING UP CHECKING ENV...');
 if (process.env.MONGOLAB_URI) {
-    console.log("Using MONGO LAB");
+    console.log('Using MONGO LAB');
 } else if (process.env.MONGOHQ_URL) {
-    console.log("Using MONGO HQ");
+    console.log('Using MONGO HQ');
 } else {
-    console.log("Using localhost MONGO");
+    console.log('Using localhost MONGO');
 }
 /*if (!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY && !process.env.AWS_S3_BUCKET) {
- console.log("Please configure correctly S3: AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET");
+ console.log('Please configure correctly S3: AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET');
  process.exit(-1);
  }
 
  if (!process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_TOKEN && !process.env.TWILIO_FROM) {
- console.log("WARNING: Twilio not configured: using log for SMS");
+ console.log('WARNING: Twilio not configured: using log for SMS');
  }*/
 
-if (!process.env.BITLY_USERNAME && !process.env.BITLY_TOKEN && !process.env.BITLY_DOMAIN && !process.env.BITLY_DOMAIN_REDIRECT) {
-    console.log("WARNING: Bitly not configured");
+if (!process.env.BITLY_USERNAME &&
+    !process.env.BITLY_TOKEN &&
+    !process.env.BITLY_DOMAIN &&
+    !process.env.BITLY_DOMAIN_REDIRECT) {
+    console.log('WARNING: Bitly not configured');
 }
 
-console.log("STARTING UP ENV CHECKED.");
+console.log('STARTING UP ENV CHECKED.');
 /**
  * Module dependencies.
  */
@@ -55,7 +58,7 @@ var path = require('path');
 var mongoose = require('mongoose');
 var app = express();
 
-//ROUTES
+// ROUTES
 var index = require(__base + 'routes/index');
 var user = require(__base + 'routes/user');
 var question = require(__base + 'routes/question');
@@ -65,7 +68,7 @@ var vote = require(__base + 'routes/vote');
 var flag = require(__base + 'routes/flag');
 var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
-var Apn = require(__base + "utils/apn");
+var Apn = require(__base + 'utils/apn');
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
@@ -91,7 +94,7 @@ if ('development' === app.get('env')) {
 
 app.get('/q/:questionId', index.question);
 
-//USER
+// USER
 app.post('/api/user/create', user.create);
 app.post('/api/user/addapntoken', user.addApnToken);
 app.post('/api/user/removeapntoken', user.removeApnToken);

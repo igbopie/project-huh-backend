@@ -19,7 +19,6 @@ exports.view = function (req, res) {
     QuestionService.view(questionId, userId, ApiUtils.handleResult(req, res));
 };
 
-
 exports.recent = function (req, res) {
     var userId = req.body.userId,
         pagination = ApiUtils.getPaginationParams(req);
@@ -48,7 +47,7 @@ exports.mine = function (req, res) {
     if (userId) {
         QuestionService.mine(userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
     } else {
-        ApiUtils.handleResult(req, res)("Invalid params");
+        ApiUtils.handleResult(req, res)('Invalid params');
     }
 };
 
@@ -58,9 +57,16 @@ exports.near = function (req, res) {
         longitude = req.body.longitude,
         pagination = ApiUtils.getPaginationParams(req);
     if (latitude && longitude) {
-        QuestionService.near(userId, latitude, longitude, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+        QuestionService.near(
+            userId,
+            latitude,
+            longitude,
+            pagination.page,
+            pagination.numItems,
+            ApiUtils.handleResult(req, res)
+        );
     } else {
-        ApiUtils.handleResult(req, res)("Invalid params");
+        ApiUtils.handleResult(req, res)('Invalid params');
     }
 };
 
@@ -78,7 +84,7 @@ exports.favorites = function (req, res) {
             })
         );
     } else {
-        ApiUtils.handleResult(req, res)("Invalid params");
+        ApiUtils.handleResult(req, res)('Invalid params');
     }
 };
 
@@ -96,6 +102,6 @@ exports.commented = function (req, res) {
             })
         );
     } else {
-        ApiUtils.handleResult(req, res)("Invalid params");
+        ApiUtils.handleResult(req, res)('Invalid params');
     }
 };

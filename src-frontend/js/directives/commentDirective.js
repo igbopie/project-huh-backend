@@ -6,13 +6,13 @@ var angular = require("angular");
 var directives = require("../directives");
 
 directives
-  .directive('huhComment', function() {
-    return {
-      restrict: 'E',
-      scope: {
-        comment: '=comment'
-      },
-      templateUrl: 'partials/directives/comment.html'
+    .directive('huhComment', function () {
+        return {
+            restrict: 'E',
+            scope: {
+                comment: '=comment'
+            },
+            templateUrl: 'partials/directives/comment.html'
+        }
     }
-  }
 );

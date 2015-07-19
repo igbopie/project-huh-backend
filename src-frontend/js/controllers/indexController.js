@@ -7,35 +7,35 @@ var controllers = require("../controllers");
 var services = require("../services");
 
 controllers
-  .controller('IndexCtrl',
+    .controller('IndexCtrl',
     function ($scope, $http, $location, QuestionService) {
 
-      $scope.questions = [];
-      QuestionService.recent(function (err, list) {
-        $scope.questions = list;
-      });
+        $scope.questions = [];
+        QuestionService.recent(function (err, list) {
+            $scope.questions = list;
+        });
 
-      $scope.goToQuestion = function (question) {
-        $location.path("/q/" + question._id);
-      }
+        $scope.goToQuestion = function (question) {
+            $location.path("/q/" + question._id);
+        }
 
     })
 
-  .controller('QuestionDetailCtrl',
+    .controller('QuestionDetailCtrl',
     function ($scope, $http, $location, $routeParams, QuestionService, CommentService) {
 
-      $scope.question = {};
-      QuestionService.view($routeParams.questionId, function (err, question) {
-        $scope.question = question;
-      });
+        $scope.question = {};
+        QuestionService.view($routeParams.questionId, function (err, question) {
+            $scope.question = question;
+        });
 
-      CommentService.list($routeParams.questionId, function (err, comments) {
-        $scope.comments = comments;
-      });
+        CommentService.list($routeParams.questionId, function (err, comments) {
+            $scope.comments = comments;
+        });
 
-      /*$scope.goToQuestion = function(question) {
-       $location.path("/q/" + question._id);
-       }*/
+        /*$scope.goToQuestion = function(question) {
+         $location.path("/q/" + question._id);
+         }*/
 
     })
 ;

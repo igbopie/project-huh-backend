@@ -5,8 +5,8 @@ var mongoose = require('mongoose'),
 
 
 var QuestionVoteSchema = new Schema({
-    questionId: {type: Schema.Types.ObjectId, required: true, ref: "Question"},
-    userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+    questionId: {type: Schema.Types.ObjectId, required: true, ref: 'Question'},
+    userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     created: {type: Date, required: true, default: Date.now},
     updated: {type: Date, required: true, default: Date.now},
     score: {type: Number, required: true, default: 0}
@@ -17,7 +17,7 @@ QuestionVoteSchema.index({userId: 1, score: 1});
 
 var QuestionVote = mongoose.model('QuestionVote', QuestionVoteSchema);
 
-//Service?
+// Service?
 var QuestionVoteService = {};
 
 // The exports is here to avoid cyclic dependency problem
@@ -45,7 +45,7 @@ QuestionVoteService.downVote = function (questionId, userId, callback) {
 
 QuestionVoteService.clearVote = function (questionId, userId, callback) {
     QuestionVoteService.vote(0, questionId, userId, callback);
-    //NotificationService.onQuestionDownVoted(questionId, userId);
+    // NotificationService.onQuestionDownVoted(questionId, userId);
 };
 
 QuestionVoteService.vote = function (score, questionId, userId, callback) {
@@ -91,7 +91,7 @@ QuestionVoteService.vote = function (score, questionId, userId, callback) {
 QuestionVoteService.findUpVoteQuestionIds = function (userId, page, numItems, callback) {
     QuestionVote.find(
         {userId: userId, score: 1},
-        "questionId",
+        'questionId',
         {
             limit: numItems,
             skip: numItems * page

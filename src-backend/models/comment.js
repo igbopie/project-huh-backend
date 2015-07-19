@@ -2,13 +2,13 @@
 var mongoose = require('mongoose'),
     u = require('underscore'),
     Schema = mongoose.Schema,
-    Async = require("async");
+    Async = require('async');
 
 
 var commentSchema = new Schema({
     text: {type: String, required: false},
-    questionId: {type: Schema.Types.ObjectId, required: true, ref: "Question"},
-    userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+    questionId: {type: Schema.Types.ObjectId, required: true, ref: 'Question'},
+    userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     username: {type: String, required: false},
     created: {type: Date, required: true, default: Date.now},
     updated: {type: Date, required: true, default: Date.now},
@@ -23,7 +23,7 @@ commentSchema.index({questionId: 1, created: -1});
 
 var Comment = mongoose.model('Comment', commentSchema);
 
-//Service?
+// Service?
 var CommentService = {};
 
 // The exports is here to avoid cyclic dependency problem
@@ -53,7 +53,7 @@ var processObject = function (dbComment, userId, callback) {
         if (userId) {
             CommentVoteService.findVote(dbComment._id, userId, function (err, vote) {
                 if (err) {
-                    console.error("Could not fetch my score");
+                    console.error('Could not fetch my score');
                 }
                 if (vote) {
                     comment.myVote = vote.score;
@@ -65,7 +65,7 @@ var processObject = function (dbComment, userId, callback) {
         }
     };
 
-    //Hack to fill oldQuestions
+    // Hack to fill oldQuestions
     if (!dbComment.username) {
         QuestionNameService.findOrCreate(dbComment.questionId, dbComment.userId, function (err, username) {
             if (err) { return callback(err); }
@@ -147,7 +147,7 @@ CommentService.updateVoteScore = function (voteIncrement, score, newVote, commen
             update.$inc.nUpVotes = -1;
             update.$inc.nDownVotes = 1;
         } else {
-            //clear score
+            // clear score
             update.$inc.nVotes = -1;
 
             if (voteIncrement > 0) {
@@ -167,7 +167,7 @@ CommentService.updateVoteScore = function (voteIncrement, score, newVote, commen
 };
 
 CommentService.findCommentedQuestionIds = function (userId, page, numItems, callback) {
-    //TODO improve this
+    // TODO improve this
     Comment.aggregate([
         {
             $match: {
@@ -177,7 +177,7 @@ CommentService.findCommentedQuestionIds = function (userId, page, numItems, call
         {$sort: {created: -1}},
         {
             $group: {
-                _id: "$questionId"
+                _id: '$questionId'
             }
         },
         {$skip: numItems * page},

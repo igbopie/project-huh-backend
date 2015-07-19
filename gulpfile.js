@@ -16,42 +16,40 @@ var buffer = require('vinyl-buffer');
 var ngAnnotate = require('gulp-ng-annotate');
 var _ = require('underscore');
 var jslint = require('gulp-jslint');
+var jshint = require('gulp-jshint');
 var bourbon = require('node-bourbon').includePaths;
 var istanbul = require('gulp-istanbul');
 // We'll use mocha here, but any test framework will work
 var mocha = require('gulp-mocha');
+var jscs = require('gulp-jscs');
 
 
 var jslintConf = {
-    // these directives can
-    // be found in the official
-    // JSLint documentation.
-    todo: true,
     node: true,
     nomen: true,
+    "strict": true,
+    "eqeqeq": true,
+    "immed": true,
+    "newcap": true,
+    "maxparams": 6,//4,
+    "maxdepth": 4,
+    "maxstatements": 18, //15,
+    "maxcomplexity": 6
+};
 
-    // you can also set global
-    // declarations for all source
-    // files like so:
-    global: [],
-    predef: [],
-    // both ways will achieve the
-    // same result; predef will be
-    // given priority because it is
-    // promoted by JSLint
-
-    // pass in your prefered
-    // reporter like so:
-    reporter: 'default',
-    // ^ there's no need to tell gulp-jslint
-    // to use the default reporter. If there is
-    // no reporter specified, gulp-jslint will use
-    // its own.
-
-    // specify whether or not
-    // to show 'PASS' messages
-    // for built-in reporter
-    errorsOnly: false
+var jslintConfFrontend = {
+    todo: true,
+    nomen: true,
+    browserify: true,
+    browser: true,
+    "strict": true,
+    "eqeqeq": true,
+    "immed": true,
+    "newcap": true,
+    "maxparams": 6,//4,
+    "maxdepth": 4,
+    "maxstatements": 18, //15,
+    "maxcomplexity": 6
 };
 
 gulp.task('start-mongo', function (cb) {
@@ -104,7 +102,11 @@ gulp.task('clean', function () {
 });
 gulp.task('build-backend-js', ["clean"], function () {
     return gulp.src('src-backend/**')
-        .pipe(jslint(jslintConf))
+        //.pipe(jslint(jslintConf))
+        .pipe(jshint(jslintConf))
+        .pipe(jshint.reporter('default'))
+        .pipe(jshint.reporter('fail'))
+        .pipe(jscs())
         .pipe(gulp.dest('dist'))
         .on('error', function (error) {
             console.error(error);
@@ -161,8 +163,17 @@ gulp.task('build-frontend-partials-watch', function () {
     return gulp.watch('src-frontend/partials/**', ['build-frontend-partials']);
 });
 
-gulp.task('build-frontend-browserify', buildFrontEndJs);
-gulp.task('build-frontend-browserify-watch', buildWatchFrontEndJs);
+
+gulp.task('build-frontend-lint', function() {
+    return gulp.src('src-frontend/js/**')
+        .pipe(jshint(jslintConfFrontend))
+        .on('error', function (error) {
+            console.error(error);
+        });
+});
+
+gulp.task('build-frontend-browserify', ['build-frontend-lint'], buildFrontEndJs);
+gulp.task('build-frontend-browserify-watch', ['build-frontend-lint'], buildWatchFrontEndJs);
 
 gulp.task('build-frontend', ['build-backend'], function (callback) {
     runSequence('build-frontend-assets',

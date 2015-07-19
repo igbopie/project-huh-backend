@@ -14,5 +14,11 @@ exports.list = function (req, res) {
         userId = req.body.userId,
         pagination = ApiUtils.getPaginationParams(req);
 
-    CommentService.listByQuestion(questionId, userId, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
+    CommentService.listByQuestion(
+        questionId,
+        userId,
+        pagination.page,
+        pagination.numItems,
+        ApiUtils.handleResult(req, res)
+    );
 };

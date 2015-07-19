@@ -10,9 +10,9 @@ var mongoose = require('mongoose'),
 var userSchema = new Schema({
     created: {type: Date, required: true, default: Date.now},
     modified: {type: Date, required: true, default: Date.now},
-    apnToken: {type: String, required: false}, //iOs notification
+    apnToken: {type: String, required: false}, // iOs notification
     apnSubscribeDate: {type: Date, required: false},
-    gcmToken: {type: String, required: false}, //Android notification
+    gcmToken: {type: String, required: false}, // Android notification
     gcmSubscribeDate: {type: Date, required: false},
     location: {type: [Number], required: false, index: '2dsphere'}
 });
@@ -21,7 +21,7 @@ userSchema.index({apnToken: 1});
 
 var User = mongoose.model('User', userSchema);
 
-//Service
+// Service
 var service = {};
 
 service.create = function (callback) {
@@ -117,13 +117,13 @@ service.removeGcmToken = function (userId, callback) {
 };
 
 service.unsubscribeApn = function (apnToken, ts, force, callback) {
-    User.where("apnToken").equals(apnToken)
+    User.where('apnToken').equals(apnToken)
         .exec(function (err, users) {
             if (err) {
                 callback(err);
             } else {
                 Async.each(users, function (user, next) {
-                    console.log("Unsubscribing user:" + user);
+                    console.log('Unsubscribing user:' + user);
 
                     // this device hasn't pinged our api since it unsubscribed
                     if (user.apnSubscribeDate <= ts || force) {

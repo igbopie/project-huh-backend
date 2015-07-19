@@ -13,7 +13,7 @@ exports.up = function (req, res) {
     } else if (commentId) {
         CommentVoteService.upVote(commentId, userId, ApiUtils.handleResult(req, res));
     } else {
-        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, "Please, specify commentId or questionId", null);
+        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, 'Please, specify commentId or questionId', null);
     }
 };
 
@@ -27,7 +27,7 @@ exports.down = function (req, res) {
     } else if (commentId) {
         CommentVoteService.downVote(commentId, userId, ApiUtils.handleResult(req, res));
     } else {
-        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, "Please, specify commentId or questionId", null);
+        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, 'Please, specify commentId or questionId', null);
     }
 };
 
@@ -41,6 +41,6 @@ exports.clear = function (req, res) {
     } else if (commentId) {
         CommentVoteService.clearVote(commentId, userId, ApiUtils.handleResult(req, res));
     } else {
-        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, "Please, specify commentId or questionId", null);
+        ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, 'Please, specify commentId or questionId', null);
     }
 };

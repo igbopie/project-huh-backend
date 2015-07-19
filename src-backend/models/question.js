@@ -8,15 +8,14 @@ var mongoose = require('mongoose'),
     LOCATION_LATITUDE = 1,
     DATE_CONSTANT = new Date(2015, 1, 1, 0, 0, 0, 0).getTime(),
     LOCATION_RADIUS = 10 * 1000,
-    Async = require("async"); //meters
+    Async = require('async'); // meters
 
 var questionSchema = new Schema({
-    typeId: {type: Schema.Types.ObjectId, required: true, ref: "QuestionType"},
-    //type: {type: String, required: true},
+    typeId: {type: Schema.Types.ObjectId, required: true, ref: 'QuestionType'},
     text: {type: String, required: false},
     url: {type: String, required: false},
     username: {type: String, required: false},
-    userId: {type: Schema.Types.ObjectId, required: true, ref: "User"},
+    userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     created: {type: Date, required: true, default: Date.now},
     updated: {type: Date, required: true, default: Date.now},
     location: {type: [Number], required: false, index: '2dsphere'},
@@ -41,7 +40,7 @@ questionSchema.index({popularScore: -1});
 
 var Question = mongoose.model('Question', questionSchema);
 
-//Service?
+// Service?
 var QuestionService = {};
 
 // The exports is here to avoid cyclic dependency problem
@@ -78,7 +77,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
             if (userId) {
                 QuestionVoteService.findVote(dbQuestion._id, userId, function (err, vote) {
                     if (err) {
-                        console.error("Could not fetch my score");
+                        console.error('Could not fetch my score');
                     }
                     if (vote) {
                         question.myVote = vote.score;
@@ -98,7 +97,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
                 ],
                 function (err) {
                     if (err) {
-                        console.error("Could not populate typeId");
+                        console.error('Could not populate typeId');
                     }
 
                     subProcess();
@@ -176,12 +175,12 @@ QuestionService.create = function (type, text, latitude, longitude, userId, call
         question.location = locationArray;
     }
 
-    //Validation
+    // Validation
     QuestionTypeService.find(question.type, function (err, qType) {
         if (err) {
             return callback(err);
         }
-        if (!qType) { return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND, "Question Type not found")); }
+        if (!qType) { return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND, 'Question Type not found')); }
         question.typeId = qType._id;
         question.save(function (err) {
             if (err) {
@@ -223,7 +222,7 @@ var execQuery = function (query, sort, userId, page, numItems, callback) {
             skip: numItems * page,
             sort: sort
         })
-        .populate("typeId")
+        .populate('typeId')
         .exec(function (err, questions) {
             if (err) {
                 return callback(err);
@@ -293,8 +292,8 @@ QuestionService.near = function (userId, latitude, longitude, page, numItems, ca
         [
             {
                 $geoNear: {
-                    near: {type: "Point", coordinates: coordinates},
-                    distanceField: "dist",
+                    near: {type: 'Point', coordinates: coordinates},
+                    distanceField: 'dist',
                     maxDistance: LOCATION_RADIUS,
                     query: {},
                     limit: 10000,
@@ -355,7 +354,7 @@ QuestionService.updateVoteScore = function (voteIncrement, score, newVote, quest
             update.$inc.nUpVotes = -1;
             update.$inc.nDownVotes = 1;
         } else {
-            //clear score
+            // clear score
             update.$inc.nVotes = -1;
 
             if (voteIncrement > 0) {

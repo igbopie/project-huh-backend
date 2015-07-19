@@ -13,7 +13,7 @@ if (!sendEmails) {
 
 exports.send = function (email, message) {
     if (!sendEmails) {
-        console.log("Email sending disabled: to:" + email + " message:" + message);
+        console.log('Email sending disabled: to:' + email + ' message:' + message);
     } else {
         var params = {
             Destination: {

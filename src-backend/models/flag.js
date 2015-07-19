@@ -5,8 +5,8 @@ var mongoose = require('mongoose'),
 
 
 var flagSchema = new Schema({
-    questionId: {type: Schema.Types.ObjectId, required: true, ref: "Question"},
-    userId: {type: Schema.Types.ObjectId, required: true, ref: "userId"},
+    questionId: {type: Schema.Types.ObjectId, required: true, ref: 'Question'},
+    userId: {type: Schema.Types.ObjectId, required: true, ref: 'userId'},
     reason: {type: String, required: true},
     created: {type: Date, required: true, default: Date.now}
 });
@@ -14,7 +14,7 @@ var flagSchema = new Schema({
 
 var Flag = mongoose.model('Flag', flagSchema);
 
-//Service?
+// Service?
 var FlagService = {};
 
 // The exports is here to avoid cyclic dependency problem

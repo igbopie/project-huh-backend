@@ -13,7 +13,7 @@ var ApiUtils = {};
 ApiUtils.OK = 200;
 ApiUtils.OK_CREATED = 201;
 ApiUtils.OK_ACCEPTED = 202;
-ApiUtils.OK_CUSTOM = 250; //someday can be usefull
+ApiUtils.OK_CUSTOM = 250; // someday can be usefull
 
 // CUSTOM 460-480
 ApiUtils.CLIENT_ERROR_BAD_REQUEST = 400;
@@ -43,7 +43,7 @@ var parseAuth = function (auth) {
     if (result.scheme !== 'Basic') {
         for (i = 1; i < parts.length; i += 1) {
             vars = parts[i].split('=');
-            result[vars[0]] = vars[1].substring(1, vars[1].length - 1);//remove "
+            result[vars[0]] = vars[1].substring(1, vars[1].length - 1);// remove '
         }
         return result;
     }
@@ -62,7 +62,7 @@ var parseAuth = function (auth) {
 ApiUtils.api = function (req, res, code, message, responseObject) {
     if (code === ApiUtils.SERVER_INTERNAL_ERROR) {
         console.error(message);
-        res.setHeader("Error", message);
+        res.setHeader('Error', message);
     }
     res.json(code, new ApiResponse(code, message, responseObject));
 };
@@ -110,11 +110,10 @@ ApiUtils.auth = function (req, res, callback) {
     var token = req.body.token,
         auth = parseAuth(req.headers.authorization);
 
-    if (auth && auth.scheme === "MarkAuth") {
+    if (auth && auth.scheme === 'MarkAuth') {
         token = auth.token;
     }
 
-    //console.log(req);
     if (token) {
         UserService.findUserByToken(token, function (err, user) {
             if (err) {
