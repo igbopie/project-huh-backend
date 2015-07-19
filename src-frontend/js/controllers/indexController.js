@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Created by igbopie on 11/16/14.
  */
@@ -17,7 +18,7 @@ controllers
 
         $scope.goToQuestion = function (question) {
             $location.path("/q/" + question._id);
-        }
+        };
 
     })
 

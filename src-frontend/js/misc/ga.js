@@ -1,3 +1,4 @@
+/* jshint ignore:start */
 (function (i, s, o, g, r, a, m) {
     i['GoogleAnalyticsObject'] = r;
     i[r] = i[r] || function () {
@@ -12,3 +13,4 @@
 
 ga('create', 'UA-49857529-1', 'auto');
 ga('send', 'pageview');
+/* jshint ignore:end */

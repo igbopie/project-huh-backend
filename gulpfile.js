@@ -37,7 +37,6 @@ var jslintConf = {
 };
 
 var jslintConfFrontend = {
-    todo: true,
     nomen: true,
     browserify: true,
     browser: true,

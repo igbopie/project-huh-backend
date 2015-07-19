@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Created by igbopie on 11/16/14.
  */
@@ -13,6 +14,6 @@ directives
                 question: '=question'
             },
             templateUrl: 'partials/directives/question.html'
-        }
+        };
     }
 );
