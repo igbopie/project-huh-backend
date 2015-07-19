@@ -68,7 +68,9 @@ var vote = require(__base + 'routes/vote');
 var flag = require(__base + 'routes/flag');
 var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
+var authUser = require(__base + 'routes/authUser');
 var Apn = require(__base + 'utils/apn');
+var AuthUserService = require(__base + 'models/authUser').Service;
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
@@ -84,13 +86,38 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(app.router);
-app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' === app.get('env')) {
     app.use(express.errorHandler());
 }
+
+// route middleware to auth
+app.use(function (req, res, next) {
+
+    // check header or url parameters or post parameters for token
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+    // decode token
+    if (token) {
+
+        // verifies secret and checks exp
+        AuthUserService.isAuth(token, function (err, authUser) {
+            if (!err) {
+
+                // if everything is good, save to request for use in other routes
+                req.authUser = authUser;
+                next();
+            }
+        });
+    } else {
+        next();
+    }
+});
+
+
+app.use(app.router);
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/q/:questionId', index.question);
 
@@ -129,6 +156,8 @@ app.post('/api/notification/markallasread', notification.markAllAsRead);
 
 app.post('/api/setting/list', setting.list);
 app.post('/api/setting/update', setting.update);
+app.post('/api/auth/login', authUser.login);
+app.post('/api/auth/check', authUser.check);
 
 
 var server = http.createServer(app);

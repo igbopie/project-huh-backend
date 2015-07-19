@@ -1,0 +1,27 @@
+.login-view{
+    .logo-card{
+        background: none;
+        box-shadow: none;
+        text-align: center;
+
+        img.logo {
+            width: auto;
+            max-height: 120px;
+        }
+        img.logo-text {
+            width: auto;
+            max-height: 60px;
+            margin-left: 10px;
+        }
+    }
+    .form-card {
+        padding: 30px;
+        padding-bottom: 20px;
+        max-width: 350px;
+        text-align: center;
+
+        .md-button {
+            min-width: 150px;
+        }
+    }
+}

@@ -79,6 +79,24 @@ gulp.task('prerun-dev', ['build-frontend', 'build-frontend-css-watch', 'build-fr
     cb();
 });
 
+gulp.task('prerun-dev-backend-only', ['start-mongo', 'build-backend'], function (cb) {
+    env({
+        vars: {
+            'AWS_ACCESS_KEY_ID': 'AKIAJ4GCCVHYQANYFALA',
+            'AWS_SECRET_ACCESS_KEY': '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',
+            'AWS_S3_BUCKET': 'left-dev-test-local'
+        }
+    });
+    cb();
+});
+
+gulp.task('run-dev-test', ['prerun-dev-backend-only'], function (cb) {
+    //run app
+    var app = require("./dist/app");
+    app.start();
+    cb();
+});
+
 gulp.task('run-dev', ['prerun-dev'], function (cb) {
     //run app
     var app = require("./dist/app");
@@ -141,7 +159,12 @@ gulp.task('build-frontend-css-watch', function () {
 });
 
 gulp.task('build-frontend-css-dep', function () {
-    return gulp.src(['./node_modules/font-awesome/css/font-awesome.min.css', './node_modules/angular-material/angular-material.min.css'])
+    return gulp.src(
+        [
+            './node_modules/font-awesome/css/font-awesome.min.css',
+            './node_modules/angular-material/angular-material.min.css',
+            './node_modules/angular-material-icons/angular-material-icons.css'
+        ])
         .pipe(gulp.dest('dist/public/css'));
 });
 
@@ -209,7 +232,7 @@ function buildWatchFrontEndJs() {
 watchifyFrontendJs.on('update', buildWatchFrontEndJs); // on any dep update, runs the bundler
 watchifyFrontendJs.on('log', console.log);
 
-gulp.task('test', ['prerun-dev'], function (cb) {
+gulp.task('test', ['prerun-dev-backend-only'], function (cb) {
     gulp.src('dist/**/*.js')
         .pipe(istanbul()) // Covering files
         .pipe(istanbul.hookRequire()) // Force `require` to return covered files

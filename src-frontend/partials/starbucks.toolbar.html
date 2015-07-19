@@ -1,0 +1,18 @@
+<div class="md-toolbar-tools" layout="row"  layout-align="start center">
+    <img class="logo" src="/images/huh.png" />
+    <img class="logo-text" src="/images/huh-logo-text.png" />
+    <span flex=""></span>
+    <md-menu>
+        <md-button aria-label="User Menu" ng-click="$mdOpenMenu()">
+            <md-icon md-menu-origin><ng-md-icon icon="face" ></ng-md-icon></md-icon> {{username}}
+        </md-button>
+        <md-menu-content width="4">
+            <md-menu-item>
+                <md-button ng-click="logout()">
+                    <md-icon><ng-md-icon icon="logout" ></ng-md-icon></md-icon>
+                    Log out
+                </md-button>
+            </md-menu-item>
+        </md-menu-content>
+    </md-menu>
+</div>

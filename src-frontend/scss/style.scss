@@ -6,7 +6,13 @@
 @import "header";
 @import "layout";
 @import "mdMods";
+@import "starbucksLogin";
 
 body {
     font-family: 'Varela Round', sans-serif;
+    background-color: #a077d5;
+}
+
+.main-view-container, .starbucks-main-view  {
+    background-color: #a077d5;
 }

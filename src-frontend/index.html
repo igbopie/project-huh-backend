@@ -10,8 +10,8 @@
     <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-    <div ng-view></div>
+<body layout="row">
+    <div ui-view class="main-view-container" layout="column" flex></div>
 
     <script src="bundle.js"></script>
 </body>

@@ -65,13 +65,9 @@ describe('Notification', function () {
                     if (err) return done(err);
 
                     Notification.list({userId: users[0]._id}, function (err, notifications) {
-                        console.log(notifications);
-                        console.log("----");
                         Notification.markAllAsRead({userId: users[0]._id}, function (err, notifications) {
                             Notification.list({userId: users[0]._id}, function (err, notifications) {
-                                console.log(notifications);
                                 Notification.list({userId: users[1]._id}, function (err, notifications) {
-                                    console.log(notifications);
 
                                     done();
                                 });

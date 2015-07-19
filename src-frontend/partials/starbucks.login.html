@@ -1,0 +1,22 @@
+<md-progress-linear md-mode="indeterminate" ng-show="loading" ></md-progress-linear>
+<div layout="column" layout-align="center center" class="fill-height login-view" md-scroll-y flex>
+    <md-content layout-padding class="panel-card logo-card" layout="row" layout-align="center center">
+        <img class="logo" src="/images/huh.png" />
+        <img class="logo-text" src="/images/huh-logo-text.png" />
+    </md-content>
+    <md-content layout-padding class="panel-card form-card">
+
+        <form class="form-signin" role="form" ng-submit="login(username,password)">
+            <md-input-container >
+                <md-icon><ng-md-icon icon="face" ></ng-md-icon></md-icon>
+                <input ng-model="username" type="email" placeholder="Email" ng-required="true">
+            </md-input-container>
+            <md-input-container md-no-float>
+                <md-icon><ng-md-icon icon="vpn_key" ></ng-md-icon></md-icon>
+                <input ng-model="password" type="password" placeholder="Password" ng-required="true">
+            </md-input-container>
+
+            <md-button class="md-raised md-primary">Log in</md-button>
+        </form>
+    </md-content>
+</div>

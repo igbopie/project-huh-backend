@@ -20,23 +20,4 @@ controllers
             $location.path('/q/' + question._id);
         };
 
-    })
-
-    .controller('QuestionDetailCtrl',
-    function ($scope, $http, $location, $routeParams, QuestionService, CommentService) {
-
-        $scope.question = {};
-        QuestionService.view($routeParams.questionId, function (err, question) {
-            $scope.question = question;
-        });
-
-        CommentService.list($routeParams.questionId, function (err, comments) {
-            $scope.comments = comments;
-        });
-
-        /*$scope.goToQuestion = function(question) {
-         $location.path('/q/' + question._id);
-         }*/
-
-    })
-;
+    });
