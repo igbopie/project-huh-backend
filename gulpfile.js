@@ -15,7 +15,6 @@ var uglify = require('gulp-uglify');
 var buffer = require('vinyl-buffer');
 var ngAnnotate = require('gulp-ng-annotate');
 var _ = require('underscore');
-var jslint = require('gulp-jslint');
 var jshint = require('gulp-jshint');
 var bourbon = require('node-bourbon').includePaths;
 var istanbul = require('gulp-istanbul');
@@ -167,6 +166,8 @@ gulp.task('build-frontend-partials-watch', function () {
 gulp.task('build-frontend-lint', function() {
     return gulp.src('src-frontend/js/**')
         .pipe(jshint(jslintConfFrontend))
+        .pipe(jshint.reporter('default'))
+        .pipe(jshint.reporter('fail'))
         .on('error', function (error) {
             console.error(error);
         });
