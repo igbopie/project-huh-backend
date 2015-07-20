@@ -69,6 +69,16 @@ describe('Question', function () {
         });
     });
 
+    describe('#viewInexistent()', function () {
+        it('shouldn\'t view a question', function (done) {
+            Question.view({questionId: "55ab317f0e4aa9f838327792", userId: users[0]._id}, function (err, errCode) {
+                if (errCode !== 470) return done("Code not equals to 470");
+
+                done();
+            });
+        });
+    });
+
     describe('#list()', function () {
         it('should list a question', function (done) {
             Question.create(

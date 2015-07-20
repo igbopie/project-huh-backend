@@ -58,6 +58,10 @@ var processQuestion = function (dbQuestion, userId, callback) {
         processUserName,
         processShortLink;
 
+    if (!dbQuestion) {
+        return callback();
+    }
+
     process = function () {
         var subProcess = function () {
             var question = {};
@@ -411,12 +415,17 @@ QuestionService.view = function (questionId, userId, callback) {
             return callback(err);
         }
 
+        if (!doc) {
+            return callback();
+        }
+
         processQuestion(doc, userId, callback);
     });
 };
 
-
-
-
-
+QuestionService.getTotal = function (callback) {
+    Question.count({}, function (err, count) {
+        callback(err, count);
+    });
+};
 

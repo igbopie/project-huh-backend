@@ -220,4 +220,9 @@ CommentService.view = function (commentId, userId, callback) {
     });
 };
 
+CommentService.getTotal = function (callback) {
+    Comment.count({}, function (err, count) {
+        callback(err, count);
+    });
+};
 

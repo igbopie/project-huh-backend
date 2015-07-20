@@ -53,7 +53,8 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                         controller: 'StarbucksToolbarCtrl'
                     },
                     'main': {
-                        template: 'Dashboard here'
+                        controller: 'StarbucksDashboardCtrl',
+                        templateUrl: 'partials/starbucks.dashboard.html'
                     }
                 }
             });

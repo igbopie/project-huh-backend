@@ -158,6 +158,13 @@ service.updateLocation = function (userId, latitude, longitude, callback) {
 };
 
 
+service.getTotal = function (callback) {
+    User.count({}, function (err, count) {
+        callback(err, count);
+    });
+};
+
+
 module.exports = {
     Service: service
 };

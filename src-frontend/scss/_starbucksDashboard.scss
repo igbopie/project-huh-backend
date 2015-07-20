@@ -1,0 +1,38 @@
+.dashboard{
+
+    .tile {
+        color: white;
+        fill: white;
+        font-size: 40px;
+    }
+    .tile1 {
+        @extend .tile;
+        background: $huh1;
+    }
+
+    .tile2 {
+        @extend .tile;
+        background: $huh2;
+    }
+
+    .tile3 {
+        @extend .tile;
+        background: $huh3;
+    }
+
+    .tile4 {
+        @extend .tile;
+        background: $huh4;
+    }
+
+    .tile5 {
+        @extend .tile;
+        background: $huh5;
+    }
+
+    .tile6 {
+        @extend .tile;
+        background: $huh6;
+    }
+
+}

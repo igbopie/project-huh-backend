@@ -1,1 +1,53 @@
-dashboad
+
+<md-grid-list
+        md-cols-sm="1" md-cols-md="2" md-cols-gt-md="5"
+        md-row-height-gt-md="1:1" md-row-height="2:2"
+        md-gutter="12px" md-gutter-gt-sm="8px" class="dashboard">
+
+    <md-grid-tile class="tile1" md-rowspan="1" md-colspan="1" md-colspan-sm="1">
+        <div  layout="column" layout-align="center center">
+
+            <div>{{stats.users}}</div>
+            <ng-md-icon icon="people" size="60"></ng-md-icon>
+        </div>
+    </md-grid-tile>
+
+    <md-grid-tile class="tile2" md-rowspan="1" md-colspan="1" md-colspan-sm="1">
+        <div  layout="column" layout-align="center center">
+
+            <div>{{stats.questions}}</div>
+            <ng-md-icon icon="help" size="60"></ng-md-icon>
+        </div>
+    </md-grid-tile>
+
+    <md-grid-tile class="tile3" md-rowspan="1" md-colspan="1" md-colspan-sm="1">
+        <div  layout="column" layout-align="center center">
+
+            <div>{{stats.comments}}</div>
+            <ng-md-icon icon="comment" size="60"></ng-md-icon>
+        </div>
+    </md-grid-tile>
+
+    <md-grid-tile class="tile4" md-rowspan="1" md-colspan="1" md-colspan-sm="1">
+        <div  layout="column" layout-align="center center">
+
+            <div>{{stats.questionVotes}}</div>
+            <div>
+                <ng-md-icon icon="help" size="30"></ng-md-icon>
+                <ng-md-icon icon="thumbs_up_down" size="60"></ng-md-icon>
+            </div>
+        </div>
+    </md-grid-tile>
+
+    <md-grid-tile class="tile5" md-rowspan="1" md-colspan="1" md-colspan-sm="1">
+        <div  layout="column" layout-align="center center">
+
+            <div>{{stats.commentVotes}}</div>
+            <div>
+                <ng-md-icon icon="comment" size="30"></ng-md-icon>
+                <ng-md-icon icon="thumbs_up_down" size="60"></ng-md-icon>
+            </div>
+        </div>
+    </md-grid-tile>
+
+</md-grid-list>

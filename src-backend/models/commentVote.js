@@ -86,6 +86,9 @@ CommentVoteService.vote = function (score, commentId, userId, callback) {
     });
 };
 
-
-
+CommentVoteService.getTotal = function (callback) {
+    CommentVote.count({}, function (err, count) {
+        callback(err, count);
+    });
+};
 

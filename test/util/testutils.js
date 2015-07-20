@@ -1,69 +1,11 @@
 var mongoose = require('mongoose'),
-    User = require('../apiclient/user');
-
-exports.cleanTemplates = function (callback) {
-    var db = mongoose.createConnection();
-    //Resest DB
-    db.open('mongodb://localhost/seem', function (err) {
-        if (err) {
-            console.log(err);
-            callback(err);
-            return;
-        }
-        db.collection('templates').remove(function (err) {
-            if (err) {
-                console.log(err);
-                callback(err);
-                return;
-            }
-
-            db.close(function (err) {
-                if (err) {
-                    console.log(err);
-                    callback(err);
-                    return;
-                }
-                callback();
-            });
-        });
-    });
-}
+    User = require('../apiclient/user'),
+    Question = require('../apiclient/question'),
+    Comment = require('../apiclient/comment'),
+    _ = require("lodash"),
+    Async = require("async");
 
 
-exports.cleanMapIcons = function (callback) {
-    var db = mongoose.createConnection();
-    //Resest DB
-    db.open('mongodb://localhost/seem', function (err) {
-        if (err) {
-            console.log(err);
-            callback(err);
-            return;
-        }
-        db.collection('mapicons').remove(function (err) {
-            if (err) {
-                console.log(err);
-                callback(err);
-                return;
-            }
-            db.collection('mapiconpacks').remove(function (err) {
-                if (err) {
-                    console.log(err);
-                    callback(err);
-                    return;
-                }
-
-                db.close(function (err) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                        return;
-                    }
-                    callback();
-                });
-            });
-        });
-    });
-}
 exports.cleanDatabase = function (callback) {
     var db = mongoose.createConnection();
     //Resest DB
@@ -92,13 +34,13 @@ exports.cleanDatabase = function (callback) {
                         return;
                     }
 
-                    db.collection('questionVote').remove(function (err) {
+                    db.collection('questionvotes').remove(function (err) {
                         if (err) {
                             console.log(err);
                             callback(err);
                             return;
                         }
-                        db.collection('commentVote').remove(function (err) {
+                        db.collection('commentvotes').remove(function (err) {
                             if (err) {
                                 console.log(err);
                                 callback(err);
@@ -219,7 +161,7 @@ exports.makeSuperAdmin = function (user, callback) {
 exports.createUsers = function (array, callback) {
     var i = 0;
     createUsersAux(array, i, callback);
-}
+};
 
 function createUsersAux(array, i, callback) {
     if (i < array.length) {
@@ -238,7 +180,7 @@ function createUsersAux(array, i, callback) {
         callback();
     }
 
-}
+};
 
 exports.randomUsers = function (nRandomUsers) {
     var array = new Array();
@@ -246,7 +188,7 @@ exports.randomUsers = function (nRandomUsers) {
         array.push(randomUser());
     }
     return array;
-}
+};
 
 
 function randomUser() {
@@ -257,3 +199,104 @@ function randomUser() {
     return {};
 }
 
+exports.randomQuestions = function (user, nRandomQuestions) {
+    var array = new Array();
+    var questionTemplate = {
+        userId: user._id,
+        type: "WHAT",
+        text: "time is it",
+        latitude: 0,
+        longitude: 0
+    };
+    for (var i = 0; i < nRandomQuestions; i++) {
+        array.push(_.clone(questionTemplate));
+    }
+    return array;
+};
+
+exports.createQuestions = function (array, callback) {
+    var i = 0;
+    createQuestionsAux(array, i, callback);
+};
+
+function createQuestionsAux(array, i, callback) {
+    if (i < array.length) {
+        var question = array[i];
+        Question.create(question, function (err, backendQuestion) {
+            _.defaults(question, backendQuestion);
+            question.err = err;
+            if (err) {
+                console.log(err);
+            }
+            i += 1;
+            createQuestionsAux(array, i, callback)
+        });
+    } else {
+        callback();
+    }
+};
+
+exports.randomComments = function (users, question, nRandomComments) {
+    var array = new Array();
+    var commentTemplate = {
+        text: "Comment here",
+        questionId: question._id,
+        userId: users[_.random(0, users.length-1)]._id
+    };
+    for (var i = 0; i < nRandomComments; i++) {
+        array.push(_.clone(commentTemplate));
+    }
+    return array;
+};
+
+exports.createComments = function (array, callback) {
+    var i = 0;
+    createCommentsAux(array, i, callback);
+};
+
+function createCommentsAux(array, i, callback) {
+    if (i < array.length) {
+        var comment = array[i];
+        Comment.create(comment, function (err, backendComment) {
+            _.defaults(comment, backendComment);
+            comment.err = err;
+            if (err) {
+                console.log(err);
+            }
+            i += 1;
+            createCommentsAux(array, i, callback)
+        });
+    } else {
+        callback();
+    }
+};
+
+exports.populateDB = function(callback) {
+    var users = exports.randomUsers(3);
+    exports.createUsers(users, function (err) {
+        Async.each(
+            users,
+            function(user, callback){
+                var questions = exports.randomQuestions(user, 3);
+                exports.createQuestions(questions, function (err) {
+                    Async.each(
+                        questions,
+                        function(question, callback) {
+                            var comments = exports.randomComments(users, question, 3);
+                            exports.createComments(comments, function (err) {
+                                callback();
+                            });
+                        },
+                        function(){
+                            callback();
+                        }
+                    );
+                });
+            },
+            function() {
+                callback();
+            }
+        );
+
+    });
+};

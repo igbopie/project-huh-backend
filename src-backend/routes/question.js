@@ -16,7 +16,7 @@ exports.create = function (req, res) {
 exports.view = function (req, res) {
     var questionId = req.body.questionId,
         userId = req.body.userId;
-    QuestionService.view(questionId, userId, ApiUtils.handleResult(req, res));
+    QuestionService.view(questionId, userId, ApiUtils.handleResult(req, res, true));
 };
 
 exports.recent = function (req, res) {

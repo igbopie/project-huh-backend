@@ -107,5 +107,9 @@ QuestionVoteService.findUpVoteQuestionIds = function (userId, page, numItems, ca
     );
 };
 
-
+QuestionVoteService.getTotal = function (callback) {
+    QuestionVote.count({}, function (err, count) {
+        callback(err, count);
+    });
+};
 

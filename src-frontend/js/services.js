@@ -9,3 +9,4 @@ module.exports = angular.module('huh.services', []);
 var questionService = require('./services/questionService');
 var commentService = require('./services/commentService');
 var authService = require('./services/authService');
+var starbucksService = require('./services/starbucksService');

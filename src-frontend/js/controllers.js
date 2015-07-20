@@ -13,3 +13,4 @@ var questionDetailController = require('./controllers/questionDetailController')
 var starbucksIndexController = require('./controllers/starbucksIndexController');
 var starbucksLoginController = require('./controllers/starbucksLoginController');
 var starbucksToolbarController = require('./controllers/starbucksToolbarController');
+var starbucksDashboardController = require('./controllers/starbucksDashboardController');
