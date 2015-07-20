@@ -7,9 +7,19 @@ var angularAria = require('angular-aria');
 var angularAnimate = require('angular-animate');
 var angularMaterial = require('angular-material');
 var icons = require('angular-material-icons');
+var angularSanitize = require('angular-sanitize');
+
+// ++++ Text Angular
+var textangular = require('textangular');
+var rangy = require('rangy');
+var rangyS = require('rangy/lib/rangy-selectionsaverestore');
+window.rangy = rangy;
+// ---- Text Angular
+
 var services = require('./services');
 var directives = require('./directives');
 var controllers = require('./controllers');
+
 
 var huh = angular.module('huh', [
     'ui.router',
@@ -19,6 +29,8 @@ var huh = angular.module('huh', [
     'ngMaterial',
     'angularMoment',
     'ngMdIcons',
+    'ngSanitize',
+    'textAngular',
     'huh.services',
     'huh.directives',
     'huh.controllers'

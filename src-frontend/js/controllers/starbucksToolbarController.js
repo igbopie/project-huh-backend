@@ -12,6 +12,10 @@ controllers
         function ($scope, $http, $location, AuthService, $mdToast) {
             $scope.username = AuthService.getUsername();
 
+            $scope.goTo = function (page) {
+                $location.path('starbucks/'+page);
+            };
+
             $scope.logout = function () {
                 AuthService.logout();
                 $location.path('starbucks/login');

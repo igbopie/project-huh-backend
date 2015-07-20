@@ -70,6 +70,7 @@ var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
 var authUser = require(__base + 'routes/authUser');
 var starbucks = require(__base + 'routes/starbucks');
+var page = require(__base + 'routes/page');
 var Apn = require(__base + 'utils/apn');
 var AuthUserService = require(__base + 'models/authUser').Service;
 
@@ -161,6 +162,10 @@ app.post('/api/auth/login', authUser.login);
 app.post('/api/auth/check', authUser.check);
 app.post('/api/starbucks/dashboard', starbucks.dashboard);
 
+app.post('/api/page/list', page.list);
+app.post('/api/page/view', page.view);
+app.post('/api/page/create', page.create);
+app.post('/api/page/update', page.update);
 
 var server = http.createServer(app);
 var listen;

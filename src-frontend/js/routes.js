@@ -28,6 +28,14 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                 templateUrl: 'partials/questiondetail.html',
                 controller: 'QuestionDetailCtrl'
             })
+
+        .state(
+            'page',
+            {
+                url: '/p/:url',
+                templateUrl: 'partials/page.html',
+                controller: 'PageCtrl'
+            })
         .state(
             'starbuckslogin',
             {
@@ -55,6 +63,37 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                     'main': {
                         controller: 'StarbucksDashboardCtrl',
                         templateUrl: 'partials/starbucks.dashboard.html'
+                    }
+                }
+            })
+
+        .state(
+            'starbucks.pages',
+            {
+                url: '/pages',
+                views: {
+                    'toolbar': {
+                        templateUrl: 'partials/starbucks.toolbar.html',
+                        controller: 'StarbucksToolbarCtrl'
+                    },
+                    'main': {
+                        controller: 'StarbucksPagesCtrl',
+                        templateUrl: 'partials/starbucks.pages.html'
+                    }
+                }
+            })
+        .state(
+            'starbucks.page',
+            {
+                url: '/pages/:url',
+                views: {
+                    'toolbar': {
+                        templateUrl: 'partials/starbucks.toolbar.html',
+                        controller: 'StarbucksToolbarCtrl'
+                    },
+                    'main': {
+                        controller: 'StarbucksPageCtrl',
+                        templateUrl: 'partials/starbucks.page.html'
                     }
                 }
             });

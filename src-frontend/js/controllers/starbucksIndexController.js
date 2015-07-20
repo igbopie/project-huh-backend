@@ -10,9 +10,11 @@ var services = require('../services');
 controllers
     .controller('StarbucksIndexCtrl',
     function ($scope, $http, $location, $stateParams, AuthService) {
-        if (AuthService.isLoggedIn()) {
-            $location.path('starbucks/dashboard');
-        } else {
+        if (!AuthService.isLoggedIn()) {
             $location.path('starbucks/login');
+            return;
+        }
+        if ($location.path() === '/starbucks') {
+            $location.path('starbucks/dashboard');
         }
     });

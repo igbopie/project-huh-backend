@@ -1,0 +1,19 @@
+<md-progress-linear md-mode="indeterminate" ng-show="loading" ></md-progress-linear>
+<div layout="column" layout-align="center center" >
+    <md-content  layout-padding class="panel-card-big md-whiteframe-z5"  layout="column">
+        <md-input-container>
+            <label>URL</label>
+            <input ng-model="url">
+        </md-input-container>
+        <text-angular ng-model="html"></text-angular>
+        <div layout="row">
+            <div flex="2"></div>
+            <md-button aria-label="Cancel" ng-click="cancel()">
+                Cancel
+            </md-button>
+            <md-button class="md-raised md-primary" aria-label="Save" ng-click="save()">
+                Save
+            </md-button>
+        </div>
+    </md-content>
+</div>

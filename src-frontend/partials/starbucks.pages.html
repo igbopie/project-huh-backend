@@ -1,0 +1,23 @@
+
+<div layout="column" layout-align="center center" >
+    <md-content layout-padding class="panel-card-big md-whiteframe-z5">
+        <md-list>
+            <md-list-item ng-repeat="page in pages" >
+                <div class="md-no-style md-list-item-inner">
+                    <div>{{page.url}}</div>
+
+                    <md-button class="md-secondary md-hue-3" ng-click="edit(page)">
+                        <md-icon><ng-md-icon icon="mode_edit" aria-label="View/Edit" ></ng-md-icon></md-icon>
+                    </md-button>
+                </div>
+            </md-list-item>
+            <md-list-item ng-show="!pages.length" layout="column" layout-align="center center">No pages</md-list-item>
+        </md-list>
+    </md-content>
+
+    <md-button class="md-fab action-btn" aria-label="Create page" ng-click="createPage()">
+        <md-icon>
+            <ng-md-icon icon="add"></ng-md-icon>
+        </md-icon>
+    </md-button>
+</div>

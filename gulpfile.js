@@ -158,12 +158,20 @@ gulp.task('build-frontend-css-watch', function () {
     return gulp.watch('src-frontend/scss/**/*', ['build-frontend-css']);
 });
 
-gulp.task('build-frontend-css-dep', function () {
+gulp.task('build-frontend-font-dep', function () {
+    return gulp.src(
+        [
+            './node_modules/font-awesome/fonts/*'
+        ])
+        .pipe(gulp.dest('dist/public/fonts'));
+});
+gulp.task('build-frontend-css-dep',['build-frontend-font-dep'], function () {
     return gulp.src(
         [
             './node_modules/font-awesome/css/font-awesome.min.css',
             './node_modules/angular-material/angular-material.min.css',
-            './node_modules/angular-material-icons/angular-material-icons.css'
+            './node_modules/angular-material-icons/angular-material-icons.css',
+            './node_modules/textangular/dist/textAngular.css'
         ])
         .pipe(gulp.dest('dist/public/css'));
 });

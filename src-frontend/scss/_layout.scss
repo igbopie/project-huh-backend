@@ -17,7 +17,6 @@
     @include transition(0.02s padding cubic-bezier(0.35, 0, 0.25, 1));
     position: relative;
     padding-bottom: 0px;
-    box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 
     @media screen and (max-width: 500px) {
 
@@ -25,3 +24,22 @@
     }
 }
 
+.panel-card-big {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    @include transition(0.02s padding cubic-bezier(0.35, 0, 0.25, 1));
+    position: relative;
+
+    @media screen and (max-width: 900px) {
+
+        border-radius: 0px;
+    }
+}
+
+.action-btn {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+}

@@ -1,6 +1,55 @@
-<div class="md-toolbar-tools" layout="row"  layout-align="start center">
+<div class="md-toolbar-tools  md-whiteframe-z1" layout="row"  layout-align="start center">
+
+    <md-menu>
+        <md-button aria-label="Open Starbucks Menu" class="md-icon-button" ng-click="$mdOpenMenu()">
+            <md-icon md-menu-origin><ng-md-icon icon="menu" ></ng-md-icon></md-icon>
+        </md-button>
+        <md-menu-content width="4">
+            <md-menu-item>
+                <md-button ng-click="goTo('dashboard')">
+                    <md-icon md-menu-align-target>
+                        <ng-md-icon icon="dashboard" ></ng-md-icon>
+                    </md-icon>
+                    Dashboard
+                </md-button>
+            </md-menu-item>
+
+
+            <md-menu-item>
+                <md-button ng-click="goTo('pages')">
+                    <md-icon md-menu-align-target>
+                        <ng-md-icon icon="format_align_center" ></ng-md-icon>
+                    </md-icon>
+                    Pages
+                </md-button>
+            </md-menu-item>
+
+
+            <md-menu-item>
+                <md-button ng-click="" disabled="disabled">
+                    <md-icon md-menu-align-target>
+                        <ng-md-icon icon="flag" ></ng-md-icon>
+                    </md-icon>
+                    Flags
+                </md-button>
+            </md-menu-item>
+
+            <md-menu-item>
+                <md-button ng-click="" disabled="disabled">
+                    <md-icon md-menu-align-target>
+                        <ng-md-icon icon="assignment_ind" ></ng-md-icon>
+                    </md-icon>
+                    Registrations
+                </md-button>
+            </md-menu-item>
+
+        </md-menu-content>
+    </md-menu>
+
     <img class="logo" src="/images/huh.png" />
     <img class="logo-text" src="/images/huh-logo-text.png" />
+
+
     <span flex=""></span>
     <md-menu>
         <md-button aria-label="User Menu" ng-click="$mdOpenMenu()">

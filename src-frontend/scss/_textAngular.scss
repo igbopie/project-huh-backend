@@ -1,0 +1,63 @@
+text-angular {
+  outline: none;
+
+  .btn-toolbar, .btn-group {
+    @include display(flex);
+    @include align-items(center);
+    @include flex-flow(row wrap);
+
+    .btn {
+      box-sizing: border-box;
+      color: currentColor;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      position: relative;
+      outline: 0;
+      border: 0;
+      display: inline-table;
+      padding: 6px 14px;
+      line-height: 36px;
+      min-height: 36px;
+      background: 0 0;
+      white-space: nowrap;
+      min-width: 39px;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-size: 14px;
+      font-style: inherit;
+      font-variant: inherit;
+      font-family: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      overflow: hidden;
+      transition: box-shadow .4s cubic-bezier(.25,.8,.25,1),background-color .4s cubic-bezier(.25,.8,.25,1);
+      letter-spacing: .01em;
+      border-radius: 0px;
+
+      &:hover {
+        background: #eaeaea;
+      }
+
+      &:active {
+        background: #999;
+      }
+
+      &[disabled]{
+        color: #eaeaea;
+      }
+    }
+  }
+
+  .btn-group {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #eaeaea;
+  }
+
+  .ta-editor {
+    border: 1px solid #eaeaea;
+  }
+}

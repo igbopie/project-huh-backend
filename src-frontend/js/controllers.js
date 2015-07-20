@@ -8,9 +8,12 @@ var angular = require('angular');
 module.exports = angular.module('huh.controllers', []);
 
 // All controllers here
-var indexController = require('./controllers/indexController');
-var questionDetailController = require('./controllers/questionDetailController');
-var starbucksIndexController = require('./controllers/starbucksIndexController');
-var starbucksLoginController = require('./controllers/starbucksLoginController');
-var starbucksToolbarController = require('./controllers/starbucksToolbarController');
-var starbucksDashboardController = require('./controllers/starbucksDashboardController');
+require('./controllers/indexController');
+require('./controllers/questionDetailController');
+require('./controllers/starbucksIndexController');
+require('./controllers/starbucksLoginController');
+require('./controllers/starbucksToolbarController');
+require('./controllers/starbucksDashboardController');
+require('./controllers/starbucksPagesController');
+require('./controllers/starbucksPageController');
+require('./controllers/pageController');
