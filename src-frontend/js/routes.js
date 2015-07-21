@@ -96,5 +96,20 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                         templateUrl: 'partials/starbucks.page.html'
                     }
                 }
+            })
+        .state(
+            'starbucks.flags',
+            {
+                url: '/flags',
+                views: {
+                    'toolbar': {
+                        templateUrl: 'partials/starbucks.toolbar.html',
+                        controller: 'StarbucksToolbarCtrl'
+                    },
+                    'main': {
+                        controller: 'StarbucksFlagsCtrl',
+                        templateUrl: 'partials/starbucks.flags.html'
+                    }
+                }
             });
 });

@@ -2,6 +2,7 @@ var mongoose = require('mongoose'),
     User = require('../apiclient/user'),
     Question = require('../apiclient/question'),
     Comment = require('../apiclient/comment'),
+    Flag = require('../apiclient/flag'),
     _ = require("lodash"),
     Async = require("async");
 
@@ -228,8 +229,14 @@ function createQuestionsAux(array, i, callback) {
             if (err) {
                 console.log(err);
             }
-            i += 1;
-            createQuestionsAux(array, i, callback)
+            Flag.flag({questionId: question._id, userId: question.userId, reason: "HATE"}, function (err) {
+                if (err) {
+                    console.log(err);
+                }
+
+                i += 1;
+                createQuestionsAux(array, i, callback)
+            });
         });
     } else {
         callback();

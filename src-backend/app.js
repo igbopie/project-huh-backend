@@ -167,6 +167,8 @@ app.post('/api/page/view', page.view);
 app.post('/api/page/create', page.create);
 app.post('/api/page/update', page.update);
 
+app.post('/api/flag/list', flag.list);
+
 var server = http.createServer(app);
 var listen;
 exports.start = function (callback) {

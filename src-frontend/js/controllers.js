@@ -16,4 +16,5 @@ require('./controllers/starbucksToolbarController');
 require('./controllers/starbucksDashboardController');
 require('./controllers/starbucksPagesController');
 require('./controllers/starbucksPageController');
+require('./controllers/starbucksFlagsController');
 require('./controllers/pageController');

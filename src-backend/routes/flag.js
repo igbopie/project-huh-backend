@@ -9,3 +9,9 @@ exports.flag = function (req, res) {
     FlagService.create(questionId, userId, reason, ApiUtils.handleResult(req, res));
 };
 
+exports.list = function (req, res) {
+    ApiUtils.auth(req, res, function (authUser) {
+        FlagService.list( ApiUtils.handleResult(req, res));
+    });
+};
+

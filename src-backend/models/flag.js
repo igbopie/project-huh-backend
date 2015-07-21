@@ -36,6 +36,17 @@ FlagService.create = function (questionId, userId, reason, callback) {
     });
 };
 
+FlagService.list = function (callback) {
+    Flag.find({})
+        .sort({created: -1})
+        .exec(function (err, results) {
+            if (err) { return callback(err); }
+
+            callback(undefined, results);
+        }
+    );
+};
+
 
 
 
