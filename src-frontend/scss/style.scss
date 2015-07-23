@@ -10,12 +10,24 @@
 @import "starbucksLogin";
 @import "starbucksDashboard";
 @import "textAngular";
+@import "index";
 
-body {
-    font-family: 'Varela Round', sans-serif;
+html, body {
     background-color: #a077d5;
+}
+
+html, body, input, textarea, keygen, select, button {
+    font-family: 'Varela Round', sans-serif;
 }
 
 .main-view-container, .starbucks-main-view  {
     background-color: #a077d5;
+}
+.starbucks-main-view {
+    width: 100%;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
 }

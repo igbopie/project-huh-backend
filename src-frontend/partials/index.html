@@ -1,4 +1,53 @@
-<div class="inner-list">
+<div layout="column" layout-align="start center" class="max-width index-page" >
+    <div layout="row" layout-align="start center" flex-no-shrink>
+        <div flex="60" flex-no-shrink class="index-hero-image">
+            <img src="/images/huh-logo-big.png" />
+        </div>
+        <div flex="40" >
+            <form name="registerForm">
+                <div layout="row">
+                    <md-input-container flex>
+                        <label>Email</label>
+                        <input ng-model="user.email" type="email">
+                    </md-input-container>
+                    <md-select placeholder="Platform" ng-model="platform">
+                        <md-option value="ios">
+                            <md-icon style="margin-top: -5px;"><ng-md-icon icon="apple"></ng-md-icon></md-icon>
+                            <span>iOS</span>
+                        </md-option>
+                        <md-option value="android">
+                            <md-icon><ng-md-icon icon="android"></ng-md-icon></md-icon>
+                            <span>Android</span>
+                        </md-option>
+                    </md-select>
+                </div>
+                <div layout="row">
+                    <md-button class="md-raised md-primary" flex style="margin: 2px;">Register</md-button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div  layout="row" layout-align="center center" flex-no-shrink fill-parent-width class="footer-menu">
+        <div>
+            <a href="#/p/about-us">About us</a>
+        </div>
+        <div>
+            <a href="#/p/terms-of-use">Terms of use</a>
+        </div>
+        <div>
+            <a href="#/p/privacy-policy">Privacy policy</a>
+        </div>
+        <div>
+            <a href="#/p/rules">Rules</a>
+        </div>
+        <div>
+            <a href="mailto:feedback@huhapp.com">Send feedback</a>
+        </div>
+    </div>
+</div>
+
+<!--div class="inner-list">
     <div layout="column" layout-fill  class="inner-list-child">
         <md-content>
             <md-list>
@@ -9,4 +58,4 @@
             </md-list>
         </md-content>
     </div>
-</div>
+</div-->

@@ -188,7 +188,7 @@ gulp.task('build-frontend-partials', function () {
 });
 
 gulp.task('build-frontend-partials-watch', function () {
-    return gulp.watch('src-frontend/partials/**', ['build-frontend-partials']);
+    return gulp.watch(['src-frontend/partials/**', 'src-frontend/index.html'], ['build-frontend-partials']);
 });
 
 

@@ -38,8 +38,21 @@
     }
 }
 
+.max-width {
+    width: 100%;
+    max-width: 700px;
+}
+
+[fill-parent-width] {
+    width: 100%;
+}
+
 .action-btn {
     position: fixed;
     bottom: 50px;
     right: 50px;
+}
+
+[flex-no-shrink] {
+    @include flex-shrink(0);
 }

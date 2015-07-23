@@ -1,0 +1,29 @@
+.index-page {
+    margin-top: 40px;
+}
+
+.index-hero-image {
+    padding-right: 100px;
+    padding-left: 0px;
+}
+
+.footer-menu{
+    @include justify-content(space-around);
+    border-top: 1px solid rgba(white,.2);
+    margin-top: 80px;
+
+    a {
+        display: block;
+        padding: 25px 10px;
+        color: rgba(white, .5);
+        text-decoration: none;
+        text-transform: uppercase;
+        font-size: 12px;
+
+        &:hover {
+
+            color: rgba(white, .8);
+            background: 1px rgba(white,.1);
+        }
+    }
+}
