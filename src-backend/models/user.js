@@ -1,6 +1,7 @@
 'use strict';
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
+    Utils = Require('../utils/utils'),
     dateUtils = require('date-utils'),
     Async = require('async'),
     LOCATION_LONGITUDE = 0,
@@ -49,6 +50,9 @@ service.addApnToken = function (apnToken, userId, callback) {
             if (err) {
                 return callback(err);
             }
+            if (!user) {
+                return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
+            }
             user.apnToken = apnToken;
             user.apnSubscribeDate = Date.now();
             user.save(function (err) {
@@ -66,6 +70,9 @@ service.removeApnToken = function (userId, callback) {
     User.findById(userId, function (err, user) {
         if (err) {
             return callback(err);
+        }
+        if (!user) {
+            return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
         }
 
         user.apnToken = undefined;
@@ -85,6 +92,9 @@ service.addGcmToken = function (gcmToken, userId, callback) {
         if (err) {
             return callback(err);
         }
+        if (!user) {
+            return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
+        }
 
         user.gcmToken = gcmToken;
         user.gcmSubscribeDate = Date.now();
@@ -102,6 +112,9 @@ service.removeGcmToken = function (userId, callback) {
     User.findById(userId, function (err, user) {
         if (err) {
             return callback(err);
+        }
+        if (!user) {
+            return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
         }
 
         user.gcmToken = undefined;
@@ -143,6 +156,9 @@ service.updateLocation = function (userId, latitude, longitude, callback) {
     service.findById(userId, function (err, user) {
         if (err) {
             return callback(err);
+        }
+        if (!user) {
+            return callback(Utils.error(Utils.ERROR_CODE_NOTFOUND));
         }
         if (latitude !== undefined &&
                 latitude !== null &&
