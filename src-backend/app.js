@@ -20,6 +20,9 @@
  *
  */
 'use strict';
+
+require('newrelic');
+
 global.__base = __dirname + '/';
 var __base = global.__base;
 
