@@ -8,8 +8,9 @@ var controllers = require('../controllers');
 var services = require('../services');
 
 controllers
-    .controller('StarbucksLoginCtrl', ['$scope', '$http', '$location', 'AuthService', '$mdToast',
-        function ($scope, $http, $location, AuthService, $mdToast) {
+    .controller('StarbucksLoginCtrl',
+        function ($scope, $http, $location, AuthService, $mdToast, HttpsService) {
+            HttpsService.force();
             $scope.loading = false;
             if (AuthService.isLoggedIn()) {
                 $location.path('starbucks');
@@ -34,4 +35,4 @@ controllers
                     });
                 }
             };
-        }]);
+        });

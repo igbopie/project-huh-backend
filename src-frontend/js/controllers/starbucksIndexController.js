@@ -9,7 +9,9 @@ var services = require('../services');
 
 controllers
     .controller('StarbucksIndexCtrl',
-    function ($scope, $http, $location, $stateParams, AuthService) {
+    function ($scope, $http, $location, $stateParams, AuthService, HttpsService) {
+        HttpsService.force();
+
         if (!AuthService.isLoggedIn()) {
             $location.path('starbucks/login');
             return;
