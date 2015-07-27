@@ -5,7 +5,7 @@ var mongoose = require('mongoose'),
     NOTIFICATIONS = [
         {
             name: NOTIFICATION_TYPES.ON_QUESTION_POSTED,
-            defaultValue: false,
+            defaultValue: true,
             title: 'New Question',
             description: 'Send me a notification when a new question is posted.'
         },
