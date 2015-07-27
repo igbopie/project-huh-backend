@@ -1,7 +1,7 @@
 'use strict';
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    Utils = Require('../utils/utils'),
+    Utils = require('../utils/utils'),
     dateUtils = require('date-utils'),
     Async = require('async'),
     LOCATION_LONGITUDE = 0,
