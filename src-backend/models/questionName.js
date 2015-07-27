@@ -1,6 +1,5 @@
 'use strict';
 var mongoose = require('mongoose'),
-    u = require('underscore'),
     Schema = mongoose.Schema,
     NAMES;
 

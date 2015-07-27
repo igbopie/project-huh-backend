@@ -6,7 +6,7 @@
                 <div class="md-no-style md-list-item-inner">
                     <div class="md-list-item-text">
                         <h3>{{flag.reason}}</h3>
-                        <p>{{flag.created}}</p>
+                        <p><span am-time-ago="flag.created"></span></p>
                     </div>
 
                     <md-button class="md-secondary md-hue-3" ng-click="view(flag)">

@@ -1,5 +1,5 @@
 'use strict';
-var UserService = require('../models/user').Service;
+var Utils = require('./utils');
 
 var ApiResponse = function (code, message, responseObject) {
     this.code = code;
@@ -42,7 +42,9 @@ ApiUtils.api = function (req, res, code, message, responseObject) {
 
 ApiUtils.handleResult = function (req, res, handle404) {
     return function (err, results) {
-        if (err) {
+        if (err && err instanceof Utils.HuhError) {
+            ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, err, null);
+        } else if (err) {
             ApiUtils.api(req, res, ApiUtils.SERVER_INTERNAL_ERROR, err, null);
         } else if (!results && handle404) {
             ApiUtils.api(req, res, ApiUtils.CLIENT_ENTITY_NOT_FOUND, null, results);

@@ -4,13 +4,13 @@
             <img src="/images/huh-logo-big.png" />
         </div>
         <div flex="40" >
-            <form name="registerForm">
+            <form name="registerForm" ng-submit="register()" ng-show="!loading && !done && !err && !already">
                 <div layout="row">
                     <md-input-container flex>
                         <label>Email</label>
-                        <input ng-model="user.email" type="email">
+                        <input ng-model="email" type="email" ng-required="true">
                     </md-input-container>
-                    <md-select placeholder="Platform" ng-model="platform">
+                    <md-select placeholder="Platform" ng-model="platform"  ng-required="true">
                         <md-option value="ios">
                             <md-icon style="margin-top: -5px;"><ng-md-icon icon="apple"></ng-md-icon></md-icon>
                             <span>iOS</span>
@@ -25,6 +25,29 @@
                     <md-button class="md-raised md-primary" flex style="margin: 2px;">Register</md-button>
                 </div>
             </form>
+            <md-progress-circular md-mode="indeterminate" ng-show="loading"></md-progress-circular>
+            <md-content ng-show="done" class="index-section">
+                <div class="index-icon">
+                    <ng-md-icon icon="done" size="120"></ng-md-icon>
+                </div>
+                <p>Done! you will receive the invitation soon.</p>
+            </md-content>
+            <md-content ng-show="already" class="index-section">
+                <div class="index-icon">
+                    <ng-md-icon icon="warning" size="120"></ng-md-icon>
+                </div>
+                <p>Already registered, be patient! you will receive an invitation soon.</p>
+                <md-button class="md-raised md-primary" ng-click="reset()">Try another email</md-button>
+            </md-content>
+            <md-content ng-show="err"  class="index-section">
+                <div class="index-icon">
+                    <ng-md-icon icon="error" size="120"></ng-md-icon>
+                </div>
+                <p>There was an unknown error, please try again.</p>
+                <md-button class="md-raised md-primary" ng-click="reset()">Try again</md-button>
+            </md-content>
+
+
         </div>
     </div>
 

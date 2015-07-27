@@ -70,6 +70,9 @@ var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
 var authUser = require(__base + 'routes/authUser');
 var starbucks = require(__base + 'routes/starbucks');
+var registration = require(__base + 'routes/registration');
+
+
 var page = require(__base + 'routes/page');
 var Apn = require(__base + 'utils/apn');
 var AuthUserService = require(__base + 'models/authUser').Service;
@@ -168,6 +171,11 @@ app.post('/api/page/create', page.create);
 app.post('/api/page/update', page.update);
 
 app.post('/api/flag/list', flag.list);
+
+app.post('/api/registration/create', registration.create);
+app.post('/api/registration/list', registration.list);
+
+
 
 var server = http.createServer(app);
 var listen;

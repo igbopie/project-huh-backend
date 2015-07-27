@@ -1,0 +1,17 @@
+
+<div layout="column" layout-align="center center" >
+    <md-content layout-padding class="panel-card-big md-whiteframe-z5">
+        <md-list>
+            <md-list-item ng-repeat="registration in registrations" >
+                <div class="md-no-style md-list-item-inner">
+                    <div flex>{{registration.email}}</div>
+                    <div flex>{{registration.platform}}</div>
+                    <div flex><span am-time-ago="registration.created"></span></div>
+
+
+                </div>
+            </md-list-item>
+            <md-list-item ng-show="!registrations.length" layout="column" layout-align="center center">No registration</md-list-item>
+        </md-list>
+    </md-content>
+</div>

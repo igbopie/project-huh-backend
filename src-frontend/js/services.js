@@ -12,3 +12,4 @@ require('./services/authService');
 require('./services/starbucksService');
 require('./services/pageService');
 require('./services/flagService');
+require('./services/registrationService');

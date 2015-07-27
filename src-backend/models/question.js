@@ -1,6 +1,5 @@
 'use strict';
 var mongoose = require('mongoose'),
-    u = require('underscore'),
     UrlShortener = require('../utils/urlshortener'),
     Schema = mongoose.Schema,
     Utils = require('../utils/utils'),

@@ -1,6 +1,6 @@
 'use strict';
 var mongoose = require('mongoose'),
-    u = require('underscore'),
+    _ = require('lodash'),
     Schema = mongoose.Schema;
 
 var questionTypeSchema = new Schema({
@@ -80,7 +80,7 @@ var initialList = [
 ];
 
 (function () {
-    u.each(initialList, function (element) {
+    _.each(initialList, function (element) {
         QuestionTypeService.find(element.word, function (err, qType) {
             if (err) { return console.error('Word check error: ' + err); }
 

@@ -1,6 +1,6 @@
 'use strict';
 var mongoose = require('mongoose'),
-    u = require('underscore'),
+    _ = require('lodash'),
     Schema = mongoose.Schema,
     Apn = require('../utils/apn'),
     Gcm = require('../utils/gcm'),
@@ -173,7 +173,7 @@ NotificationService.onQuestionCommented = function (questionId, commentId) {
                 comments.forEach(function (otherComment) {
                     if (!doNotSendAgain[otherComment.userId]) {
 
-                        var newData = u.defaults({
+                        var newData = _.defaults({
                             yourCommentId: otherComment._id
                         }, data);
 

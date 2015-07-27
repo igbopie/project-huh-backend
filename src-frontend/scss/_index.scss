@@ -1,5 +1,27 @@
 .index-page {
     margin-top: 40px;
+    color: white;
+
+    md-input-container .md-input {
+        color: white;
+    }
+    md-select:not([disabled]):focus .md-select-label{
+        color: white;
+    }
+
+    md-content {
+        background: transparent;
+    }
+
+    .index-icon {
+        text-align: center;
+        fill: white;
+    }
+
+    .index-section {
+        text-align: center;
+    }
+
 }
 
 .index-hero-image {

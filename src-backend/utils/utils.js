@@ -100,6 +100,7 @@ utils.error = function (code, message) {
 
 utils.ERROR_CODE_UNAUTHORIZED = 400100;
 utils.ERROR_CODE_NOTFOUND = 400101;
+utils.ERROR_CODE_ALREADY_EXISTS = 400102;
 
 // export the class
 module.exports = utils;

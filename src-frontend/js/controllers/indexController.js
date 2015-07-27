@@ -9,15 +9,41 @@ var services = require('../services');
 
 controllers
     .controller('IndexCtrl',
-    function ($scope, $http, $location, QuestionService) {
+    function ($scope, $http, $location, QuestionService, RegistrationService) {
 
-        $scope.questions = [];
-        QuestionService.recent(function (err, list) {
-            $scope.questions = list;
-        });
+        $scope.done = false;
+        $scope.err = false;
+        $scope.already = false;
+        $scope.loading = false;
 
-        $scope.goToQuestion = function (question) {
-            $location.path('/q/' + question._id);
+        $scope.register = function () {
+            if (!$scope.platform || !$scope.platform.trim()) {
+                return;
+            }
+            $scope.loading = true;
+            RegistrationService.create($scope.email, $scope.platform, function (err) {
+                $scope.loading = false;
+                if (err &&
+                    err.code === 400 &&
+                    err.message &&
+                    err.message.code === 400102) {
+                    $scope.already = true;
+                } else if (err) {
+                    $scope.err = true;
+                } else {
+                    $scope.done = true;
+                }
+            });
+        };
+
+        $scope.reset = function () {
+            $scope.done = false;
+            $scope.err = false;
+            $scope.already = false;
+            $scope.loading = false;
+            $scope.err = undefined;
+            $scope.email = undefined;
+            $scope.platform = undefined;
         };
 
     });
