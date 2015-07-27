@@ -51,6 +51,7 @@
     "mocha": "^1.17.1",
     "mongoose": "~3.8.8",
     "mongoose-text-search": "0.0.2",
+    "newrelic": "^1.21.1",
     "node-bourbon": "^4.2.3",
     "node-gcm": "^0.9.10",
     "node-jslint": "^0.1.1",
