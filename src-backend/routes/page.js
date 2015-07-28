@@ -3,7 +3,7 @@ var PageService = require('../models/page').Service,
     ApiUtils = require('../utils/apiutils');
 
 exports.list = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
         PageService.list(ApiUtils.handleResult(req, res));
     });
 };
@@ -14,7 +14,7 @@ exports.view = function (req, res) {
 };
 
 exports.create = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
         var url = req.body.url,
             html = req.body.html;
         PageService.create(url, html, ApiUtils.handleResult(req, res));
@@ -22,7 +22,7 @@ exports.create = function (req, res) {
 };
 
 exports.update = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
         var id = req.body.id,
             url = req.body.url,
             html = req.body.html;

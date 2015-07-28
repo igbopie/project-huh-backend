@@ -167,15 +167,25 @@ exports.createUsers = function (array, callback) {
 function createUsersAux(array, i, callback) {
     if (i < array.length) {
         var user = array[i];
-        User.create(function (err, _id) {
-            user._id = _id;
+        User.create(function (err, apiUser) {
+            user._id = apiUser._id;
+            user.password = apiUser.password;
             user.err = err;
             if (err) {
                 console.log(err);
                 return callback(err);
             }
-            i++;
-            createUsersAux(array, i, callback)
+            User.login({userId: user._id, password: user.password}, function (err, loggedUser) {
+                user.err = err;
+                if (err) {
+                    console.log(err);
+                    return callback(err);
+                }
+
+                user.token = loggedUser.token;
+                i++;
+                createUsersAux(array, i, callback);
+            });
         });
     } else {
         callback();

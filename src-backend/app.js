@@ -71,14 +71,13 @@ var vote = require(__base + 'routes/vote');
 var flag = require(__base + 'routes/flag');
 var notification = require(__base + 'routes/notification');
 var setting = require(__base + 'routes/setting');
-var authUser = require(__base + 'routes/authUser');
 var starbucks = require(__base + 'routes/starbucks');
 var registration = require(__base + 'routes/registration');
 
 
 var page = require(__base + 'routes/page');
 var Apn = require(__base + 'utils/apn');
-var AuthUserService = require(__base + 'models/authUser').Service;
+var UserService = require(__base + 'models/user').Service;
 
 
 mongoose.connect(process.env.MONGOLAB_URI || process.env.MONGOHQ_URL || 'mongodb://localhost/huh');
@@ -110,7 +109,7 @@ app.use(function (req, res, next) {
     if (token) {
 
         // verifies secret and checks exp
-        AuthUserService.isAuth(token, function (err, authUser) {
+        UserService.isAuth(token, function (err, authUser) {
             if (!err) {
 
                 // if everything is good, save to request for use in other routes
@@ -130,6 +129,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/q/:questionId', index.question);
 
 // USER
+app.post('/api/user/login', user.login);
 app.post('/api/user/create', user.create);
 app.post('/api/user/addapntoken', user.addApnToken);
 app.post('/api/user/removeapntoken', user.removeApnToken);
@@ -164,8 +164,6 @@ app.post('/api/notification/markallasread', notification.markAllAsRead);
 
 app.post('/api/setting/list', setting.list);
 app.post('/api/setting/update', setting.update);
-app.post('/api/auth/login', authUser.login);
-app.post('/api/auth/check', authUser.check);
 app.post('/api/starbucks/dashboard', starbucks.dashboard);
 
 app.post('/api/page/list', page.list);

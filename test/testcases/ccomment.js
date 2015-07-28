@@ -21,7 +21,7 @@ describe('Comment', function () {
             TestUtils.createUsers(users, function (err) {
                 if (err) return done(err);
 
-                question.userId = users[0]._id;
+                question.token = users[0].token;
                 Question.create(
                     question
                     ,
@@ -42,7 +42,7 @@ describe('Comment', function () {
             var comment = {
                 text: "hello",
                 questionId: question._id,
-                userId: users[0]._id
+                token: users[0].token
             };
             Comment.create(comment, function (err) {
                 done(err);
@@ -56,12 +56,12 @@ describe('Comment', function () {
             var comment1 = {
                 text: "hello1",
                 questionId: question._id,
-                userId: users[0]._id
+                token: users[0].token
             };
             var comment2 = {
                 text: "hello2",
                 questionId: question._id,
-                userId: users[0]._id
+                token: users[0].token
             };
             Comment.create(comment1, function (err) {
                 Comment.create(comment2, function (err) {
@@ -70,7 +70,7 @@ describe('Comment', function () {
 
                         comments.length.should.be.equal(2);
 
-                        Question.commented({userId: users[0]._id}, function (err, questions) {
+                        Question.commented({token: users[0].token}, function (err, questions) {
                             //console.log(questions);
                             done(err);
                         })
@@ -86,7 +86,7 @@ describe('Comment', function () {
             var comment1 = {
                 text: "       hello1     ",
                 questionId: question._id,
-                userId: users[0]._id
+                token: users[0].token
             };
             Comment.create(comment1, function (err) {
                 Comment.list({questionId: question._id}, function (err, comments) {

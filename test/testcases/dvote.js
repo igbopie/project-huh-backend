@@ -26,8 +26,8 @@ describe('Vote', function () {
             TestUtils.createUsers(users, function (err) {
                 if (err) return done(err);
 
-                question.userId = users[0]._id;
-                comment.userId = users[0]._id;
+                question.token = users[0].token;
+                comment.token = users[0].token;
                 Question.create(
                     question
                     ,
@@ -53,9 +53,9 @@ describe('Vote', function () {
 
     describe('#upVoteQuestion()', function () {
         it('should up vote a question', function (done) {
-            Vote.up({questionId: question._id, userId: users[0]._id}, function (err) {
+            Vote.up({questionId: question._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.up({questionId: question._id, userId: users[0]._id}, function (err) {
+                Vote.up({questionId: question._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
                     Question.recent({userId: users[0]._id}, function (err, questions) {
                         if (err) return done(err);
@@ -66,7 +66,7 @@ describe('Vote', function () {
                         questions[0].voteScore.should.be.equal(1);
                         questions[0].myVote.should.be.equal(1);
 
-                        Question.favorites({userId: users[0]._id}, function (err, questions) {
+                        Question.favorites({token: users[0].token}, function (err, questions) {
                             if (err) return done(err);
 
                             questions[0]._id.should.be.equal(question._id);
@@ -81,11 +81,11 @@ describe('Vote', function () {
 
     describe('#downVoteQuestion()', function () {
         it('should down vote a question', function (done) {
-            Vote.down({questionId: question._id, userId: users[0]._id}, function (err) {
+            Vote.down({questionId: question._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.down({questionId: question._id, userId: users[0]._id}, function (err) {
+                Vote.down({questionId: question._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Question.recent({userId: users[0]._id}, function (err, questions) {
+                    Question.recent({token: users[0].token}, function (err, questions) {
                         if (err) return done(err);
 
                         questions[0].nVotes.should.be.equal(1);
@@ -103,11 +103,11 @@ describe('Vote', function () {
 
     describe('#changeVoteQuestion()', function () {
         it('should clear vote a question', function (done) {
-            Vote.up({questionId: question._id, userId: users[0]._id}, function (err) {
+            Vote.up({questionId: question._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.down({questionId: question._id, userId: users[0]._id}, function (err) {
+                Vote.down({questionId: question._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Question.recent({userId: users[0]._id}, function (err, questions) {
+                    Question.recent({token: users[0].token}, function (err, questions) {
                         if (err) return done(err);
 
                         questions[0].nVotes.should.be.equal(1);
@@ -116,9 +116,9 @@ describe('Vote', function () {
                         questions[0].voteScore.should.be.equal(-1);
                         questions[0].myVote.should.be.equal(-1);
 
-                        Vote.clear({questionId: question._id, userId: users[0]._id}, function (err) {
+                        Vote.clear({questionId: question._id, token: users[0]._id}, function (err) {
                             if (err) return done(err);
-                            Question.recent({userId: users[0]._id}, function (err, questions) {
+                            Question.recent({token: users[0]._id}, function (err, questions) {
                                 if (err) return done(err);
 
                                 questions[0].nVotes.should.be.equal(0);
@@ -138,11 +138,11 @@ describe('Vote', function () {
 
     describe('#upVoteComment()', function () {
         it('should up vote a comment', function (done) {
-            Vote.up({commentId: comment._id, userId: users[0]._id}, function (err) {
+            Vote.up({commentId: comment._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.up({commentId: comment._id, userId: users[0]._id}, function (err) {
+                Vote.up({commentId: comment._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Comment.list({questionId: question._id, userId: users[0]._id}, function (err, comments) {
+                    Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                         if (err) return done(err);
 
                         comments[0].nVotes.should.be.equal(1);
@@ -160,11 +160,11 @@ describe('Vote', function () {
 
     describe('#downVoteComment()', function () {
         it('should down vote a comment', function (done) {
-            Vote.down({commentId: comment._id, userId: users[0]._id}, function (err) {
+            Vote.down({commentId: comment._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.down({commentId: comment._id, userId: users[0]._id}, function (err) {
+                Vote.down({commentId: comment._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Comment.list({questionId: question._id, userId: users[0]._id}, function (err, comments) {
+                    Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                         if (err) return done(err);
 
 
@@ -173,7 +173,6 @@ describe('Vote', function () {
                         comments[0].nDownVotes.should.be.equal(1);
                         comments[0].voteScore.should.be.equal(-1);
                         comments[0].myVote.should.be.equal(-1);
-                        ;
 
                         done();
                     });
@@ -183,11 +182,11 @@ describe('Vote', function () {
     });
     describe('#changeVoteComment()', function () {
         it('should clear vote a comment', function (done) {
-            Vote.up({commentId: comment._id, userId: users[0]._id}, function (err) {
+            Vote.up({commentId: comment._id, token: users[0].token}, function (err) {
                 if (err) return done(err);
-                Vote.down({commentId: comment._id, userId: users[0]._id}, function (err) {
+                Vote.down({commentId: comment._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Comment.list({questionId: question._id, userId: users[0]._id}, function (err, comments) {
+                    Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                         if (err) return done(err);
 
                         comments[0].nVotes.should.be.equal(1);
@@ -196,9 +195,9 @@ describe('Vote', function () {
                         comments[0].voteScore.should.be.equal(-1);
                         comments[0].myVote.should.be.equal(-1);
 
-                        Vote.clear({commentId: comment._id, userId: users[0]._id}, function (err) {
+                        Vote.clear({commentId: comment._id, token: users[0].token}, function (err) {
                             if (err) return done(err);
-                            Comment.list({questionId: question._id, userId: users[0]._id}, function (err, comments) {
+                            Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                                 if (err) return done(err);
 
                                 comments[0].nVotes.should.be.equal(0);

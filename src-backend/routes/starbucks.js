@@ -7,7 +7,7 @@ var CommentService = require('../models/comment').Service,
     ApiUtils = require('../utils/apiutils');
 
 exports.dashboard = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
 
         // TODO: use promises
         CommentService.getTotal(function (err, totalComments) {

@@ -24,7 +24,7 @@ describe('Question', function () {
         it('should create a question', function (done) {
             Question.create(
                 {
-                    userId: users[0]._id,
+                    token: users[0].token,
                     type: "WHAT",
                     text: "time is it",
                     latitude: 0,
@@ -33,7 +33,7 @@ describe('Question', function () {
                 function (err, question) {
                     if (err) return done(err);
 
-                    Flag.flag({questionId: question._id, userId: users[0]._id, reason: "HATE"}, function (err) {
+                    Flag.flag({questionId: question._id, token: users[0].token, reason: "HATE"}, function (err) {
                         if (err) return done(err);
 
                         done();
@@ -47,7 +47,7 @@ describe('Question', function () {
         it('should view a question', function (done) {
             Question.create(
                 {
-                    userId: users[0]._id,
+                    token: users[0].token,
                     type: "WHAT",
                     text: "time is it",
                     latitude: 0,
@@ -56,7 +56,7 @@ describe('Question', function () {
                 function (err, question) {
                     if (err) return done(err);
 
-                    Question.view({questionId: question._id, userId: users[0]._id}, function (err, questionViewed) {
+                    Question.view({questionId: question._id, token: users[0].token}, function (err, questionViewed) {
                         if (err) return done(err);
                         if (!questionViewed) return done("no question");
 
@@ -71,7 +71,7 @@ describe('Question', function () {
 
     describe('#viewInexistent()', function () {
         it('shouldn\'t view a question', function (done) {
-            Question.view({questionId: "55ab317f0e4aa9f838327792", userId: users[0]._id}, function (err, errCode) {
+            Question.view({questionId: "55ab317f0e4aa9f838327792", token: users[0].token}, function (err, errCode) {
                 if (errCode !== 470) return done("Code not equals to 470");
 
                 done();
@@ -83,7 +83,7 @@ describe('Question', function () {
         it('should list a question', function (done) {
             Question.create(
                 {
-                    userId: users[0]._id,
+                    token: users[0].token,
                     type: "WHAT",
                     text: "time is it",
                     latitude: 0,

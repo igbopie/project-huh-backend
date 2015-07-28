@@ -9,7 +9,7 @@ exports.create = function (req, res) {
 };
 
 exports.list = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
         RegistrationService.list( ApiUtils.handleResult(req, res));
     });
 };

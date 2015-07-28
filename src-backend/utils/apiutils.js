@@ -92,5 +92,15 @@ ApiUtils.auth = function (req, res, callback) {
     }
 };
 
+ApiUtils.authAdmin = function (req, res, callback) {
+    ApiUtils.auth(req, res, function (authUser) {
+        if (authUser.admin) {
+            callback(authUser);
+        } else {
+            ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_UNAUTHORIZED, null, null);
+        }
+    });
+};
+
 // export the class
 module.exports = ApiUtils;
