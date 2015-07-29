@@ -57,7 +57,7 @@ describe('Vote', function () {
                 if (err) return done(err);
                 Vote.up({questionId: question._id, token: users[0].token}, function (err) {
                     if (err) return done(err);
-                    Question.recent({userId: users[0]._id}, function (err, questions) {
+                    Question.recent({userId: users[0]._id, token: users[0].token}, function (err, questions) {
                         if (err) return done(err);
 
                         questions[0].nVotes.should.be.equal(1);
@@ -116,9 +116,9 @@ describe('Vote', function () {
                         questions[0].voteScore.should.be.equal(-1);
                         questions[0].myVote.should.be.equal(-1);
 
-                        Vote.clear({questionId: question._id, token: users[0]._id}, function (err) {
+                        Vote.clear({questionId: question._id, token: users[0].token}, function (err) {
                             if (err) return done(err);
-                            Question.recent({token: users[0]._id}, function (err, questions) {
+                            Question.recent({token: users[0].token}, function (err, questions) {
                                 if (err) return done(err);
 
                                 questions[0].nVotes.should.be.equal(0);

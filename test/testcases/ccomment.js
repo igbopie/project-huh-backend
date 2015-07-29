@@ -65,7 +65,7 @@ describe('Comment', function () {
             };
             Comment.create(comment1, function (err) {
                 Comment.create(comment2, function (err) {
-                    Comment.list({questionId: question._id}, function (err, comments) {
+                    Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                         if (err) return done(err);
 
                         comments.length.should.be.equal(2);
@@ -89,7 +89,7 @@ describe('Comment', function () {
                 token: users[0].token
             };
             Comment.create(comment1, function (err) {
-                Comment.list({questionId: question._id}, function (err, comments) {
+                Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                     if (err) return done(err);
 
                     comments[0].text.should.be.equal("hello1");

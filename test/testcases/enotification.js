@@ -27,8 +27,8 @@ describe('Notification', function () {
             TestUtils.createUsers(users, function (err) {
                 if (err) return done(err);
 
-                question.userId = users[0]._id;
-                comment.userId = users[1]._id;
+                question.token = users[0].token;
+                comment.token = users[1].token;
                 Question.create(
                     question
                     ,
@@ -42,7 +42,7 @@ describe('Notification', function () {
                             if (err) return done(err);
 
                             comment._id = data._id;
-                            comment.userId = users[2]._id;
+                            comment.token = users[2].token;
 
                             Comment.create(comment, function (err, data) {
                                 if (err) return done(err);
@@ -59,15 +59,15 @@ describe('Notification', function () {
 
     describe('#notifications()', function () {
         it('should up vote a question', function (done) {
-            Vote.up({questionId: question._id, userId: users[1]._id}, function (err) {
+            Vote.up({questionId: question._id, token: users[1].token}, function (err) {
                 if (err) return done(err);
-                Vote.up({questionId: question._id, userId: users[2]._id}, function (err) {
+                Vote.up({questionId: question._id, token: users[2].token}, function (err) {
                     if (err) return done(err);
 
-                    Notification.list({userId: users[0]._id}, function (err, notifications) {
-                        Notification.markAllAsRead({userId: users[0]._id}, function (err, notifications) {
-                            Notification.list({userId: users[0]._id}, function (err, notifications) {
-                                Notification.list({userId: users[1]._id}, function (err, notifications) {
+                    Notification.list({token: users[0].token}, function (err, notifications) {
+                        Notification.markAllAsRead({token: users[0].token}, function (err, notifications) {
+                            Notification.list({token: users[0].token}, function (err, notifications) {
+                                Notification.list({token: users[1].token}, function (err, notifications) {
 
                                     done();
                                 });

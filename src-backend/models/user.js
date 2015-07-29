@@ -23,6 +23,7 @@ var userSchema = new Schema({
     gcmSubscribeDate: {type: Date, required: false},
     location: {type: [Number], required: false, index: '2dsphere'},
 
+    username: { type: String, required: false, index: { unique: true, sparse: true } },
     email: { type: String, required: false, index: { unique: true, sparse: true } },
     password: { type: String, required: true },
     admin: {type: Boolean, required: true, default: false }
@@ -78,7 +79,13 @@ UserService.create = function (callback) {
         cleanPassword = generatePassword(12, false); // once you save is hashed
     user.password = cleanPassword;
     user.save(function (err) {
-        callback(err, {_id: user._id, password: cleanPassword});
+        if (err) {
+            return callback(err);
+        }
+        user.username = user._id;
+        user.save(function (err) {
+            callback(err, {username: user.username, password: cleanPassword});
+        });
     });
 };
 
@@ -241,47 +248,60 @@ UserService.getTotal = function (callback) {
 };
 
 
-UserService.auth = function (userId, password, callback) {
-    // fetch user and test password verification
-    User.findOne({ _id: userId }, function (err, user) {
+var _auth = function (user, password, callback) {
+    if (!user) {
+        return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED), undefined);
+    }
+
+    // test a matching password
+    user.comparePassword(password, function (err, isMatch) {
         if (err) {
             return callback(err);
         }
 
-        if (!user) {
-            return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED), undefined);
+        if (!isMatch) {
+            return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED));
         }
 
-        // test a matching password
-        user.comparePassword(password, function (err, isMatch) {
-            if (err) {
-                return callback(err);
+        // if user is found and password is right
+        // create a token
+        var token = jwt.sign(
+            user,
+            SECRET,
+            {
+                expiresInMinutes: EXPIRES
             }
+        );
 
-            if (!isMatch) {
-                return callback(Utils.error(Utils.ERROR_CODE_UNAUTHORIZED));
+        callback(
+            undefined,
+            {
+                _id: user._id,
+                admin: user.admin,
+                token: token
             }
+        );
 
-            // if user is found and password is right
-            // create a token
-            var token = jwt.sign(
-                user,
-                SECRET,
-                {
-                    expiresInMinutes: EXPIRES
-                }
-            );
+    });
+};
 
-            callback(
-                undefined,
-                {
-                    _id: user._id,
-                    admin: user.admin,
-                    token: token
-                }
-            );
+UserService.auth = function (username, password, callback) {
+    // fetch user and test password verification
+    User.findOne({ username: username }, function (err, user) {
+        if (err) {
+            return callback(err);
+        }
+        _auth(user, password, callback);
+    });
+};
 
-        });
+UserService.authEmail = function (email, password, callback) {
+    // fetch user and test password verification
+    User.findOne({ email: email }, function (err, user) {
+        if (err) {
+            return callback(err);
+        }
+        _auth(user, password, callback);
     });
 };
 

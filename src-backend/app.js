@@ -130,6 +130,7 @@ app.get('/q/:questionId', index.question);
 
 // USER
 app.post('/api/user/login', user.login);
+app.post('/api/user/login/check', user.loginCheck);
 app.post('/api/user/create', user.create);
 app.post('/api/user/addapntoken', user.addApnToken);
 app.post('/api/user/removeapntoken', user.removeApnToken);

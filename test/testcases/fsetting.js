@@ -23,14 +23,14 @@ describe('Setting', function () {
 
     describe('#list()', function () {
         it('should list', function (done) {
-            Setting.list({userId: users[1]._id}, function (err, settings) {
+            Setting.list({token: users[1].token}, function (err, settings) {
                 if (err) return done(err);
                 var originalSetting = settings[0];
 
-                Setting.update({userId: users[1]._id, name: originalSetting.name, value: false}, function (err) {
+                Setting.update({token: users[1].token, name: originalSetting.name, value: false}, function (err) {
                     if (err) return done(err);
 
-                    Setting.list({userId: users[1]._id}, function (err, settings) {
+                    Setting.list({token: users[1].token}, function (err, settings) {
                         if (err) return done(err);
 
                         settings[0].value.should.not.be.equal(originalSetting.value);

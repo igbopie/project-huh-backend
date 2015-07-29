@@ -22,3 +22,14 @@ exports.login = function (params, callback) {
     });
 }
 
+
+
+exports.loginCheck = function (params, callback) {
+    apiClientBase.post('/api/user/login/check', params, function (code, headers, data) {
+        if (code != 201 && code != 200) {
+            callback("The server responded with an invalid code: " + code + " : " + data, code);
+        } else {
+            callback(null, JSON.parse(data).response);
+        }
+    });
+}

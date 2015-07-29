@@ -41,17 +41,24 @@ exports.updateLocation = function (req, res) {
 };
 
 exports.login = function (req, res) {
-    var userId = req.body.userId,
+    var username = req.body.username,
+        email = req.body.email,
         password = req.body.password;
 
-    if (userId && password) {
-        UserService.auth(userId, password, ApiUtils.handleResult(req, res));
+    if (username && password) {
+        UserService.auth(username, password, ApiUtils.handleResult(req, res));
+    } else if (email && password) {
+        UserService.authEmail(email, password, ApiUtils.handleResult(req, res));
     } else {
-        ApiUtils.api(req, res, ApiUtils.CLIENT_ERROR_BAD_REQUEST, 'Please, specify userId and password', null);
+        ApiUtils.api(req,
+            res,
+            ApiUtils.CLIENT_ERROR_BAD_REQUEST,
+            'Please, specify username or email and password',
+            null);
     }
 };
 
-exports.checkLogin = function (req, res) {
+exports.loginCheck = function (req, res) {
     if (req.authUser) {
         ApiUtils.api(req, res, ApiUtils.OK, 'UserLogged', null);
     } else {

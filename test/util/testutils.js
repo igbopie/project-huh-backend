@@ -127,7 +127,7 @@ function loginUsersAux(array, i, callback) {
             //console.log(object);
             user.err = err;
             user.token = object.token;
-            user.id = object.userId;
+            user.username = object.username;
 
             i++;
             loginUsersAux(array, i, callback)
@@ -168,14 +168,14 @@ function createUsersAux(array, i, callback) {
     if (i < array.length) {
         var user = array[i];
         User.create(function (err, apiUser) {
-            user._id = apiUser._id;
+            user.username = apiUser.username;
             user.password = apiUser.password;
             user.err = err;
             if (err) {
                 console.log(err);
                 return callback(err);
             }
-            User.login({userId: user._id, password: user.password}, function (err, loggedUser) {
+            User.login({username: user.username, password: user.password}, function (err, loggedUser) {
                 user.err = err;
                 if (err) {
                     console.log(err);
@@ -213,7 +213,7 @@ function randomUser() {
 exports.randomQuestions = function (user, nRandomQuestions) {
     var array = new Array();
     var questionTemplate = {
-        userId: user._id,
+        token: user.token,
         type: "WHAT",
         text: "time is it",
         latitude: 0,
@@ -239,7 +239,7 @@ function createQuestionsAux(array, i, callback) {
             if (err) {
                 console.log(err);
             }
-            Flag.flag({questionId: question._id, userId: question.userId, reason: "HATE"}, function (err) {
+            Flag.flag({questionId: question._id, token: question.token, reason: "HATE"}, function (err) {
                 if (err) {
                     console.log(err);
                 }
@@ -258,7 +258,7 @@ exports.randomComments = function (users, question, nRandomComments) {
     var commentTemplate = {
         text: "Comment here",
         questionId: question._id,
-        userId: users[_.random(0, users.length-1)]._id
+        token: users[_.random(0, users.length-1)].token
     };
     for (var i = 0; i < nRandomComments; i++) {
         array.push(_.clone(commentTemplate));
