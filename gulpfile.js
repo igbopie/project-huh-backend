@@ -63,8 +63,12 @@ gulp.task('start-mongo', function (cb) {
         // path was created unless there was error
         child_process.exec("mongod --dbpath ./db", function (err, stdout, stderr) {
             //console.log(stdout);
-            cb()
+
+            //this is only called when mongo is off
         });
+
+        // We wait 1 second to boot mongo
+        setTimeout(cb, 1000);
     });
 });
 
