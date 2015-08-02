@@ -276,7 +276,7 @@ var _auth = function (user, password, callback) {
         callback(
             undefined,
             {
-                _id: user._id,
+                username: user.username,
                 admin: user.admin,
                 token: token
             }
