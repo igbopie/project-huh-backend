@@ -236,7 +236,12 @@ UserService.updateLocation = function (userId, latitude, longitude, callback) {
             locationArray[LOCATION_LATITUDE] = latitude;
             user.location = locationArray;
         }
-        user.save(callback);
+        user.save(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            callback();
+        });
     });
 };
 
