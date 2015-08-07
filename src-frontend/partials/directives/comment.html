@@ -11,7 +11,17 @@
             <span class="question-username"><span am-time-ago="comment.created"></span></span>
         </div>
     </div>
-    <div flex layout="column" class="question-score-container" layout-align="center">
+    <div flex layout="column" class="question-score-container" layout-align="center center">
+        <span ng-show="withToken"
+              class="huh-icon-up-vote"
+              ng-click="voteUp()"
+              ng-class="{active: comment.myVote == 1}"
+              ng-style="comment.myVote == 1 && {'color': qColor}"></span>
         <span class="question-score">{{comment.voteScore}}</span>
+        <span ng-show="withToken"
+              class="huh-icon-down-vote"
+              ng-click="voteDown()"
+              ng-class="{active: comment.myVote == -1}"
+              ng-style="comment.myVote == -1 && {'color': qColor}"></span>
     </div>
 </md-item-content>

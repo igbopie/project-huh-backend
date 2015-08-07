@@ -1,0 +1,20 @@
+<div class="inner-list">
+    <div layout="column" layout-fill  class="inner-list-child">
+        <md-content class="panel-card">
+            <md-list>
+                <md-item ng-repeat="question in questions">
+                    <huh-question question="question" with-token="true"></huh-question>
+                    <md-divider inset></md-divider>
+                </md-item>
+            </md-list>
+        </md-content>
+
+    </div>
+</div>
+
+
+<md-button class="md-fab action-btn" aria-label="Create page" ng-click="createQuestion()">
+    <md-icon>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-icon>
+</md-button>

@@ -159,7 +159,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
 };
 
 
-QuestionService.create = function (type, text, latitude, longitude, userId, callback) {
+QuestionService.create = function (type, text, latitude, longitude, userId, isAdmin, callback) {
     var question = new Question(),
         locationArray;
     question.type = type;
@@ -196,7 +196,11 @@ QuestionService.create = function (type, text, latitude, longitude, userId, call
                     return callback(err);
                 }
 
-                question.username = username;
+                if (isAdmin) {
+                    question.username = 'Mummy';
+                } else {
+                    question.username = username;
+                }
                 UrlShortener.shortenQuestion(question._id, function (err, url) {
                     if (err) { console.error(err); }
 

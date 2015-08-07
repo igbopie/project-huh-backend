@@ -82,7 +82,7 @@ var processObject = function (dbComment, userId, callback) {
 };
 
 
-CommentService.create = function (text, userId, questionId, callback) {
+CommentService.create = function (text, userId, questionId, isAdmin, callback) {
     var comment = new Comment();
     comment.text = text.trim();
     comment.questionId = questionId;
@@ -94,7 +94,11 @@ CommentService.create = function (text, userId, questionId, callback) {
         QuestionNameService.findOrCreate(comment.questionId, comment.userId, function (err, username) {
             if (err) { return callback(err); }
 
-            comment.username = username;
+            if (isAdmin) {
+                comment.username = 'Mummy';
+            } else {
+                comment.username = username;
+            }
             comment.save(function (err) {
                 if (err) { return callback(err); }
 

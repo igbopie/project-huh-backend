@@ -1,0 +1,21 @@
+<form ng-submit="create()">
+    <div class="inner-list">
+        <div layout="column" layout-fill  class="inner-list-child">
+            <md-content class="panel-card create-question">
+                <md-list>
+                    <md-item ng-repeat="type in questionTypesSelected">
+                        <div ng-style="{'background': type.color}" class="create-question-word" ng-click="select(type)">{{type.word}}</div>
+                    </md-item>
+                </md-list>
+
+                <md-input-container flex ng-show="questionTypesSelected.length === 1">
+                    <textarea ng-model="text" columns="1" md-maxlength="140"></textarea>
+                </md-input-container>
+                <div class="create-question-mark" ng-show="questionTypesSelected.length === 1">?</div>
+
+
+                <md-button class="md-raised md-primary create-question-button" ng-show="questionTypesSelected.length === 1" >Create</md-button>
+            </md-content>
+        </div>
+    </div>
+</form>

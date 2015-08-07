@@ -4,8 +4,8 @@
  */
 
 var angular = require('angular');
-var controllers = require('../controllers');
-var services = require('../services');
+var controllers = require('../../controllers');
+var services = require('../../services');
 
 controllers
     .controller('StarbucksRegistrationsCtrl',

@@ -9,6 +9,14 @@
 
     .question-score-container{
         @include flex(inherit);
+
+        .huh-icon-up-vote, .huh-icon-down-vote {
+            color: #dadada;
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
     }
 
     .question-type-title{
@@ -40,10 +48,7 @@
     }
 
     .question-score {
-        padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 15px;
-        padding-bottom: 15px;
+        padding:5px 20px;
         display: inline-block;
     }
     .question-created, .question-more, .comment-created{

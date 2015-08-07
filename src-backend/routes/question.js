@@ -10,7 +10,14 @@ exports.create = function (req, res) {
             latitude = req.body.latitude,
             longitude = req.body.longitude,
             type = req.body.type;
-        QuestionService.create(type, text, latitude, longitude, authUser._id, ApiUtils.handleResult(req, res));
+        QuestionService.create(
+            type,
+            text,
+            latitude,
+            longitude,
+            authUser._id,
+            authUser.admin,
+            ApiUtils.handleResult(req, res));
     });
 };
 

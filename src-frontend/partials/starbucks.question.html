@@ -1,0 +1,25 @@
+
+<div class="inner-list">
+    <div layout="column" layout-fill  class="inner-list-child">
+        <md-content class="panel-card">
+            <huh-question question="question" with-token="true"></huh-question>
+            <md-divider inset></md-divider>
+            <md-list>
+                <md-item ng-repeat="comment in comments">
+                    <huh-comment comment="comment" with-token="true" q-color="question.type.color"></huh-comment>
+                    <md-divider inset></md-divider>
+                </md-item>
+            </md-list>
+
+
+            <form layout="row" layout-sm="column" layout-align="center center" ng-submit="createComment()">
+                <md-input-container flex>
+                    <label>New comment</label>
+                    <input type="text" ng-model="newComment">
+                </md-input-container>
+
+                <md-button class="md-raised md-primary">Send</md-button>
+            </form>
+        </md-content>
+    </div>
+</div>

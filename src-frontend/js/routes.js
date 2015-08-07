@@ -126,5 +126,52 @@ app.config(function ($stateProvider, $urlRouterProvider) {
                         templateUrl: 'partials/starbucks.registrations.html'
                     }
                 }
-            });
+            })
+        .state(
+            'starbucks.questions',
+            {
+                url: '/questions',
+                views: {
+                    'toolbar': {
+                        templateUrl: 'partials/starbucks.toolbar.html',
+                        controller: 'StarbucksToolbarCtrl'
+                    },
+                    'main': {
+                        controller: 'StarbucksQuestionsCtrl',
+                        templateUrl: 'partials/starbucks.questions.html'
+                    }
+                }
+            })
+        .state(
+        'starbucks.question',
+        {
+            url: '/questions/:questionId',
+            views: {
+                'toolbar': {
+                    templateUrl: 'partials/starbucks.toolbar.html',
+                    controller: 'StarbucksToolbarCtrl'
+                },
+                'main': {
+                    controller: 'StarbucksQuestionCtrl',
+                    templateUrl: 'partials/starbucks.question.html'
+                }
+            }
+        })
+        .state(
+        'starbucks.questionCreate',
+        {
+            url: '/question/create',
+            views: {
+                'toolbar': {
+                    templateUrl: 'partials/starbucks.toolbar.html',
+                    controller: 'StarbucksToolbarCtrl'
+                },
+                'main': {
+                    controller: 'StarbucksQuestionCreateCtrl',
+                    templateUrl: 'partials/starbucks.questionCreate.html'
+                }
+            }
+        })
+
+    ;
 });

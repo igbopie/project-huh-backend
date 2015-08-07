@@ -29,7 +29,7 @@ var jslintConf = {
     "eqeqeq": true,
     "immed": true,
     "newcap": true,
-    "maxparams": 6,//4,
+    "maxparams": 7,//4,
     "maxdepth": 4,
     "maxstatements": 18, //15,
     "maxcomplexity": 6

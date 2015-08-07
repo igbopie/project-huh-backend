@@ -6,7 +6,7 @@ exports.create = function (req, res) {
     ApiUtils.auth(req, res, function (authUser) {
         var text = req.body.text,
             questionId = req.body.questionId;
-        CommentService.create(text, authUser._id, questionId, ApiUtils.handleResult(req, res));
+        CommentService.create(text, authUser._id, questionId, authUser.admin, ApiUtils.handleResult(req, res));
     });
 };
 
