@@ -5,8 +5,17 @@ var CommentService = require('../models/comment').Service,
 exports.create = function (req, res) {
     ApiUtils.auth(req, res, function (authUser) {
         var text = req.body.text,
-            questionId = req.body.questionId;
-        CommentService.create(text, authUser._id, questionId, authUser.admin, ApiUtils.handleResult(req, res));
+            questionId = req.body.questionId,
+            latitude = req.body.latitude,
+            longitude = req.body.longitude;
+        CommentService.create(
+            text,
+            authUser._id,
+            questionId,
+            authUser.admin,
+            latitude,
+            longitude,
+            ApiUtils.handleResult(req, res));
     });
 };
 

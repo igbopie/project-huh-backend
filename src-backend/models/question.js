@@ -26,7 +26,8 @@ var questionSchema = new Schema({
     activity: {type: Number, required: true, default: 0}, // nComments + nVotes
     createdScore: {type: Number, required: true, default: 0},
     trendingScore: {type: Number, required: true, default: 0}, // activity * (timeCreated - constant)
-    popularScore: {type: Number, required: true, default: 0} // voteScore * (timeCreated - constant)
+    popularScore: {type: Number, required: true, default: 0}, // voteScore * (timeCreated - constant)
+    score: {type: Number, required: true, default: 0} // voteScore * (timeCreated - constant)
 });
 
 questionSchema.index({userId: 1});
@@ -35,6 +36,7 @@ questionSchema.index({voteScore: -1});
 questionSchema.index({nComments: -1});
 questionSchema.index({trendingScore: -1});
 questionSchema.index({popularScore: -1});
+questionSchema.index({score: -1});
 
 
 var Question = mongoose.model('Question', questionSchema);
@@ -254,13 +256,7 @@ QuestionService.recent = function (userId, page, numItems, callback) {
 
 QuestionService.trending = function (userId, page, numItems, callback) {
     execQuery({}, {
-        'trendingScore': -1
-    }, userId, page, numItems, callback);
-};
-
-QuestionService.popular = function (userId, page, numItems, callback) {
-    execQuery({}, {
-        'popularScore': -1
+        'score': -1
     }, userId, page, numItems, callback);
 };
 
@@ -338,6 +334,14 @@ QuestionService.processQuestionIds = function (questionIds, userId, callback) {
     );
 };
 
+var calcScores = function (question) {
+    var voteScore = question.voteScore === 0 ? 1 : question.voteScore,
+        activity = question.activity === 0 ? 1 : question.activity;
+    question.popularScore = voteScore * question.createdScore;
+    question.trendingScore = activity * question.createdScore;
+    question.score = voteScore * activity * question.createdScore;
+};
+
 QuestionService.updateVoteScore = function (voteIncrement, score, newVote, questionId, userId, callback) {
     console.log(voteIncrement);
     var conditions = {_id: questionId},
@@ -377,9 +381,7 @@ QuestionService.updateVoteScore = function (voteIncrement, score, newVote, quest
             if (err) {
                 return callback(err);
             }
-
-            question.popularScore = question.voteScore * question.createdScore;
-            question.trendingScore = question.activity * question.createdScore;
+            calcScores(question);
             question.save(function (err) {
                 if (err) {
                     return callback(err);
@@ -402,8 +404,7 @@ QuestionService.incCommentCount = function (questionId, callback) {
             if (err) {
                 return callback(err);
             }
-
-            question.trendingScore = question.activity * question.createdScore;
+            calcScores(question);
             question.save(callback(err));
         });
 };

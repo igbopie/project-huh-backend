@@ -1,6 +1,8 @@
 'use strict';
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
+    LOCATION_LONGITUDE = 0,
+    LOCATION_LATITUDE = 1,
     Async = require('async');
 
 
@@ -14,7 +16,8 @@ var commentSchema = new Schema({
     voteScore: {type: Number, required: true, default: 0},
     nVotes: {type: Number, required: true, default: 0},
     nUpVotes: {type: Number, required: true, default: 0},
-    nDownVotes: {type: Number, required: true, default: 0}
+    nDownVotes: {type: Number, required: true, default: 0},
+    location: {type: [Number], required: false, index: '2dsphere'}
 });
 
 commentSchema.index({userId: 1, created: -1});
@@ -82,12 +85,22 @@ var processObject = function (dbComment, userId, callback) {
 };
 
 
-CommentService.create = function (text, userId, questionId, isAdmin, callback) {
-    var comment = new Comment();
+CommentService.create = function (text, userId, questionId, isAdmin, latitude, longitude, callback) {
+    var comment = new Comment(),
+        locationArray;
     comment.text = text.trim();
     comment.questionId = questionId;
     comment.userId = userId;
 
+    if (latitude !== undefined &&
+        latitude !== null &&
+        longitude !== undefined &&
+        longitude !== null) {
+        locationArray = [];
+        locationArray[LOCATION_LONGITUDE] = longitude;
+        locationArray[LOCATION_LATITUDE] = latitude;
+        comment.location = locationArray;
+    }
     // TODO Validation
     comment.save(function (err) {
         if (err) { return callback(err); }

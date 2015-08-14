@@ -44,14 +44,6 @@ exports.trending = function (req, res) {
     });
 };
 
-exports.popular = function (req, res) {
-    ApiUtils.auth(req, res, function (authUser) {
-        var pagination = ApiUtils.getPaginationParams(req);
-
-        QuestionService.popular(authUser._id, pagination.page, pagination.numItems, ApiUtils.handleResult(req, res));
-    });
-};
-
 exports.mine = function (req, res) {
     ApiUtils.auth(req, res, function (authUser) {
         var pagination = ApiUtils.getPaginationParams(req);

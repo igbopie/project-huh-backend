@@ -142,7 +142,6 @@ app.post('/api/question/create', question.create);
 app.post('/api/question/view', question.view);
 app.post('/api/question/list', question.recent);
 app.post('/api/question/recent', question.recent);
-app.post('/api/question/popular', question.popular);
 app.post('/api/question/trending', question.trending);
 app.post('/api/question/mine', question.mine);
 app.post('/api/question/favorites', question.favorites);

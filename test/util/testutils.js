@@ -258,7 +258,9 @@ exports.randomComments = function (users, question, nRandomComments) {
     var commentTemplate = {
         text: "Comment here",
         questionId: question._id,
-        token: users[_.random(0, users.length-1)].token
+        token: users[_.random(0, users.length-1)].token,
+        longitude: 0.2,
+        latitude: 0.1
     };
     for (var i = 0; i < nRandomComments; i++) {
         array.push(_.clone(commentTemplate));

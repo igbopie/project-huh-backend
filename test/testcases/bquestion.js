@@ -97,27 +97,21 @@ describe('Question', function () {
 
                         docs.length.should.be.equal(1);
 
-                        Question.popular({token: users[0].token}, function (err, docs) {
+                        Question.trending({token: users[0].token}, function (err, docs) {
                             if (err) return done(err);
 
                             docs.length.should.be.equal(1);
 
-                            Question.trending({token: users[0].token}, function (err, docs) {
+                            Question.near({
+                                latitude: 0.01,
+                                longitude: 0.01,
+                                token: users[0].token
+                            }, function (err, docs) {
                                 if (err) return done(err);
 
                                 docs.length.should.be.equal(1);
 
-                                Question.near({
-                                    latitude: 0.01,
-                                    longitude: 0.01,
-                                    token: users[0].token
-                                }, function (err, docs) {
-                                    if (err) return done(err);
-
-                                    docs.length.should.be.equal(1);
-
-                                    done();
-                                });
+                                done();
                             });
                         });
                     });

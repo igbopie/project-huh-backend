@@ -42,7 +42,9 @@ describe('Comment', function () {
             var comment = {
                 text: "hello",
                 questionId: question._id,
-                token: users[0].token
+                token: users[0].token,
+                longitude: 0.2,
+                latitude: 0.1
             };
             Comment.create(comment, function (err) {
                 done(err);
