@@ -17,7 +17,7 @@ controllers
                 $scope.url = page.url;
                 $scope.html = page.html;
             } else {
-                $scope.html = "<h1>404 Not found</h1><p>The page you are trying to see does not exists.</p>"
+                $scope.html = '<h1>404 Not found</h1><p>The page you are trying to see does not exists.</p>';
             }
         });
     });
