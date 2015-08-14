@@ -1,6 +1,8 @@
 'use strict';
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
+    Schema = mongoose.Schema,
+    Http = require('http'),
+    PRIVACY_POLICY_PAGE;
 
 
 var pageSchema = new Schema({
@@ -43,17 +45,26 @@ PageService.update = function (id, url, html, callback) {
 };
 
 PageService.view = function (url, callback) {
-    Page.findOne({url: url}, function (err, page) {
+    if (url === 'privacy-policy') {
+        callback(null,
+            {
+                url: 'privacy-policy',
+                html: PRIVACY_POLICY_PAGE
+            }
+        );
+    } else {
+        Page.findOne({url: url}, function (err, page) {
 
-        if (err) {
-            return callback(err);
-        }
+            if (err) {
+                return callback(err);
+            }
 
-        if (!page) {
-            return callback();
-        }
-        callback(err, page);
-    });
+            if (!page) {
+                return callback();
+            }
+            callback(err, page);
+        });
+    }
 };
 
 PageService.list = function (callback) {
@@ -64,3 +75,21 @@ PageService.list = function (callback) {
 module.exports = {
     Service: PageService
 };
+
+
+// Load PRIVACY POLICY
+Http.get({
+    host: 'www.iubenda.com',
+    path: '/api/privacy-policy/145989'
+}, function (response) {
+    // Continuously update stream with data
+    var body = '';
+    response.on('data', function (d) {
+        body += d;
+    });
+    response.on('end', function () {
+        // Data reception is done, do whatever with it!
+        var parsed = JSON.parse(body);
+        PRIVACY_POLICY_PAGE = parsed.content;
+    });
+});

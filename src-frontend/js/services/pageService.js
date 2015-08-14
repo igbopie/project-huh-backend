@@ -20,32 +20,15 @@ services.service('PageService', function ($http, AuthService) {
     };
 
     this.view = function (url, callback) {
-        if (url === 'privacy-policy') {
-            $http.get('http://www.iubenda.com/api/privacy-policy/145989').success(function (data) {
-                if (data.success) {
-                    callback(null,
-                        {
-                            url: 'privacy-policy',
-                            html: data.content
-                        }
-                    );
-                } else {
-                    callback(data);
-                }
-            }).error(function (error) {
-                callback(error);
-            });
-        }else {
-            $http.post(urlBase + '/view', {url: url}).success(function (data) {
-                if (data.response) {
-                    callback(null, data.response);
-                } else {
-                    callback(data.code);
-                }
-            }).error(function (error) {
-                callback(error);
-            });
-        }
+        $http.post(urlBase + '/view', {url: url}).success(function (data) {
+            if (data.response) {
+                callback(null, data.response);
+            } else {
+                callback(data.code);
+            }
+        }).error(function (error) {
+            callback(error);
+        });
     };
 
     this.createOrUpdate = function (id, url, html, callback) {
