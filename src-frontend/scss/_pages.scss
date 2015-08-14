@@ -1,0 +1,43 @@
+.page-top-menu{
+    border-top: 1px solid rgba(white,.2);
+
+    > div {
+        flex-grow: 1;
+
+        .logo {
+            height: 40px;
+            margin-right: 5px;
+        }
+
+        .logo-text{
+            height: 25px;
+        }
+
+        a {
+            text-align: center;
+            display: block;
+            padding: 25px 10px;
+            color: rgba(white, .5);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 12px;
+
+            &:hover {
+
+                color: rgba(white, .8);
+                background: 1px rgba(white, .1);
+            }
+
+            &.logo-link{
+
+                padding: 10px 10px;
+            }
+        }
+    }
+}
+
+.footer-copyright {
+    margin: 40px 0px;
+    font-size: 12px;
+    color: rgba(white, .5);
+}

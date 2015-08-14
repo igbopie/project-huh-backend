@@ -13,7 +13,11 @@ controllers
         $scope.loading = true;
         PageService.view($stateParams.url, function (err, page) {
             $scope.loading = false;
-            $scope.url = page.url;
-            $scope.html = page.html;
+            if (page) {
+                $scope.url = page.url;
+                $scope.html = page.html;
+            } else {
+                $scope.html = "<h1>404 Not found</h1><p>The page you are trying to see does not exists.</p>"
+            }
         });
     });
