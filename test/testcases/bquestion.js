@@ -121,8 +121,32 @@ describe('Question', function () {
     });
 
 
-})
-;
+
+    describe('#tooLarge()', function () {
+        it('should not create question', function (done) {
+            Question.create(
+                {
+                    token: users[0].token,
+                    type: "WHAT",
+                    text: "MAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMA" +
+                    "ASDAMAASDAMAASDAMsdkalkdsjakljdlkjaljdslkajklsdjlkajskldjlkajdslkjsakljdklajlksAAl" +
+                    "kasdjlajsdjlajsdkjajsdljaklsjdlkjaa,sdlakjlskdjlasdjlkajlksdjlkjaldsjlkjalksdjklaj" +
+                    "slkdjlkajsdlkjalksjdkljalksdjkljakldsjlkajslkdjalsdakaljdlkjlkasjdkljalksdjklajsdkl" +
+                    "jalksjdklajskldjalsdlsdadsSDA",
+                    latitude: 0,
+                    longitude: 0
+                },
+                function (err) {
+                    if (err) return done();
+
+                    done("Question was too large to create");
+                }
+            );
+        });
+    });
+
+
+});
 
 
 

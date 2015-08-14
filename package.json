@@ -61,6 +61,7 @@
     "q": "^1.0.1",
     "rangy": "^1.3.0",
     "run-sequence": "^1.1.1",
+    "sanitize-html": "^1.8.0",
     "should": "^3.1.3",
     "temp": "^0.7.0",
     "textangular": "1.4.2",
@@ -68,7 +69,8 @@
     "twilio": "^1.5.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.2.3"
+    "watchify": "^3.2.3",
+    "yargs": "^3.19.0"
   },
   "engines": {
     "node": "0.10.x",

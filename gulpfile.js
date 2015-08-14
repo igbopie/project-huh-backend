@@ -20,6 +20,7 @@ var bourbon = require('node-bourbon').includePaths;
 var istanbul = require('gulp-istanbul');
 var mocha = require('gulp-mocha');
 var jscs = require('gulp-jscs');
+var argv = require('yargs').argv;
 
 
 var jslintConf = {
@@ -252,7 +253,10 @@ gulp.task('test', ['prerun-dev-backend-only'], function (cb) {
             var app = require("./dist/app");
             app.start(function () {
                 gulp.src(['test/testcases/*.js'])
-                    .pipe(mocha())
+                    .pipe(mocha({
+                        reporter: 'spec',
+                        grep: argv.grep
+                    }))
                     .pipe(istanbul.writeReports()) // Creating the reports after tests ran
                     //.pipe(istanbul.enforceThresholds({ thresholds: { global: 70 } })) // Enforce a coverage of at least 90%
                     .on('end', function () {

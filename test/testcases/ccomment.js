@@ -102,6 +102,45 @@ describe('Comment', function () {
         })
     });
 
+    describe('#validation()', function () {
+        it('should remove extra stuff', function (done) {
+            var comment1 = {
+                text: "       hello    <tag>my</tag> \t \t world ",
+                questionId: question._id,
+                token: users[0].token
+            };
+            Comment.create(comment1, function (err) {
+                Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
+                    if (err) return done(err);
+
+                    comments[0].text.should.be.equal("hello my world");
+
+                    done();
+                });
+            });
+
+        });
+    });
+
+    describe('#tooLarge()', function () {
+        it('should not create comment', function (done) {
+            var comment1 = {
+                text: "MAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMAASDAMA" +
+                "ASDAMAASDAMAASDAMsdkalkdsjakljdlkjaljdslkajklsdjlkajskldjlkajdslkjsakljdklajlksAAl" +
+                "kasdjlajsdjlajsdkjajsdljaklsjdlkjaa,sdlakjlskdjlasdjlkajlksdjlkjaldsjlkjalksdjklaj" +
+                "slkdjlkajsdlkjalksjdkljalksdjkljakldsjlkajslkdjalsdakaljdlkjlkasjdkljalksdjklajsdkl" +
+                "jalksjdklajskldjalsdlsdadsSDA",
+                questionId: question._id,
+                token: users[0].token
+            };
+            Comment.create(comment1, function (err) {
+                if (err) return done();
+
+                done("Comment was too large to create");
+            });
+        });
+    });
+
 });
 
 

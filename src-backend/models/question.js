@@ -3,6 +3,7 @@ var mongoose = require('mongoose'),
     UrlShortener = require('../utils/urlshortener'),
     Schema = mongoose.Schema,
     Utils = require('../utils/utils'),
+    sanitizeHtml = require('sanitize-html'),
     LOCATION_LONGITUDE = 0,
     LOCATION_LATITUDE = 1,
     DATE_CONSTANT = new Date(2015, 1, 1, 0, 0, 0, 0).getTime(),
@@ -160,15 +161,42 @@ var processQuestion = function (dbQuestion, userId, callback) {
     processUserName();
 };
 
+var cleanInput = function (text, questionType) {
+    text = sanitizeHtml(text)
+        .replace(/(\r\n|\n|\r)/gm, ' ')
+        .replace(/\s+/g, ' ').trim();
+    var pieces = text.split(' ');
+
+    if (pieces.length === 0) {
+        return '';
+    }
+
+    if (pieces[0].toLowerCase() === questionType.toLowerCase()) {
+        pieces = pieces.splice(1);
+    }
+    var lastPiece = pieces[pieces.length-1];
+    if (lastPiece.indexOf('?') === lastPiece.length - 1) {
+        pieces[pieces.length-1] = lastPiece.substr(0, lastPiece.length-1);
+    }
+    return pieces.join(' ').trim();
+};
 
 QuestionService.create = function (type, text, latitude, longitude, userId, isAdmin, callback) {
     var question = new Question(),
         locationArray;
     question.type = type;
-    question.text = text;
     question.userId = userId;
     question.created = Date.now();
     question.createdScore = Math.round((question.created.getTime() - DATE_CONSTANT) / 1000);
+    question.text = cleanInput(text, type);
+
+    if (question.text.length === 0) {
+        return callback('cannot be empty');
+    }
+
+    if (question.text.length > 140) {
+        return callback('too large');
+    }
 
     if (latitude !== undefined &&
             latitude !== null &&

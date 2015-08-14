@@ -3,6 +3,7 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     LOCATION_LONGITUDE = 0,
     LOCATION_LATITUDE = 1,
+    sanitizeHtml = require('sanitize-html'),
     Async = require('async');
 
 
@@ -85,12 +86,28 @@ var processObject = function (dbComment, userId, callback) {
 };
 
 
+var cleanInput = function (text) {
+    text = sanitizeHtml(text)
+        .replace(/(\r\n|\n|\r)/gm, ' ')
+        .replace(/\s+/g, ' ').trim();
+
+    return text;
+};
+
 CommentService.create = function (text, userId, questionId, isAdmin, latitude, longitude, callback) {
     var comment = new Comment(),
         locationArray;
-    comment.text = text.trim();
+    comment.text = cleanInput(text);
     comment.questionId = questionId;
     comment.userId = userId;
+
+    if (comment.text.length === 0) {
+        return callback('cannot be empty');
+    }
+
+    if (comment.text.length > 140) {
+        return callback('too large');
+    }
 
     if (latitude !== undefined &&
         latitude !== null &&
