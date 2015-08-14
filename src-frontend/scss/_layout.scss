@@ -41,11 +41,13 @@
 .max-width-big {
     width: 100%;
     max-width: 900px;
+    @include flex-shrink(0);
 }
 
 .max-width {
     width: 100%;
     max-width: 700px;
+    @include flex-shrink(0);
 }
 
 [fill-parent-width] {

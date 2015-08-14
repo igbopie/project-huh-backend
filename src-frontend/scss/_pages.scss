@@ -2,7 +2,7 @@
     border-top: 1px solid rgba(white,.2);
 
     > div {
-        flex-grow: 1;
+        @include flex-grow(1);
 
         .logo {
             height: 40px;

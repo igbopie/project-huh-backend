@@ -39,7 +39,7 @@
     margin-top: 80px;
 
     > div {
-        flex-grow: 1;
+        @include flex-grow(1);
 
         a {
             text-align: center;
