@@ -169,6 +169,7 @@ app.post('/api/starbucks/dashboard', starbucks.dashboard);
 
 app.post('/api/page/list', page.list);
 app.post('/api/page/view', page.view);
+app.get('/api/page/view/:url', page.view);
 app.post('/api/page/create', page.create);
 app.post('/api/page/update', page.update);
 

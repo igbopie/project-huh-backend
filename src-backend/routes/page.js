@@ -9,7 +9,7 @@ exports.list = function (req, res) {
 };
 
 exports.view = function (req, res) {
-    var url = req.body.url;
+    var url = req.body.url || req.params.url;
     PageService.view(url, ApiUtils.handleResult(req, res));
 };
 
