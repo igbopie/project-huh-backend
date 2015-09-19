@@ -17,7 +17,12 @@ controllers
         $scope.loading = false;
 
         $scope.register = function () {
+            if (!$scope.email|| !$scope.email.trim()) {
+                $scope.emailRequired = true;
+                return;
+            }
             if (!$scope.platform || !$scope.platform.trim()) {
+                $scope.platformRequired = true;
                 return;
             }
             $scope.loading = true;

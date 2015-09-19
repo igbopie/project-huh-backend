@@ -1,16 +1,30 @@
 .index-page {
     margin-top: 40px;
+    padding: 00px 20px 0px 20px;
     color: white;
 
     md-input-container .md-input {
         color: white;
     }
-    md-select:not([disabled]):focus .md-select-label{
+    md-select:not([disabled]):focus, md-select .md-select-label{
+        color: white;
+    }
+
+    md-input-container label{
         color: white;
     }
 
     md-content {
         background: transparent;
+    }
+
+    md-select {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    md-select-label{
+        @include flex-grow(1);
     }
 
     .index-icon {
@@ -55,6 +69,22 @@
                 color: rgba(white, .8);
                 background: 1px rgba(white, .1);
             }
+        }
+    }
+}
+
+@media (max-width: 599px){
+    .index-page {
+        .index-hero-image {
+            padding: 0px;
+            margin-bottom: 20px;
+            img {
+                height: 50px;
+                width: auto;
+            }
+        }
+        .index-main-layout, .index-form {
+            width: 100%;
         }
     }
 }

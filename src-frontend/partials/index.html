@@ -1,26 +1,36 @@
 <div layout="column" layout-align="start center" class="max-width index-page" >
-    <div layout="row" layout-align="start center" flex-no-shrink>
-        <div flex="60" flex-no-shrink class="index-hero-image">
+    <div layout-sm="column" layout="row" layout-align="start center" flex-no-shrink class="index-main-layout">
+        <div flex-gt-sm="60"  layout-sm="row" flex-no-shrink class="index-hero-image">
             <img src="/images/mummy2.gif" class="little-mummy"/>
             <img src="/images/huh-logo-text.png" />
         </div>
-        <div flex="40" >
+        <div flex-gt-sm="40" class="index-form" >
             <form name="registerForm" ng-submit="register()" ng-show="!loading && !done && !err && !already">
-                <div layout="row">
+                <div layout="column">
                     <md-input-container flex>
-                        <label>Email</label>
-                        <input ng-model="email" type="email" ng-required="true">
+                        <label>Email:</label>
+                        <input ng-model="email" type="email" name="email" ng-required="true">
+                        <div ng-messages="registerForm.email.$error" ng-if='emailRequired'>
+                            <div ng-message="required">This is required.</div>
+                        </div>
                     </md-input-container>
-                    <md-select placeholder="Platform" ng-model="platform"  ng-required="true">
-                        <md-option value="ios">
-                            <md-icon style="margin-top: -5px;"><ng-md-icon icon="apple"></ng-md-icon></md-icon>
-                            <span>iOS</span>
-                        </md-option>
-                        <md-option value="android">
-                            <md-icon><ng-md-icon icon="android"></ng-md-icon></md-icon>
-                            <span>Android</span>
-                        </md-option>
-                    </md-select>
+
+                    <md-input-container flex>
+                        <md-select placeholder="Platform" name="platform" ng-model="platform"  ng-required="true">
+                            <md-option value="ios">
+                                <md-icon style="margin-top: -5px;"><ng-md-icon icon="apple"></ng-md-icon></md-icon>
+                                <span>iOS</span>
+                            </md-option>
+                            <md-option value="android">
+                                <md-icon><ng-md-icon icon="android"></ng-md-icon></md-icon>
+                                <span>Android</span>
+                            </md-option>
+                        </md-select>
+
+                        <div ng-messages="registerForm.platform.$error" ng-if='platformRequired'>
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
                 </div>
                 <div layout="row">
                     <md-button class="md-raised md-primary" flex style="margin: 2px;">Register</md-button>
@@ -52,7 +62,7 @@
         </div>
     </div>
 
-    <div  layout="row" layout-align="center center" flex-no-shrink fill-parent-width class="footer-menu">
+    <div layout-sm="column" layout="row" layout-align="center center" flex-no-shrink fill-parent-width class="footer-menu">
         <div>
             <a href="#/p/about-us">About us</a>
         </div>

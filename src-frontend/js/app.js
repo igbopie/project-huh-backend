@@ -8,6 +8,7 @@ var angularAnimate = require('angular-animate');
 var angularMaterial = require('angular-material');
 var icons = require('angular-material-icons');
 var angularSanitize = require('angular-sanitize');
+var angularSanitize = require('angular-messages');
 
 // ++++ Text Angular
 var textangular = require('textangular');
@@ -27,6 +28,7 @@ var huh = angular.module('huh', [
     'ngAnimate',
     'ngAria',
     'ngMaterial',
+    'ngMessages',
     'angularMoment',
     'ngMdIcons',
     'ngSanitize',
