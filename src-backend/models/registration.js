@@ -1,7 +1,8 @@
 'use strict';
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    Utils = require('../utils/utils');
+    Utils = require('../utils/utils'),
+    emailService = require('../utils/email');
 
 
 var registrationSchema = new Schema({
@@ -43,6 +44,21 @@ RegistrationService.create = function (email, platform, callback) {
 
         // TODO Validation
         registration.save(callback);
+
+        emailService.send(
+            'devs@huhapp.com',
+            'Hi,<br>\n'+
+            'New registration: '+email+'<br>\n'+
+            'Platform: '+ platform +'<br>\n',
+            '[REGISTRATIONS] New registration');
+
+        emailService.send(
+            email,
+            'Hello,<br>\n<br>\n'+
+            'Thank you for participating in our beta. Our monkeys are a little busy right now' +
+            ', but you will receive an email with the instructions to install our app soon. <br>\n<br>\n'+
+            'Thank you and eat more jelly donuts,<br>\n The Mummy ',
+            'Thank you for trying Huh?');
     });
 
 };

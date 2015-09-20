@@ -11,7 +11,10 @@ if (!sendEmails) {
     sendEmails = Boolean(sendEmails);
 }
 
-exports.send = function (email, message) {
+console.log('Send Mail Status:' + sendEmails);
+
+exports.send = function (email, message, subject) {
+    subject = subject ? subject : 'Huhapp Notification';
     if (!sendEmails) {
         console.log('Email sending disabled: to:' + email + ' message:' + message);
     } else {
@@ -36,10 +39,10 @@ exports.send = function (email, message) {
                 },
                 Subject: {
                     /* required */
-                    Data: 'Mark Notification'
+                    Data: subject
                 }
             },
-            Source: 'notification@mark.as' /* required */
+            Source: 'info@huhapp.com' /* required */
 
         };
         SES.sendEmail(params, function (err, data) {

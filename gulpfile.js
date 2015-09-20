@@ -78,7 +78,8 @@ gulp.task('prerun-dev', ['build-frontend', 'build-frontend-css-watch', 'build-fr
         vars: {
             'AWS_ACCESS_KEY_ID': 'AKIAJ4GCCVHYQANYFALA',
             'AWS_SECRET_ACCESS_KEY': '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',
-            'AWS_S3_BUCKET': 'left-dev-test-local'
+            'AWS_S3_BUCKET': 'left-dev-test-local',
+            'SEND_EMAIL': false
         }
     });
     cb();
@@ -89,7 +90,8 @@ gulp.task('prerun-dev-backend-only', ['start-mongo', 'build-backend'], function 
         vars: {
             'AWS_ACCESS_KEY_ID': 'AKIAJ4GCCVHYQANYFALA',
             'AWS_SECRET_ACCESS_KEY': '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',
-            'AWS_S3_BUCKET': 'left-dev-test-local'
+            'AWS_S3_BUCKET': 'left-dev-test-local',
+            'SEND_EMAIL': false
         }
     });
     cb();

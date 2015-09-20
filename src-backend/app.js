@@ -43,6 +43,10 @@ if (process.env.MONGOLAB_URI) {
  console.log('WARNING: Twilio not configured: using log for SMS');
  }*/
 
+if (!process.env.AWS_ACCESS_KEY_ID && !process.env.AWS_SECRET_ACCESS_KEY && !process.env.AWS_S3_BUCKET) {
+    console.log('WARNING: Please configure correctly S3: AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_S3_BUCKET');
+}
+
 if (!process.env.BITLY_USERNAME &&
     !process.env.BITLY_TOKEN &&
     !process.env.BITLY_DOMAIN &&
