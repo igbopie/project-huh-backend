@@ -1,36 +1,38 @@
 .page-top-menu{
     border-top: 1px solid rgba(white,.2);
 
-    > div {
-        @include flex-grow(1);
+    .logo {
+        height: 40px;
+        margin-right: 5px;
+    }
 
-        .logo {
-            height: 40px;
-            margin-right: 5px;
-        }
+    .logo-text{
+        height: 25px;
+    }
 
-        .logo-text{
-            height: 25px;
-        }
+    .page-top-menu-links {
+        margin-left: 20px;
+        > div {
+            @include flex-grow(1);
+            a {
+                text-align: center;
+                display: block;
+                padding: 25px 10px;
+                color: rgba(white, .5);
+                text-decoration: none;
+                text-transform: uppercase;
+                font-size: 12px;
 
-        a {
-            text-align: center;
-            display: block;
-            padding: 25px 10px;
-            color: rgba(white, .5);
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 12px;
+                &:hover {
 
-            &:hover {
+                    color: rgba(white, .8);
+                    background: 1px rgba(white, .1);
+                }
 
-                color: rgba(white, .8);
-                background: 1px rgba(white, .1);
-            }
+                &.logo-link{
 
-            &.logo-link{
-
-                padding: 10px 10px;
+                    padding: 10px 10px;
+                }
             }
         }
     }

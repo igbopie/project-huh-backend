@@ -153,7 +153,7 @@ gulp.task('build-frontend-assets', function () {
 });
 
 gulp.task('build-frontend-css', function () {
-    return gulp.src('src-frontend/scss/style.scss')
+    return gulp.src(['src-frontend/scss/style.scss','src-frontend/scss/staticpages.scss'])
         .pipe(sass({
             includePaths: ['styles'].concat(bourbon)
         }).on('error', console.error))

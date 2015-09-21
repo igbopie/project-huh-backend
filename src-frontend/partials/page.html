@@ -1,27 +1,68 @@
 <div layout="column" layout-align="start center" class="max-width-big" >
-    <div  layout="row" layout-align="center center" flex-no-shrink fill-parent-width class="page-top-menu">
+    <div  layout="row" layout-align="start center" fill-parent-width class="page-top-menu" >
+        <md-menu hide show-sm>
+            <md-button aria-label="Open Menu" class="md-icon-button" ng-click="$mdOpenMenu()">
+                <md-icon md-menu-origin><ng-md-icon icon="menu" ></ng-md-icon></md-icon>
+            </md-button>
+            <md-menu-content>
+                <md-menu-item>
+                    <md-button ng-href="#/p/about-us">
+                        About us
+                    </md-button>
+                </md-menu-item>
+
+
+                <md-menu-item>
+                    <md-button ng-href="#/p/terms-of-use">
+                        Terms of use
+                    </md-button>
+                </md-menu-item>
+
+                <md-menu-item>
+                    <md-button ng-href="#/p/privacy-policy">
+                        Privacy policy
+                    </md-button>
+                </md-menu-item>
+
+                <md-menu-item>
+                    <md-button ng-href="#/p/rules">
+                        Rules
+                    </md-button>
+                </md-menu-item>
+
+                <md-menu-item>
+                    <md-button ng-href="mailto:feedback@huhapp.com">
+                        Send feedback
+                    </md-button>
+                </md-menu-item>
+
+            </md-menu-content>
+        </md-menu>
+
         <div>
             <a href="#/" class="logo-link">
-                <div layout="row" layout-align="center center">
+                <div layout="row" layout-align="start center">
                     <img class="logo" src="/images/huh.png" />
                     <img class="logo-text" src="/images/huh-logo-text.png" />
                 </div>
             </a>
         </div>
-        <div>
-            <a href="#/p/about-us">About us</a>
-        </div>
-        <div>
-            <a href="#/p/terms-of-use">Terms of use</a>
-        </div>
-        <div>
-            <a href="#/p/privacy-policy">Privacy policy</a>
-        </div>
-        <div>
-            <a href="#/p/rules">Rules</a>
-        </div>
-        <div>
-            <a href="mailto:feedback@huhapp.com">Send feedback</a>
+        <div hide-sm layout="row" class="page-top-menu-links" >
+            <div>
+                <a href="#/p/about-us">About us</a>
+            </div>
+            <div>
+                <a href="#/p/terms-of-use">Terms of use</a>
+            </div>
+            <div>
+                <a href="#/p/privacy-policy">Privacy policy</a>
+            </div>
+            <div>
+                <a href="#/p/rules">Rules</a>
+            </div>
+            <div>
+                <a href="mailto:feedback@huhapp.com">Send feedback</a>
+            </div>
         </div>
     </div>
 </div>
