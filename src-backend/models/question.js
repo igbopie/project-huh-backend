@@ -162,7 +162,7 @@ var processQuestion = function (dbQuestion, userId, callback) {
 };
 
 var cleanInput = function (text, questionType) {
-    text = sanitizeHtml(text)
+    text = text
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .replace(/\s+/g, ' ').trim();
     var pieces = text.split(' ');

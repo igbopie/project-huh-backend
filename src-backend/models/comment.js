@@ -87,7 +87,7 @@ var processObject = function (dbComment, userId, callback) {
 
 
 var cleanInput = function (text) {
-    text = sanitizeHtml(text)
+    text = text
         .replace(/(\r\n|\n|\r)/gm, ' ')
         .replace(/\s+/g, ' ').trim();
 

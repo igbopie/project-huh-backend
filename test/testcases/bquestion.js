@@ -146,6 +146,30 @@ describe('Question', function () {
     });
 
 
+    describe('#shouldnotscapequotes()', function () {
+        it('should not scape quotes', function (done) {
+            var questionText = "\"quotes\"";
+            Question.create(
+                {
+                    token: users[0].token,
+                    type: "WHAT",
+                    text: questionText,
+                    latitude: 0,
+                    longitude: 0
+                },
+                function (err, dbQuestion) {
+                    if (err) return done(err);
+
+
+                    dbQuestion.text.should.be.equal(questionText);
+
+                    done();
+                }
+            );
+        });
+    });
+
+
 });
 
 

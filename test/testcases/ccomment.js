@@ -113,7 +113,8 @@ describe('Comment', function () {
                 Comment.list({questionId: question._id, token: users[0].token}, function (err, comments) {
                     if (err) return done(err);
 
-                    comments[0].text.should.be.equal("hello my world");
+                    //Scaping should happend in UI
+                    comments[0].text.should.be.equal("hello <tag>my</tag> world");
 
                     done();
                 });
@@ -137,6 +138,26 @@ describe('Comment', function () {
                 if (err) return done();
 
                 done("Comment was too large to create");
+            });
+        });
+    });
+
+    describe('#shouldnotscapequotes()', function () {
+        it('should not scape quotes', function (done) {
+            var commentText = "\"quotes\"";
+            var comment1 = {
+                text: commentText,
+                questionId: question._id,
+                token: users[0].token
+            };
+            Comment.create(comment1, function (err, commentDb) {
+                if (err) return done();
+
+                if (err) return done(err);
+
+                commentDb.text.should.be.equal(commentText);
+
+                done();
             });
         });
     });
