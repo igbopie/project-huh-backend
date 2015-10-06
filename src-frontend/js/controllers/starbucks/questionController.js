@@ -9,7 +9,7 @@ var services = require('../../services');
 
 controllers
     .controller('StarbucksQuestionCtrl',
-        function ($scope, $location, AuthService, QuestionService, CommentService, $stateParams) {
+        function ($scope, $location, AuthService, QuestionService, CommentService, $stateParams, $mdDialog, $mdToast) {
             $scope.comments = [];
 
             $scope.question = {};
@@ -31,5 +31,31 @@ controllers
                 });
 
             };
+
+            $scope.removeQuestion = function() {
+                var confirm = $mdDialog.confirm()
+                    .title('Would you like to delete this question?')
+                    .content('If you delete it, it will be <b>gone</b> forever. Well... maybe you can find it somewhere in the DB.')
+                    .ok('OK')
+                    .cancel('Opps!! no please, don\'t delete me');
+
+                $mdDialog.show(confirm).then(function() {
+                    QuestionService.delete($stateParams.questionId, function(err, question) {
+                        if (err) {
+                            $mdToast.simple()
+                                .content('There was an error')
+                                .position('top right')
+                                .hideDelay(3000);
+                            console.error(err);
+                        } else {
+                            $scope.question = {};
+                            $scope.comments = [];
+                        }
+                    });
+                }, function() {
+                    // nothing here
+                });
+            };
+
 
         });

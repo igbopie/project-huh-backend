@@ -101,3 +101,12 @@ exports.commented = function (req, res) {
         );
     });
 };
+
+exports.delete = function (req, res) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
+        QuestionService.delete(
+            req.body.questionId,
+            ApiUtils.handleResult(req, res)
+        );
+    });
+};

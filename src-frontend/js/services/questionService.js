@@ -92,4 +92,20 @@ services.service('QuestionService', function ($http, AuthService) {
         });
 
     };
+
+    this.delete = function (questionId, callback) {
+        $http.post(
+            '/api/question/delete',
+            {questionId:questionId, token: AuthService.getToken()}
+        ).success(function (data) {
+                if (data.response) {
+                    callback(null, data.response);
+                } else {
+                    callback(data.code);
+                }
+            }).error(function (error) {
+                callback(error);
+            });
+
+    };
 });

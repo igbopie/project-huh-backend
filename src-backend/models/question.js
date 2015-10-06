@@ -8,7 +8,8 @@ var mongoose = require('mongoose'),
     LOCATION_LATITUDE = 1,
     DATE_CONSTANT = new Date(2015, 1, 1, 0, 0, 0, 0).getTime(),
     LOCATION_RADIUS = 10 * 1000,
-    Async = require('async'); // meters
+    Async = require('async'),
+    _ = require('lodash'); // meters
 
 var questionSchema = new Schema({
     typeId: {type: Schema.Types.ObjectId, required: true, ref: 'QuestionType'},
@@ -18,6 +19,7 @@ var questionSchema = new Schema({
     userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     created: {type: Date, required: true, default: Date.now},
     updated: {type: Date, required: true, default: Date.now},
+    deleted: {type: Date, required: false},
     location: {type: [Number], required: false, index: '2dsphere'},
     voteScore: {type: Number, required: true, default: 0},
     nVotes: {type: Number, required: true, default: 0},
@@ -33,6 +35,7 @@ var questionSchema = new Schema({
 
 questionSchema.index({userId: 1});
 questionSchema.index({created: -1});
+questionSchema.index({deleted: -1});
 questionSchema.index({voteScore: -1});
 questionSchema.index({nComments: -1});
 questionSchema.index({trendingScore: -1});
@@ -251,8 +254,12 @@ QuestionService.create = function (type, text, latitude, longitude, userId, isAd
     });
 };
 
+var baseQuery = function (query) {
+    return _.defaults(query,{ deleted: {$exists: false}});
+};
+
 var execQuery = function (query, sort, userId, page, numItems, callback) {
-    Question.find(query,
+    Question.find(baseQuery(query),
         null,
         {
             limit: numItems,
@@ -371,7 +378,6 @@ var calcScores = function (question) {
 };
 
 QuestionService.updateVoteScore = function (voteIncrement, score, newVote, questionId, userId, callback) {
-    console.log(voteIncrement);
     var conditions = {_id: questionId},
         update = {$inc: {voteScore: voteIncrement}},
         options = {multi: false, new: true};
@@ -438,11 +444,11 @@ QuestionService.incCommentCount = function (questionId, callback) {
 };
 
 QuestionService.findById = function (questionId, callback) {
-    Question.findOne({_id: questionId}).populate('typeId').exec(callback);
+    Question.findOne(baseQuery({_id: questionId})).populate('typeId').exec(callback);
 };
 
 QuestionService.view = function (questionId, userId, callback) {
-    Question.findOne({_id: questionId}, function (err, doc) {
+    Question.findOne(baseQuery({_id: questionId}), function (err, doc) {
         if (err) {
             return callback(err);
         }
@@ -452,6 +458,21 @@ QuestionService.view = function (questionId, userId, callback) {
         }
 
         processQuestion(doc, userId, callback);
+    });
+};
+
+QuestionService.delete = function (questionId, callback) {
+    Question.findOne(baseQuery({_id: questionId}), function (err, doc) {
+        if (err) {
+            return callback(err);
+        }
+
+        if (!doc) {
+            return callback();
+        }
+
+        doc.deleted = Date.now();
+        doc.save(callback);
     });
 };
 

@@ -19,5 +19,4 @@ controllers
         CommentService.list($stateParams.questionId, function (err, comments) {
             $scope.comments = comments;
         });
-
     });

@@ -144,6 +144,7 @@ app.post('/api/user/location', user.updateLocation);
 
 app.post('/api/question/create', question.create);
 app.post('/api/question/view', question.view);
+app.post('/api/question/delete', question.delete);
 app.post('/api/question/list', question.recent);
 app.post('/api/question/recent', question.recent);
 app.post('/api/question/trending', question.trending);

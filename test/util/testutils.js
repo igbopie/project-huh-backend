@@ -4,7 +4,13 @@ var mongoose = require('mongoose'),
     Comment = require('../apiclient/comment'),
     Flag = require('../apiclient/flag'),
     _ = require("lodash"),
-    Async = require("async");
+    Async = require("async"),
+    A_USERNAME = 'starbucks@huhapp.com',
+    A_PASSWORD = 'thisSucks!123!';
+
+
+// Workaround to access not exposed API calls
+var UserService = require('../../dist/models/user').Service;
 
 
 exports.cleanDatabase = function (callback) {
@@ -291,31 +297,61 @@ function createCommentsAux(array, i, callback) {
 };
 
 exports.populateDB = function(callback) {
-    var users = exports.randomUsers(3);
-    exports.createUsers(users, function (err) {
-        Async.each(
-            users,
-            function(user, callback){
-                var questions = exports.randomQuestions(user, 3);
-                exports.createQuestions(questions, function (err) {
+    var db = {
+        users: [],
+        questions: [],
+        comments: [],
+        adminUser: {
+            email: A_USERNAME,
+            password: A_PASSWORD
+        }
+    };
+    UserService.createAdminWithEmailAndPassword(db.adminUser.email, db.adminUser.password, function (err, userId) {
+        if (err) {
+            return callback(err);
+        }
+        User.login(db.adminUser, function (err, user) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (!user) {
+                return callback("User should exist");
+            }
+            db.adminUser.token = user.token;
+            User.loginCheck({token: db.adminUser.token}, function (err) {
+                if (err) {
+                    return done(err);
+                }
+                db.users = exports.randomUsers(3);
+                exports.createUsers(db.users, function (err) {
                     Async.each(
-                        questions,
-                        function(question, callback) {
-                            var comments = exports.randomComments(users, question, 3);
-                            exports.createComments(comments, function (err) {
-                                callback();
+                        db.users,
+                        function (user, callback) {
+                            var questions = exports.randomQuestions(user, 3);
+                            db.questions = _.union(questions, db.questions);
+                            exports.createQuestions(questions, function (err) {
+                                Async.each(
+                                    questions,
+                                    function (question, callback) {
+                                        var comments = exports.randomComments(db.users, question, 3);
+                                        db.comments = _.union(comments, db.comments);
+                                        exports.createComments(comments, function (err) {
+                                            callback();
+                                        });
+                                    },
+                                    function () {
+                                        callback();
+                                    }
+                                );
                             });
                         },
-                        function(){
-                            callback();
+                        function () {
+                            callback(null, db);
                         }
                     );
                 });
-            },
-            function() {
-                callback();
-            }
-        );
-
+            });
+        });
     });
 };

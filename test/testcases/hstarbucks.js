@@ -3,12 +3,7 @@ var TestUtils = require('../util/testutils');
 var User = require('../apiclient/user');
 var Starbucks = require('../apiclient/starbucks');
 var should = require('should');
-var A_USERNAME = 'starbucks@huhapp.com';
-var A_PASSWORD = 'thisSucks!123!';
 var token;
-
-// Workaround to access not exposed API calls
-var UserService = require('../../dist/models/user').Service;
 
 describe('Starbucks', function () {
 
@@ -17,33 +12,10 @@ describe('Starbucks', function () {
         //Clean and create some test users
         TestUtils.cleanDatabase(function (err) {
             if (err) return done(err);
-            UserService.createAdminWithEmailAndPassword(A_USERNAME, A_PASSWORD, function (err) {
-                if (err) {
-                    return done(err);
-                }
 
-                User.login({email: A_USERNAME, password: A_PASSWORD}, function (err, user) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    if (!user) {
-                        return done("User should exist");
-                    }
-
-                    token = user.token;
-
-                    User.loginCheck({token: token}, function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        TestUtils.populateDB(function () {
-                            done();
-                        });
-                    });
-
-                });
+            TestUtils.populateDB(function (err, db) {
+                token = db.adminUser.token;
+                done();
             });
         });
     });

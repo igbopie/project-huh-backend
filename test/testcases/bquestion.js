@@ -169,6 +169,28 @@ describe('Question', function () {
         });
     });
 
+    describe('#delete()', function () {
+        it('should delete', function (done) {
+            TestUtils.populateDB(function(err, db){
+                if (err) return done(err);
+                Question.delete({token: db.users[0].token, questionId: db.questions[0]._id}, function(err) {
+                    if (!err) return done("It should not delete");
+                    Question.delete({token: db.adminUser.token, questionId: db.questions[0]._id}, function (err) {
+                        if (err) return done(err);
+
+                        Question.view({
+                            token: db.adminUser.token,
+                            questionId: db.questions[0]._id
+                        }, function (err, resp) {
+                            if (err && resp !== 470) return done(err);
+                            done();
+                        })
+                    });
+                });
+            });
+        });
+    });
+
 
 });
 

@@ -44,7 +44,6 @@ exports.login = function (req, res) {
     var username = req.body.username,
         email = req.body.email,
         password = req.body.password;
-
     if (username && password) {
         UserService.auth(username, password, ApiUtils.handleResult(req, res));
     } else if (email && password) {
