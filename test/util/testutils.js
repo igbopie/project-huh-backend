@@ -59,7 +59,14 @@ exports.cleanDatabase = function (callback) {
                                     callback(err);
                                     return;
                                 }
-                                callback();
+                                db.collection('flags').remove(function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                        callback(err);
+                                        return;
+                                    }
+                                    callback();
+                                });
                             });
                         });
                     });

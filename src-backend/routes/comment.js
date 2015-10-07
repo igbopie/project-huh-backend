@@ -33,3 +33,11 @@ exports.list = function (req, res) {
         );
     });
 };
+
+
+exports.view = function (req, res) {
+    ApiUtils.auth(req, res, function (authUser) {
+        var commentId = req.body.commentId;
+        CommentService.view(commentId, authUser._id, ApiUtils.handleResult(req, res, true));
+    });
+};

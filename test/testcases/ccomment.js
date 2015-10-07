@@ -151,13 +151,31 @@ describe('Comment', function () {
                 token: users[0].token
             };
             Comment.create(comment1, function (err, commentDb) {
-                if (err) return done();
-
                 if (err) return done(err);
 
                 commentDb.text.should.be.equal(commentText);
 
                 done();
+            });
+        });
+    });
+
+
+    describe('#flagcomment()', function () {
+        it('should flag comment', function (done) {
+            var commentText = "\"quotes\"";
+            var comment1 = {
+                text: commentText,
+                questionId: question._id,
+                token: users[0].token
+            };
+            Comment.create(comment1, function (err, commentDb) {
+                if (err) return done(err);
+                Comment.flag({commentId: commentDb._id, reason: "hateful", token: users[0].token}, function (err) {
+                    if (err) return done(err);
+
+                    done();
+                });
             });
         });
     });

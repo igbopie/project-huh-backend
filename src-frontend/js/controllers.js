@@ -21,4 +21,5 @@ require('./controllers/starbucks/flagsController');
 require('./controllers/starbucks/registrationsController');
 require('./controllers/starbucks/questionsController');
 require('./controllers/starbucks/questionController');
+require('./controllers/starbucks/commentController');
 require('./controllers/starbucks/questionCreateController');

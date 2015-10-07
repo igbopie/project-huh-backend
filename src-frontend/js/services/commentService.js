@@ -62,4 +62,19 @@ services.service('CommentService', function ($http, AuthService) {
                 callback(error);
             });
     };
+
+    this.view = function (commentId, callback) {
+        $http.post(
+            urlBase + '/view',
+            {commentId: commentId, token: AuthService.getToken()}
+        ).success(function (data) {
+                if (data.response) {
+                    callback(null, data.response);
+                } else {
+                    callback(data.code);
+                }
+            }).error(function (error) {
+                callback(error);
+            });
+    };
 });

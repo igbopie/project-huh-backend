@@ -151,7 +151,7 @@ app.post('/api/question/trending', question.trending);
 app.post('/api/question/mine', question.mine);
 app.post('/api/question/favorites', question.favorites);
 app.post('/api/question/commented', question.commented);
-app.post('/api/question/flag', flag.flag);
+app.post('/api/question/flag', flag.flagQuestion);
 app.post('/api/question/near', question.near);
 
 app.get('/api/questiontype/list', questionType.list);
@@ -159,6 +159,8 @@ app.post('/api/questiontype/list', questionType.list);
 
 app.post('/api/comment/create', comment.create);
 app.post('/api/comment/list', comment.list);
+app.post('/api/comment/view', comment.view);
+app.post('/api/comment/flag', flag.flagComment);
 
 app.post('/api/vote/up', vote.up);
 app.post('/api/vote/down', vote.down);

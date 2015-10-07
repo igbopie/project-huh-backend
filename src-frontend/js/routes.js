@@ -158,6 +158,21 @@ app.config(function ($stateProvider, $urlRouterProvider) {
             }
         })
         .state(
+        'starbucks.comment',
+        {
+            url: '/comment/:commentId',
+            views: {
+                'toolbar': {
+                    templateUrl: 'partials/starbucks.toolbar.html',
+                    controller: 'StarbucksToolbarCtrl'
+                },
+                'main': {
+                    controller: 'StarbucksCommentCtrl',
+                    templateUrl: 'partials/starbucks.comment.html'
+                }
+            }
+        })
+        .state(
         'starbucks.questionCreate',
         {
             url: '/question/create',

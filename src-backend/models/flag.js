@@ -4,7 +4,8 @@ var mongoose = require('mongoose'),
 
 
 var flagSchema = new Schema({
-    questionId: {type: Schema.Types.ObjectId, required: true, ref: 'Question'},
+    questionId: {type: Schema.Types.ObjectId, required: false, ref: 'Question'},
+    commentId: {type: Schema.Types.ObjectId, required: false, ref: 'Comment'},
     userId: {type: Schema.Types.ObjectId, required: true, ref: 'userId'},
     reason: {type: String, required: true},
     created: {type: Date, required: true, default: Date.now}
@@ -21,8 +22,9 @@ module.exports = {
     Service: FlagService
 };
 
-FlagService.create = function (questionId, userId, reason, callback) {
+FlagService.create = function (questionId, commentId, userId, reason, callback) {
     var flag = new Flag();
+    flag.commentId = commentId;
     flag.questionId = questionId;
     flag.userId = userId;
     flag.reason = reason;

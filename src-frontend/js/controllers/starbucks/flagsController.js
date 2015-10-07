@@ -13,7 +13,11 @@ controllers
         $scope.flags = [];
 
         $scope.view = function (flag) {
-            $location.path('/starbucks/questions/' + flag.questionId);
+            if (flag.questionId) {
+                $location.path('/starbucks/questions/' + flag.questionId);
+            } else {
+                $location.path('/starbucks/comment/' + flag.commentId);
+            }
         };
 
         FlagService.list(function (err, flags) {

@@ -19,3 +19,14 @@ exports.list = function (params, callback) {
         }
     });
 }
+
+
+exports.flag = function (params, callback) {
+    apiClientBase.post('/api/comment/flag', params, function (code, headers, data) {
+        if (code != 200) {
+            callback("The server responded with an invalid code: " + code + " : " + data, code);
+        } else {
+            callback(null, JSON.parse(data).response);
+        }
+    });
+}
