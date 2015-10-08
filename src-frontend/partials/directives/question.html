@@ -1,4 +1,4 @@
-<md-item-content layout="row" class="question-container" ng-click="goToQuestion()">
+<md-item-content layout="row" class="question-container" ng-click="goToQuestion()" ng-class="{'swiped': swiped}" md-swipe-left="onSwipeLeft()"  md-swipe-right="onSwipeRight()" ng-show="question">
     <div flex class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
     </div>
     <div flex class="question-content" layout="column" layout-align="center">
@@ -16,14 +16,19 @@
     <div flex layout="column" class="question-score-container" layout-align="center center">
         <span ng-show="withToken"
               class="huh-icon-up-vote"
-              ng-click="voteUp()"
+              ng-click="voteUp(); $event.stopPropagation()"
               ng-class="{active: question.myVote == 1}"
               ng-style="question.myVote == 1 && {'color': question.type.color}"></span>
         <span class="question-score">{{question.voteScore}}</span>
         <span ng-show="withToken"
               class="huh-icon-down-vote"
-              ng-click="voteDown()"
+              ng-click="voteDown(); $event.stopPropagation()"
               ng-class="{active: question.myVote == -1}"
               ng-style="question.myVote == -1 && {'color': question.type.color}"></span>
+    </div>
+    <div class="context-menu" >
+        <div flex layout="column" layout-align="center center" class="delete-button" ng-click="delete(); $event.stopPropagation()">
+            <div>Delete</div>
+        </div>
     </div>
 </md-item-content>

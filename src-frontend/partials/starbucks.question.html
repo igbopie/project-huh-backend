@@ -2,11 +2,11 @@
 <div class="inner-list">
     <div layout="column" layout-fill  class="inner-list-child">
         <md-content class="panel-card">
-            <huh-question question="question" with-token="true"></huh-question>
+            <huh-question question="question" with-token="true" selected="true"></huh-question>
             <md-divider inset></md-divider>
             <md-list>
                 <md-item ng-repeat="comment in comments">
-                    <huh-comment comment="comment" with-token="true" q-color="question.type.color"></huh-comment>
+                    <huh-comment comment="comment" with-token="true" q-color="question.type.color" ></huh-comment>
                     <md-divider inset></md-divider>
                 </md-item>
             </md-list>
@@ -23,11 +23,3 @@
         </md-content>
     </div>
 </div>
-
-
-
-<md-button class="md-fab action-btn" aria-label="Remove question" ng-click="removeQuestion()">
-    <md-icon>
-        <ng-md-icon icon="remove"></ng-md-icon>
-    </md-icon>
-</md-button>

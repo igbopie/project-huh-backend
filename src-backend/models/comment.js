@@ -52,6 +52,7 @@ var processObject = function (dbComment, userId, callback) {
         comment.nUpVotes = dbComment.nUpVotes;
         comment.nDownVotes = dbComment.nDownVotes;
         comment.username = dbComment.username;
+        comment.questionId = dbComment.questionId;
 
         if (userId) {
             CommentVoteService.findVote(dbComment._id, userId, function (err, vote) {

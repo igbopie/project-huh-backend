@@ -14,11 +14,18 @@ controllers
                   $location,
                   AuthService,
                   CommentService,
+                  QuestionService,
                   $stateParams,
                   $mdDialog,
                   $mdToast) {
             $scope.comment = {};
+            $scope.question = {};
             CommentService.view($stateParams.commentId, function (err, comment) {
                 $scope.comment = comment;
+                comment.selected = ($stateParams.selected === 'true');
+
+                QuestionService.view(comment.questionId, function (err, question) {
+                    $scope.question = question;
+                });
             });
         });

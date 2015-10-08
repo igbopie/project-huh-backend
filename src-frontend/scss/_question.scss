@@ -1,10 +1,25 @@
 .question-container{
     @include align-items(stretch);
+    @include transition(left .5s ease);
+    left: 0px;
     padding-right: 20px;
     position: relative;
 
     &:hover {
         background: #fafafa;
+    }
+    /* The animation code */
+    @keyframes example {
+        0% {border: 2px solid gold;}
+        50% {border: 2px solid white;}
+        100% {border: 2px solid gold;}
+    }
+
+    &.selected {
+        border: 2px solid gold;
+        animation-name: example;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
     }
 
     .question-score-container{
@@ -58,5 +73,29 @@
     .question-text{
         margin-top: 10px;
         margin-bottom: 10px;
+    }
+
+    &.swiped {
+        left: -122px;
+
+        .context-menu {
+            margin-left: -122px;
+            right: -142px;
+            width: 122px;
+            position: relative;
+            @include display(flex);
+        }
+    }
+
+    .context-menu {
+        display: none;
+        .delete-button {
+            background: rgb(255,64,129);
+            color: white;
+            cursor: pointer;
+            &:hover {
+                background: lighten(rgb(255,64,129), 10%);
+            }
+        }
     }
 }

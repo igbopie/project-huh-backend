@@ -16,7 +16,7 @@ controllers
             if (flag.questionId) {
                 $location.path('/starbucks/questions/' + flag.questionId);
             } else {
-                $location.path('/starbucks/comment/' + flag.commentId);
+                $location.path('/starbucks/comment/' + flag.commentId + "/selected/true");
             }
         };
 
