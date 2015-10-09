@@ -7,7 +7,7 @@ var angular = require('angular');
 var directives = require('../directives');
 
 directives
-    .directive('huhComment', function (CommentService, $mdToast) {
+    .directive('huhComment', function (CommentService, $mdToast, $location, $mdDialog) {
         return {
             restrict: 'E',
             scope: {
@@ -46,23 +46,43 @@ directives
                     $scope.swiped = false;
                 };
 
-                $scope.delete = function () {
+                $scope.onRightClick = function () {
                     if ($scope.withToken) {
-                        CommentService.delete($scope.comment._id, function(err){
-                            if (err) {
+                        $scope.swiped = !$scope.swiped;
+                    }
+                };
+
+                $scope.onClick = function () {
+                    $scope.swiped = false;
+                };
+
+                $scope.delete = function (ev) {
+                    if ($scope.withToken) {
+                        var confirm = $mdDialog.confirm()
+                            .title('Are you really sure about this?')
+                            .content('You will delete this comment.')
+                            .ariaLabel('Delete')
+                            .targetEvent(ev)
+                            .ok('I am really really sure')
+                            .cancel('Nah, just kidding');
+                        $mdDialog.show(confirm).then(function () {
+                            CommentService.delete($scope.comment._id, function (err) {
+                                if (err) {
+                                    $mdToast.show($mdToast.simple()
+                                        .content('There was an error')
+                                        .position('top right')
+                                        .hideDelay(3000));
+                                    return;
+                                }
+                                $scope.comment = undefined;
                                 $mdToast.show($mdToast.simple()
-                                    .content('There was an error')
+                                    .content('Comment was deleted')
                                     .position('top right')
                                     .hideDelay(3000));
-                                return;
-                            }
-                            $scope.question = undefined;
-                            $mdToast.show($mdToast.simple()
-                                .content('Comment was deleted')
-                                .position('top right')
-                                .hideDelay(3000));
-                            $location.path('starbucks/questions');
-                        });
+                            });
+                        }, function () {}
+                        );
+
                     }
                 };
             }

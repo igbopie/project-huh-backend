@@ -5,6 +5,7 @@ var Comment = require('../apiclient/comment');
 var Vote = require('../apiclient/vote');
 var Notification = require('../apiclient/notification');
 var should = require('should');
+var _ = require('lodash');
 var nUsers = 5;
 var users = null;
 var question = {
@@ -76,6 +77,73 @@ describe('Notification', function () {
                     });
                 });
             });
+        })
+    });
+
+    describe('#notificationsDelete()', function () {
+        it('should delete notification', function (done) {
+            this.timeout(5000);
+            TestUtils.populateDB(function(err, db){
+                if (err) return done(err);
+                Notification.list({token: db.users[0].token}, function (err, notifications) {
+                    if (err) return done(err);
+
+                    var questionId = notifications[0].questionId;
+                    Question.delete({token: db.adminUser.token, questionId: questionId}, function(err) {
+                        if (err) return done(err);
+
+                        Notification.list({token: db.users[0].token}, function (err, notifications) {
+                            if (err) return done(err);
+
+                            _.each(notifications, function(notification){
+                                questionId.should.not.be.equal(notification.questionId);
+                            });
+
+                            done();
+                        });
+                    });
+                });
+            });
+
+        })
+    });
+
+    describe('#notificationsDeleteComment()', function () {
+        it('should delete notification', function (done) {
+            this.timeout(5000);
+            TestUtils.populateDB(function(err, db){
+                if (err) return done(err);
+                Notification.list({token: db.users[0].token}, function (err, notifications) {
+                    if (err) return done(err);
+
+                    var commentId;
+                    _.each(notifications, function(notification){
+                        if (notification.commentId) {
+                            commentId = notification.commentId;
+                            return false;
+                        }
+                    });
+
+                    if (!commentId) {
+                        return done("Should have commentId");
+                    }
+
+                    Comment.delete({token: db.adminUser.token, commentId: commentId}, function(err) {
+                        if (err) return done(err);
+
+                        Notification.list({token: db.users[0].token}, function (err, notifications) {
+                            if (err) return done(err);
+
+                            _.each(notifications, function(notification){
+                                commentId.should.not.be.equal(notification.commentId);
+                            });
+
+                            done();
+                        });
+                    });
+                });
+            });
+
         })
     });
 

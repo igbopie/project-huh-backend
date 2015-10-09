@@ -1,4 +1,11 @@
-<md-item-content layout="row" class="question-container" ng-click="goToQuestion()" ng-class="{'swiped': swiped}" md-swipe-left="onSwipeLeft()"  md-swipe-right="onSwipeRight()" ng-show="question">
+<md-item-content layout="row"
+                 class="question-container"
+                 ng-click="goToQuestion()"
+                 ng-class="{'swiped': swiped}"
+                 ng-right-click="onRightClick()"
+                 md-swipe-left="onSwipeLeft()"
+                 md-swipe-right="onSwipeRight()"
+                 ng-show="question">
     <div flex class="question-type-title"  layout="column" layout-align="center"  style="background:{{question.type.color}};">
     </div>
     <div flex class="question-content" layout="column" layout-align="center">

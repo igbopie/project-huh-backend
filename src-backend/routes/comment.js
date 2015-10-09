@@ -41,3 +41,13 @@ exports.view = function (req, res) {
         CommentService.view(commentId, authUser._id, ApiUtils.handleResult(req, res, true));
     });
 };
+
+exports.delete = function (req, res) {
+    ApiUtils.authAdmin(req, res, function (authUser) {
+        CommentService.delete(
+            req.body.commentId,
+            ApiUtils.handleResult(req, res)
+        );
+    });
+};
+

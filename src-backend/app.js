@@ -161,6 +161,7 @@ app.post('/api/comment/create', comment.create);
 app.post('/api/comment/list', comment.list);
 app.post('/api/comment/view', comment.view);
 app.post('/api/comment/flag', flag.flagComment);
+app.post('/api/comment/delete', comment.delete);
 
 app.post('/api/vote/up', vote.up);
 app.post('/api/vote/down', vote.down);

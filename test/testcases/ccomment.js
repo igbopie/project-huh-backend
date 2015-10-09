@@ -180,6 +180,28 @@ describe('Comment', function () {
         });
     });
 
+    describe('#delete()', function () {
+        it('should delete', function (done) {
+            TestUtils.populateDB(function(err, db){
+                if (err) return done(err);
+                Comment.delete({token: db.users[0].token, commentId: db.comments[0]._id}, function(err) {
+                    if (!err) return done("It should not delete");
+                    Comment.delete({token: db.adminUser.token, commentId: db.comments[0]._id}, function (err) {
+                        if (err) return done(err);
+
+                        Comment.view({
+                            token: db.adminUser.token,
+                            commentId: db.comments[0]._id
+                        }, function (err, resp) {
+                            if (err && resp !== 470) return done(err);
+                            done();
+                        })
+                    });
+                });
+            });
+        });
+    });
+
 });
 
 

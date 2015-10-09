@@ -20,6 +20,7 @@ var notificationSchema = new Schema({
     message: {type: String, required: false},
     userId: {type: Schema.Types.ObjectId, required: true, ref: 'User'},
     created: {type: Date, required: true, default: Date.now},
+    deleted: {type: Date, required: false},
     read: {type: Boolean, required: true, default: false},
     type: {type: String, required: true},
     // DATA
@@ -31,6 +32,8 @@ var notificationSchema = new Schema({
 notificationSchema.index({userId: 1, created: -1});
 notificationSchema.index({userId: 1, read: 1});
 notificationSchema.index({questionId: 1, created: -1});
+notificationSchema.index({commentId: 1, created: -1});
+notificationSchema.index({deleted: -1});
 
 var Notification = mongoose.model('Notification', notificationSchema);
 
@@ -49,6 +52,9 @@ var QuestionService = require('./question').Service;
 var UserService = require('./user').Service;
 var SettingsService = require('./setting').Service;
 
+var baseQuery = function (query) {
+    return _.defaults(query, {deleted: {$exists: false}});
+};
 
 function fixedFromCharCode(codePt) {
     /*jslint bitwise: true */
@@ -85,7 +91,7 @@ function sendNotification(type, userId, message, data) {
 
         data.notificationId = notification._id;
 
-        Notification.count({userId: userId, read: false}, function (err, badge) {
+        Notification.count(baseQuery({userId: userId, read: false}), function (err, badge) {
             if (err) { return console.error(err); }
 
 
@@ -267,10 +273,28 @@ NotificationService.onCommentDownVoted = function (commentId, userId) {
     });
 };
 
+NotificationService.onQuestionDeleted = function (questionId) {
+    Notification.update(
+        {questionId: questionId},
+        {deleted: Date.now()},
+        {multi: true},
+        function (err, numberAffected, raw) {}
+    );
+};
+
+NotificationService.onCommentDeleted = function (commentId) {
+    Notification.update(
+        {commentId: commentId},
+        {deleted: Date.now()},
+        {multi: true},
+        function (err, numberAffected, raw) {}
+    );
+};
+
 
 NotificationService.list = function (userId, page, numItems, callback) {
     Notification.find(
-        {userId: userId},
+        baseQuery({userId: userId}),
         null,
         {
             limit: numItems,

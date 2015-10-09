@@ -4,7 +4,8 @@ var mongoose = require('mongoose'),
     LOCATION_LONGITUDE = 0,
     LOCATION_LATITUDE = 1,
     sanitizeHtml = require('sanitize-html'),
-    Async = require('async');
+    Async = require('async'),
+    _ = require('lodash');
 
 
 var commentSchema = new Schema({
@@ -14,6 +15,7 @@ var commentSchema = new Schema({
     username: {type: String, required: false},
     created: {type: Date, required: true, default: Date.now},
     updated: {type: Date, required: true, default: Date.now},
+    deleted: {type: Date, required: false},
     voteScore: {type: Number, required: true, default: 0},
     nVotes: {type: Number, required: true, default: 0},
     nUpVotes: {type: Number, required: true, default: 0},
@@ -23,6 +25,7 @@ var commentSchema = new Schema({
 
 commentSchema.index({userId: 1, created: -1});
 commentSchema.index({questionId: 1, created: -1});
+commentSchema.index({deleted: -1});
 
 var Comment = mongoose.model('Comment', commentSchema);
 
@@ -41,6 +44,9 @@ var NotificationService = require('./notification').Service;
 var QuestionNameService = require('./questionName').Service;
 
 var processObject = function (dbComment, userId, callback) {
+    if (!dbComment) {
+        return callback();
+    }
     var processInternal = function () {
         var comment = {};
         comment._id = dbComment._id;
@@ -94,6 +100,11 @@ var cleanInput = function (text) {
 
     return text;
 };
+
+var baseQuery = function (query) {
+    return _.defaults(query, { deleted: {$exists: false}});
+};
+
 
 CommentService.create = function (text, userId, questionId, isAdmin, latitude, longitude, callback) {
     var comment = new Comment(),
@@ -230,7 +241,7 @@ CommentService.findCommentedQuestionIds = function (userId, page, numItems, call
 // INTERNALS
 CommentService.listByQuestionInternal = function (questionId, page, numItems, callback) {
     Comment.find(
-        {questionId: questionId},
+        baseQuery({questionId: questionId}),
         null,
         {
             limit: numItems,
@@ -242,12 +253,12 @@ CommentService.listByQuestionInternal = function (questionId, page, numItems, ca
 };
 
 CommentService.findById = function (commentId, callback) {
-    Comment.findOne({_id: commentId}, callback);
+    Comment.findOne(baseQuery({_id: commentId}), callback);
 };
 
 
 CommentService.view = function (commentId, userId, callback) {
-    Comment.findOne({_id: commentId}, function (err, dbComment) {
+    Comment.findOne(baseQuery({_id: commentId}), function (err, dbComment) {
         if (err) { return callback(err); }
 
         processObject(dbComment, userId, callback);
@@ -255,8 +266,28 @@ CommentService.view = function (commentId, userId, callback) {
 };
 
 CommentService.getTotal = function (callback) {
-    Comment.count({}, function (err, count) {
+    Comment.count(baseQuery(), function (err, count) {
         callback(err, count);
     });
 };
 
+CommentService.delete = function (commentId, callback) {
+    Comment.findOne(baseQuery({_id: commentId}), function (err, doc) {
+        if (err) {
+            return callback(err);
+        }
+
+        if (!doc) {
+            return callback();
+        }
+
+        doc.deleted = Date.now();
+        doc.save(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            NotificationService.onCommentDeleted(doc._id);
+            callback();
+        });
+    });
+};

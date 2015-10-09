@@ -472,12 +472,18 @@ QuestionService.delete = function (questionId, callback) {
         }
 
         doc.deleted = Date.now();
-        doc.save(callback);
+        doc.save(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            NotificationService.onQuestionDeleted(doc._id);
+            callback();
+        });
     });
 };
 
 QuestionService.getTotal = function (callback) {
-    Question.count({}, function (err, count) {
+    Question.count(baseQuery(), function (err, count) {
         callback(err, count);
     });
 };

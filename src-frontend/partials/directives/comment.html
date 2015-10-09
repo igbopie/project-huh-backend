@@ -1,4 +1,12 @@
-<md-item-content layout="row" class="question-container" ng-class="{'swiped': swiped, 'selected': comment.selected}"  md-swipe-left="onSwipeLeft()"  md-swipe-right="onSwipeRight()">
+<md-item-content
+        layout="row"
+        class="question-container"
+        ng-class="{'swiped': swiped, 'selected': comment.selected}"
+        ng-click="onClick()"
+        ng-right-click="onRightClick()"
+        md-swipe-left="onSwipeLeft()"
+        md-swipe-right="onSwipeRight()"
+        ng-show="comment">
     <div flex class="question-type-title"  layout="column" layout-align="center">
     </div>
     <div flex class="question-content" layout="column" layout-align="center">
